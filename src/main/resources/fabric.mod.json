@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "enchantpeak",
+  "version": "${version}",
+  "name": "EnchantPeak",
+  "description": "Shows best enchantment combinations for diamond and netherite items in JEI/REI",
+  "authors": ["zhaojiedi1992"],
+  "contact": {
+    "homepage": "https://github.com/zhaojiedi1992/enchantpeak",
+    "sources": "https://github.com/zhaojiedi1992/enchantpeak"
+  },
+  "license": "MIT",
+  "icon": "assets/enchantpeak/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.zhaojiedi1992.enchantpeak.EnchantPeakMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "jei": "*",
+    "roughlyenoughitems": "*"
+  }
+}
