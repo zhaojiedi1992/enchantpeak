@@ -53,7 +53,7 @@ jobs:
       - name: Publish to Modrinth
         uses: Kira-NT/mc-publish@v3
         with:
-          modrinth-id: ${{ secrets.MODRINTH_PROJECT_ID }}
+          modrinth-id: Ieptg3ne
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
 
           files: ${{ steps.jar.outputs.path }}
