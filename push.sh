@@ -65,9 +65,9 @@ else
 fi
 
 # ---- 提交 + 打 tag + push ----
+# 只提交版本相关文件的改动（gradle.properties + CHANGELOG.md）
+# 如果用户有其他已 staged 的改动也会一起提交
 git add gradle.properties CHANGELOG.md
-# 同时把工作区其他已存在的改动也带上（避免遗漏）
-git add -A
 git commit -m "update to ${NEW_VERSION}" >/dev/null 2>&1 || {
     echo "✗ git commit 失败" >&2
     exit 1

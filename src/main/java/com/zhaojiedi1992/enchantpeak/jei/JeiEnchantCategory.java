@@ -12,6 +12,7 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
 
@@ -20,7 +21,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
     private static final int HEIGHT = 100;
 
     public JeiEnchantCategory(IGuiHelper guiHelper) {
-        this.icon = guiHelper.createDrawableItemStack(new ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE));
+        this.icon = guiHelper.createDrawableItemStack(new ItemStack(Items.DIAMOND_PICKAXE));
     }
 
     @Override
