@@ -30,9 +30,9 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 - **JEI**（≥ 30.18.0）**或** **REI**（≥ 26.1）— 至少安装一个
 
 **下载地址：**
+- [Modrinth](https://modrinth.com/mod/enchantpeak)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/enchantpeak)
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
-- [Modrinth](https://modrinth.com/mod/enchantpeak) *（即将上线）*
-- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/enchantpeak) *（即将上线）*
 
 **安装步骤：**
 1. 下载最新的 `enchantpeak-x.x.x.jar`

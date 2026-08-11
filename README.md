@@ -30,9 +30,9 @@ A Minecraft Fabric mod that shows **best enchantment combinations** for diamond 
 - **JEI** (≥ 30.18.0) **OR** **REI** (≥ 26.1) — at least one is required
 
 **Download from:**
+- [Modrinth](https://modrinth.com/mod/enchantpeak)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/enchantpeak)
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
-- [Modrinth](https://modrinth.com/mod/enchantpeak) *(coming soon)*
-- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/enchantpeak) *(coming soon)*
 
 **Installation:**
 1. Download the latest `enchantpeak-x.x.x.jar`
