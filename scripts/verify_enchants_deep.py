@@ -133,6 +133,12 @@ ITEMS = {
         ("弹射物保护流·深海", [("projectile_protection",4),("feather_falling",4),("soul_speed",3),("depth_strider",3),("thorns",3),("unbreaking",3),("mending",1)]),
         ("弹射物保护流·冰霜", [("projectile_protection",4),("feather_falling",4),("soul_speed",3),("frost_walker",2),("thorns",3),("unbreaking",3),("mending",1)]),
     ],
+    "elytra": [
+        ("满配流", [("unbreaking",3),("mending",1)]),
+    ],
+    "shield": [
+        ("满配流", [("unbreaking",3),("mending",1)]),
+    ],
 }
 # 下界合金复用钻石规格（代码里也是复用同一组 EnchantGroup 对象）
 DIAMOND_TO_NETHERITE = {

@@ -67,6 +67,9 @@ public class EnchantmentData {
         buildChestplates(l);
         buildLeggings(l);
         buildBoots(l);
+        // 实用道具
+        buildElytra(l);
+        buildShields(l);
     }
 
     // ==================== 工具 ====================
@@ -358,6 +361,25 @@ public class EnchantmentData {
                 e(l, Enchantments.MENDING, 1)
         ));
         records.add(new ItemEnchantRecord(Items.FISHING_ROD, List.of(standard)));
+    }
+
+    // ==================== 实用道具 ====================
+    // 鞘翅 / 盾：均不在 armor tag，无法附保护类/荆棘；仅支持耐久 III + 修补 I（durability 组）
+
+    private void buildElytra(HolderLookup.RegistryLookup<Enchantment> l) {
+        records.add(new ItemEnchantRecord(Items.ELYTRA, List.of(utilityGroup(l))));
+    }
+
+    private void buildShields(HolderLookup.RegistryLookup<Enchantment> l) {
+        records.add(new ItemEnchantRecord(Items.SHIELD, List.of(utilityGroup(l))));
+    }
+
+    /** 实用道具满配流：耐久 III + 修补 I（鞘翅/盾均只支持这两个非诅咒附魔）*/
+    private static EnchantGroup utilityGroup(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("满配流", List.of(
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
     }
 
     // ==================== 防具（钻石 + 下界合金）====================

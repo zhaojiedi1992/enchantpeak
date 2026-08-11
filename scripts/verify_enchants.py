@@ -183,6 +183,12 @@ ITEMS = {
         ("弹射物保护流·冰霜", [("projectile_protection",4),("feather_falling",4),("soul_speed",3),("frost_walker",2),("thorns",3),("unbreaking",3),("mending",1)]),
     ],
     "netherite_boots": "_same_as_diamond_boots_",
+    "elytra": [
+        ("满配流", [("unbreaking",3),("mending",1)]),
+    ],
+    "shield": [
+        ("满配流", [("unbreaking",3),("mending",1)]),
+    ],
 }
 
 errors = []
