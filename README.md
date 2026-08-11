@@ -21,6 +21,22 @@ A Minecraft Fabric mod that shows **best enchantment combinations** for diamond 
 
 ---
 
+## 📸 Screenshots
+
+![Builds overview](.github/screenshots/rei-overview.png)
+
+*Each item shows all its enchantment builds as separate enchanted item slots.*
+
+![Search](.github/screenshots/rei-search.png)
+
+*Search by item name (钻石镐 / `diamond_pickaxe`), enchantment name (时运 / `Fortune`), or even pinyin (`zuanshigao`).*
+
+![Build detail](.github/screenshots/rei-detail.png)
+
+*Hover any slot to see the full enchantment list rendered natively — no duplicate text.*
+
+---
+
 ## 📦 Download & Installation
 
 **Requirements:**

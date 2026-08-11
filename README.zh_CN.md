@@ -21,6 +21,22 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 
 ---
 
+## 📸 游戏截图
+
+![流派方案总览](.github/screenshots/rei-overview.png)
+
+*每个物品的所有附魔流派以独立的附魔物品槽位展示。*
+
+![搜索](.github/screenshots/rei-search.png)
+
+*支持按物品名（钻石镐 / `diamond_pickaxe`）、附魔名（时运 / `Fortune`）、甚至拼音（`zuanshigao`）搜索。*
+
+![悬停详情](.github/screenshots/rei-detail.png)
+
+*鼠标悬停任一槽位，原生渲染完整的附魔列表，无重复文字。*
+
+---
+
 ## 📦 下载与安装
 
 **依赖要求：**
