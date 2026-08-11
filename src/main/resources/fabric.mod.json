@@ -30,7 +30,7 @@
     "fabric-api": "*"
   },
   "suggests": {
-    "jei": "*",
-    "roughlyenoughitems": "*"
+    "jei": ">=30.18.0",
+    "roughlyenoughitems": ">=26.1"
   }
 }

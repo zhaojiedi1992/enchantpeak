@@ -62,7 +62,9 @@ jobs:
           version-type: release
           changelog-file: CHANGELOG.md
 
-          loaders: fabric
+          loaders: |
+            fabric
+            quilt
           game-versions: |
             26.1
             26.1.1
