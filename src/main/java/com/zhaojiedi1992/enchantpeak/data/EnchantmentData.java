@@ -16,7 +16,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 原版附魔顶配数据表（MC 26.1 ~ 26.2 系列，附魔注册表 ID 未变）
+ * 原版附魔顶配数据表（MC 26.1 ~ 26.2 系列）。
+ *
+ * <p>所有附魔等级、互斥关系、适用物品均严格依据 Minecraft 客户端 jar 内置的官方 datapack
+ * （{@code data/minecraft/enchantment/*.json} 和 {@code data/minecraft/tags/enchantment/exclusive_set/*.json}），
+ * 已逐项核对，确保与原版完全一致。
+ *
+ * <h2>互斥关系（exclusive_set，同一组内只能选一个）</h2>
+ * <ul>
+ *   <li><b>damage 组</b>：sharpness / smite / bane_of_arthropods / impaling / density / breach（剑/三叉戟/重锤伤害附魔六选一）</li>
+ *   <li><b>armor 组</b>：protection / fire_protection / blast_protection / projectile_protection（防具保护四选一）</li>
+ *   <li><b>mining 组</b>：fortune / silk_touch（时运与精准采集二选一）</li>
+ *   <li><b>bow 组</b>：infinity / mending（弓的无限与修补二选一，仅限弓）</li>
+ *   <li><b>crossbow 组</b>：piercing / multishot（弩的穿透与多重二选一）</li>
+ *   <li><b>boots 组</b>：depth_strider / frost_walker（靴子的深海探索者与冰霜行者二选一）</li>
+ *   <li><b>riptide 组</b>：riptide 与 {loyalty, channeling}（激流与忠诚/引雷互斥，但忠诚与引雷可共存）</li>
+ * </ul>
  */
 public class EnchantmentData {
 
@@ -33,167 +48,467 @@ public class EnchantmentData {
     }
 
     private void buildAll(HolderLookup.RegistryLookup<Enchantment> l) {
+        // 工具（钻石 + 下界合金）
         buildPickaxes(l);
         buildAxes(l);
         buildShovels(l);
         buildHoes(l);
+        // 近战武器（钻石 + 下界合金）
         buildSwords(l);
+        buildMaces(l);
+        buildSpears(l);
+        // 远程 / 投掷武器（无材质区分，单一物品）
         buildBows(l);
         buildCrossbows(l);
         buildTridents(l);
         buildFishingRods(l);
+        // 防具（钻石 + 下界合金）
         buildHelmets(l);
         buildChestplates(l);
         buildLeggings(l);
         buildBoots(l);
     }
 
+    // ==================== 工具 ====================
+    // 镐/铲/锄：时运流 vs 精准流（mining 互斥组），工具类共通：效率 V + 耐久 III + 修补 I
+
     private void buildPickaxes(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup fortune = new EnchantGroup("时运流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
-        EnchantGroup silk = new EnchantGroup("精准流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.SILK_TOUCH, 1),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
+        EnchantGroup fortune = toolFortune(l);
+        EnchantGroup silk = toolSilk(l);
         records.add(new ItemEnchantRecord(Items.DIAMOND_PICKAXE, List.of(fortune, silk)));
         records.add(new ItemEnchantRecord(Items.NETHERITE_PICKAXE, List.of(fortune, silk)));
     }
 
-    private void buildAxes(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup logging = new EnchantGroup("伐木流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
-        EnchantGroup combat = new EnchantGroup("战斗流", List.of(
-                e(l, Enchantments.SHARPNESS, 5), e(l, Enchantments.EFFICIENCY, 5),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_AXE, List.of(logging, combat)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_AXE, List.of(logging, combat)));
-    }
-
     private void buildShovels(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup fortune = new EnchantGroup("时运流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
-        EnchantGroup silk = new EnchantGroup("精准流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.SILK_TOUCH, 1),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
+        EnchantGroup fortune = toolFortune(l);
+        EnchantGroup silk = toolSilk(l);
         records.add(new ItemEnchantRecord(Items.DIAMOND_SHOVEL, List.of(fortune, silk)));
         records.add(new ItemEnchantRecord(Items.NETHERITE_SHOVEL, List.of(fortune, silk)));
     }
 
     private void buildHoes(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup fortune = new EnchantGroup("时运流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
-        EnchantGroup silk = new EnchantGroup("精准流", List.of(
-                e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.SILK_TOUCH, 1),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
-        ));
+        EnchantGroup fortune = toolFortune(l);
+        EnchantGroup silk = toolSilk(l);
         records.add(new ItemEnchantRecord(Items.DIAMOND_HOE, List.of(fortune, silk)));
         records.add(new ItemEnchantRecord(Items.NETHERITE_HOE, List.of(fortune, silk)));
     }
 
-    private void buildSwords(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup standard = new EnchantGroup("满配流", List.of(
-                e(l, Enchantments.SHARPNESS, 5), e(l, Enchantments.KNOCKBACK, 2),
-                e(l, Enchantments.FIRE_ASPECT, 2), e(l, Enchantments.LOOTING, 3),
-                e(l, Enchantments.SWEEPING_EDGE, 3), e(l, Enchantments.UNBREAKING, 3),
+    /** 工具时运流：效率 V + 时运 III + 耐久 III + 修补 I */
+    private static EnchantGroup toolFortune(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("时运流", List.of(
+                e(l, Enchantments.EFFICIENCY, 5),
+                e(l, Enchantments.FORTUNE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
                 e(l, Enchantments.MENDING, 1)
         ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_SWORD, List.of(standard)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_SWORD, List.of(standard)));
     }
+
+    /** 工具精准流：效率 V + 精准采集 I + 耐久 III + 修补 I */
+    private static EnchantGroup toolSilk(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("精准流", List.of(
+                e(l, Enchantments.EFFICIENCY, 5),
+                e(l, Enchantments.SILK_TOUCH, 1),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    // ==================== 斧子 ====================
+    // 斧子同时属于 mining（可附效率/时运/精准）和 sharp_weapon（可附锋利/亡灵杀手/节肢杀手）
+    // 伐木流：效率 V + 时运 III + 耐久 III + 修补 I
+    // 战斗流：锋利 V + 效率 V + 耐久 III + 修补 I（锋利为 damage 组代表，可与效率共存）
+
+    private void buildAxes(HolderLookup.RegistryLookup<Enchantment> l) {
+        EnchantGroup logging = new EnchantGroup("伐木流", List.of(
+                e(l, Enchantments.EFFICIENCY, 5),
+                e(l, Enchantments.FORTUNE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+        EnchantGroup combat = new EnchantGroup("战斗流（锋利）", List.of(
+                e(l, Enchantments.SHARPNESS, 5),
+                e(l, Enchantments.EFFICIENCY, 5),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+        records.add(new ItemEnchantRecord(Items.DIAMOND_AXE, List.of(logging, combat)));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_AXE, List.of(logging, combat)));
+    }
+
+    // ==================== 剑（钻石 + 下界合金）====================
+    // 伤害附魔 damage 组三选一：锋利 / 亡灵杀手 / 节肢杀手
+    // 其余可叠加：击退 II、火焰附加 II、抢夺 III、横扫之刃 III、耐久 III、修补 I
+
+    private void buildSwords(HolderLookup.RegistryLookup<Enchantment> l) {
+        records.add(new ItemEnchantRecord(Items.DIAMOND_SWORD, List.of(
+                swordSharp(l), swordSmite(l), swordArthropods(l)
+        )));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_SWORD, List.of(
+                swordSharp(l), swordSmite(l), swordArthropods(l)
+        )));
+    }
+
+    /** 剑·锋利流：通用伤害最高，对亡灵/节肢也有基础加成 */
+    private static EnchantGroup swordSharp(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("锋利流", List.of(
+                e(l, Enchantments.SHARPNESS, 5),
+                e(l, Enchantments.KNOCKBACK, 2),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.LOOTING, 3),
+                e(l, Enchantments.SWEEPING_EDGE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    /** 剑·亡灵杀手流：对亡灵生物（僵尸/骷髅等）伤害最高 */
+    private static EnchantGroup swordSmite(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("亡灵杀手流", List.of(
+                e(l, Enchantments.SMITE, 5),
+                e(l, Enchantments.KNOCKBACK, 2),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.LOOTING, 3),
+                e(l, Enchantments.SWEEPING_EDGE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    /** 剑·节肢杀手流：对节肢生物（蜘蛛/蠹虫等）伤害最高 */
+    private static EnchantGroup swordArthropods(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("节肢杀手流", List.of(
+                e(l, Enchantments.BANE_OF_ARTHROPODS, 5),
+                e(l, Enchantments.KNOCKBACK, 2),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.LOOTING, 3),
+                e(l, Enchantments.SWEEPING_EDGE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    // ==================== 重锤（Mace，单一材质）====================
+    // 伤害附魔 damage 组：density V 或 breach IV 二选一（两者都在 damage 组互斥）
+    // wind_burst III 可叠加；不可附击退/横扫/火焰附加（mace 不在 melee_weapon/sweeping/fire_aspect 的 applicable 范围）
+    // 实际 mace 在 fire_aspect tag 里（fire_aspect tag 包含 mace），但不在 sweeping/melee_weapon tag
+    // 经核实：mace 可附 fire_aspect，但不可附 knockback/looting/sweeping_edge
+
+    private void buildMaces(HolderLookup.RegistryLookup<Enchantment> l) {
+        records.add(new ItemEnchantRecord(Items.MACE, List.of(
+                maceDensity(l), maceBreach(l)
+        )));
+    }
+
+    /** 重锤·密度流：下落攻击伤害最高（density V，与 breach 同属 damage 组互斥，故不带 breach）*/
+    private static EnchantGroup maceDensity(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("密度流", List.of(
+                e(l, Enchantments.DENSITY, 5),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.WIND_BURST, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    /** 重锤·破甲流：无视护甲（breach IV）*/
+    private static EnchantGroup maceBreach(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("破甲流", List.of(
+                e(l, Enchantments.BREACH, 4),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.WIND_BURST, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    // ==================== 长矛（Spears，钻石 + 下界合金）====================
+    // lunge III 专属；长矛在 melee_weapon tag（可附 knockback/looting），在 sharp_weapon tag（可附锋利等 damage 组）
+    // 但长矛不在 sweeping tag（不可附横扫之刃），在 fire_aspect tag（可附火焰附加）
+
+    private void buildSpears(HolderLookup.RegistryLookup<Enchantment> l) {
+        EnchantGroup sharp = spearSharp(l);
+        EnchantGroup smite = spearSmite(l);
+        EnchantGroup arthropods = spearArthropods(l);
+        records.add(new ItemEnchantRecord(Items.DIAMOND_SPEAR, List.of(sharp, smite, arthropods)));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_SPEAR, List.of(sharp, smite, arthropods)));
+    }
+
+    private static EnchantGroup spearSharp(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("锋利流", List.of(
+                e(l, Enchantments.SHARPNESS, 5),
+                e(l, Enchantments.LUNGE, 3),
+                e(l, Enchantments.KNOCKBACK, 2),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.LOOTING, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    private static EnchantGroup spearSmite(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("亡灵杀手流", List.of(
+                e(l, Enchantments.SMITE, 5),
+                e(l, Enchantments.LUNGE, 3),
+                e(l, Enchantments.KNOCKBACK, 2),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.LOOTING, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    private static EnchantGroup spearArthropods(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("节肢杀手流", List.of(
+                e(l, Enchantments.BANE_OF_ARTHROPODS, 5),
+                e(l, Enchantments.LUNGE, 3),
+                e(l, Enchantments.KNOCKBACK, 2),
+                e(l, Enchantments.FIRE_ASPECT, 2),
+                e(l, Enchantments.LOOTING, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    // ==================== 弓 ====================
+    // 无限流 vs 修补流（bow 互斥组）：infinity 与 mending 互斥
 
     private void buildBows(HolderLookup.RegistryLookup<Enchantment> l) {
         EnchantGroup infinite = new EnchantGroup("无限流", List.of(
-                e(l, Enchantments.POWER, 5), e(l, Enchantments.PUNCH, 2),
-                e(l, Enchantments.FLAME, 1), e(l, Enchantments.INFINITY, 1),
+                e(l, Enchantments.POWER, 5),
+                e(l, Enchantments.PUNCH, 2),
+                e(l, Enchantments.FLAME, 1),
+                e(l, Enchantments.INFINITY, 1),
                 e(l, Enchantments.UNBREAKING, 3)
         ));
         EnchantGroup mending = new EnchantGroup("修补流", List.of(
-                e(l, Enchantments.POWER, 5), e(l, Enchantments.PUNCH, 2),
-                e(l, Enchantments.FLAME, 1), e(l, Enchantments.MENDING, 1),
+                e(l, Enchantments.POWER, 5),
+                e(l, Enchantments.PUNCH, 2),
+                e(l, Enchantments.FLAME, 1),
+                e(l, Enchantments.MENDING, 1),
                 e(l, Enchantments.UNBREAKING, 3)
         ));
         records.add(new ItemEnchantRecord(Items.BOW, List.of(infinite, mending)));
     }
 
+    // ==================== 弩 ====================
+    // 穿透流 vs 多重流（crossbow 互斥组）
+
     private void buildCrossbows(HolderLookup.RegistryLookup<Enchantment> l) {
         EnchantGroup piercing = new EnchantGroup("穿透流", List.of(
-                e(l, Enchantments.PIERCING, 4), e(l, Enchantments.QUICK_CHARGE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
+                e(l, Enchantments.PIERCING, 4),
+                e(l, Enchantments.QUICK_CHARGE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
         ));
         EnchantGroup multishot = new EnchantGroup("多重流", List.of(
-                e(l, Enchantments.MULTISHOT, 1), e(l, Enchantments.QUICK_CHARGE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
+                e(l, Enchantments.MULTISHOT, 1),
+                e(l, Enchantments.QUICK_CHARGE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
         ));
         records.add(new ItemEnchantRecord(Items.CROSSBOW, List.of(piercing, multishot)));
     }
 
+    // ==================== 三叉戟 ====================
+    // riptide 与 {loyalty, channeling} 互斥（riptide 互斥组）
+    // loyalty 与 channeling 可共存（无互斥声明）
+    // impaling 属 damage 组（与 sharpness/smite 等互斥，但三叉戟只能附 impaling，无冲突）
+
     private void buildTridents(HolderLookup.RegistryLookup<Enchantment> l) {
         EnchantGroup loyalty = new EnchantGroup("忠诚流", List.of(
-                e(l, Enchantments.LOYALTY, 3), e(l, Enchantments.IMPALING, 5),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
+                e(l, Enchantments.LOYALTY, 3),
+                e(l, Enchantments.CHANNELING, 1),
+                e(l, Enchantments.IMPALING, 5),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
         ));
         EnchantGroup riptide = new EnchantGroup("激流流", List.of(
-                e(l, Enchantments.RIPTIDE, 3), e(l, Enchantments.IMPALING, 5),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
+                e(l, Enchantments.RIPTIDE, 3),
+                e(l, Enchantments.IMPALING, 5),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
         ));
         records.add(new ItemEnchantRecord(Items.TRIDENT, List.of(loyalty, riptide)));
     }
 
+    // ==================== 钓鱼竿 ====================
+
     private void buildFishingRods(HolderLookup.RegistryLookup<Enchantment> l) {
         EnchantGroup standard = new EnchantGroup("满配流", List.of(
-                e(l, Enchantments.LUCK_OF_THE_SEA, 3), e(l, Enchantments.LURE, 3),
-                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
+                e(l, Enchantments.LUCK_OF_THE_SEA, 3),
+                e(l, Enchantments.LURE, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
         ));
         records.add(new ItemEnchantRecord(Items.FISHING_ROD, List.of(standard)));
     }
 
+    // ==================== 防具（钻石 + 下界合金）====================
+    // armor 互斥组四选一：protection / fire_protection / blast_protection / projectile_protection
+    // 因此每件防具提供 4 个保护流派
+
     private void buildHelmets(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup standard = new EnchantGroup("标准流", List.of(
+        List<EnchantGroup> groups = List.of(
+                helmetProtection(l), helmetFireProtection(l),
+                helmetBlastProtection(l), helmetProjectileProtection(l)
+        );
+        records.add(new ItemEnchantRecord(Items.DIAMOND_HELMET, groups));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_HELMET, groups));
+    }
+
+    private void buildChestplates(HolderLookup.RegistryLookup<Enchantment> l) {
+        List<EnchantGroup> groups = List.of(
+                chestplateProtection(l), chestplateFireProtection(l),
+                chestplateBlastProtection(l), chestplateProjectileProtection(l)
+        );
+        records.add(new ItemEnchantRecord(Items.DIAMOND_CHESTPLATE, groups));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_CHESTPLATE, groups));
+    }
+
+    private void buildLeggings(HolderLookup.RegistryLookup<Enchantment> l) {
+        List<EnchantGroup> groups = List.of(
+                leggingsProtection(l), leggingsFireProtection(l),
+                leggingsBlastProtection(l), leggingsProjectileProtection(l)
+        );
+        records.add(new ItemEnchantRecord(Items.DIAMOND_LEGGINGS, groups));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_LEGGINGS, groups));
+    }
+
+    private void buildBoots(HolderLookup.RegistryLookup<Enchantment> l) {
+        // 靴子额外有 boots 互斥组：depth_strider vs frost_walker
+        // 因此靴子 = 4（armor） × 2（boots） = 8 个流派
+        List<EnchantGroup> groups = List.of(
+                bootsProtectionDepth(l), bootsProtectionFrost(l),
+                bootsFireProtectionDepth(l), bootsFireProtectionFrost(l),
+                bootsBlastProtectionDepth(l), bootsBlastProtectionFrost(l),
+                bootsProjectileProtectionDepth(l), bootsProjectileProtectionFrost(l)
+        );
+        records.add(new ItemEnchantRecord(Items.DIAMOND_BOOTS, groups));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_BOOTS, groups));
+    }
+
+    // ---- 头盔流派（额外：水下呼吸 III + 水下速掘 I）----
+    private static EnchantGroup helmetProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("保护流", List.of(
                 e(l, Enchantments.PROTECTION, 4), e(l, Enchantments.RESPIRATION, 3),
                 e(l, Enchantments.AQUA_AFFINITY, 1), e(l, Enchantments.THORNS, 3),
                 e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
         ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_HELMET, List.of(standard)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_HELMET, List.of(standard)));
     }
-
-    private void buildChestplates(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup standard = new EnchantGroup("标准流", List.of(
-                e(l, Enchantments.PROTECTION, 4), e(l, Enchantments.THORNS, 3),
+    private static EnchantGroup helmetFireProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("火焰保护流", List.of(
+                e(l, Enchantments.FIRE_PROTECTION, 4), e(l, Enchantments.RESPIRATION, 3),
+                e(l, Enchantments.AQUA_AFFINITY, 1), e(l, Enchantments.THORNS, 3),
                 e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
         ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_CHESTPLATE, List.of(standard)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_CHESTPLATE, List.of(standard)));
     }
-
-    private void buildLeggings(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup standard = new EnchantGroup("标准流", List.of(
-                e(l, Enchantments.PROTECTION, 4), e(l, Enchantments.THORNS, 3),
+    private static EnchantGroup helmetBlastProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("爆炸保护流", List.of(
+                e(l, Enchantments.BLAST_PROTECTION, 4), e(l, Enchantments.RESPIRATION, 3),
+                e(l, Enchantments.AQUA_AFFINITY, 1), e(l, Enchantments.THORNS, 3),
                 e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
         ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_LEGGINGS, List.of(standard)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_LEGGINGS, List.of(standard)));
+    }
+    private static EnchantGroup helmetProjectileProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return new EnchantGroup("弹射物保护流", List.of(
+                e(l, Enchantments.PROJECTILE_PROTECTION, 4), e(l, Enchantments.RESPIRATION, 3),
+                e(l, Enchantments.AQUA_AFFINITY, 1), e(l, Enchantments.THORNS, 3),
+                e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)
+        ));
     }
 
-    private void buildBoots(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup standard = new EnchantGroup("标准流", List.of(
-                e(l, Enchantments.PROTECTION, 4), e(l, Enchantments.FEATHER_FALLING, 4),
-                e(l, Enchantments.SOUL_SPEED, 3), e(l, Enchantments.DEPTH_STRIDER, 3),
-                e(l, Enchantments.THORNS, 3), e(l, Enchantments.UNBREAKING, 3),
+    // ---- 胸甲流派 ----
+    private static EnchantGroup chestplateProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return armorGroup(l, "保护流", Enchantments.PROTECTION);
+    }
+    private static EnchantGroup chestplateFireProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return armorGroup(l, "火焰保护流", Enchantments.FIRE_PROTECTION);
+    }
+    private static EnchantGroup chestplateBlastProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return armorGroup(l, "爆炸保护流", Enchantments.BLAST_PROTECTION);
+    }
+    private static EnchantGroup chestplateProjectileProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return armorGroup(l, "弹射物保护流", Enchantments.PROJECTILE_PROTECTION);
+    }
+
+    // ---- 护腿流派（额外：迅捷潜行 III，leg_armor 专属）----
+    private static EnchantGroup leggingsProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return leggingsGroup(l, "保护流", Enchantments.PROTECTION);
+    }
+    private static EnchantGroup leggingsFireProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return leggingsGroup(l, "火焰保护流", Enchantments.FIRE_PROTECTION);
+    }
+    private static EnchantGroup leggingsBlastProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return leggingsGroup(l, "爆炸保护流", Enchantments.BLAST_PROTECTION);
+    }
+    private static EnchantGroup leggingsProjectileProtection(HolderLookup.RegistryLookup<Enchantment> l) {
+        return leggingsGroup(l, "弹射物保护流", Enchantments.PROJECTILE_PROTECTION);
+    }
+
+    /** 胸甲通用：保护类 IV + 荆棘 III + 耐久 III + 修补 I */
+    private static EnchantGroup armorGroup(HolderLookup.RegistryLookup<Enchantment> l, String name, ResourceKey<Enchantment> protectionType) {
+        return new EnchantGroup(name, List.of(
+                e(l, protectionType, 4),
+                e(l, Enchantments.THORNS, 3),
+                e(l, Enchantments.UNBREAKING, 3),
                 e(l, Enchantments.MENDING, 1)
         ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_BOOTS, List.of(standard)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_BOOTS, List.of(standard)));
+    }
+
+    /** 护腿通用：保护类 IV + 迅捷潜行 III + 荆棘 III + 耐久 III + 修补 I */
+    private static EnchantGroup leggingsGroup(HolderLookup.RegistryLookup<Enchantment> l, String name, ResourceKey<Enchantment> protectionType) {
+        return new EnchantGroup(name, List.of(
+                e(l, protectionType, 4),
+                e(l, Enchantments.SWIFT_SNEAK, 3),
+                e(l, Enchantments.THORNS, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+    }
+
+    // ---- 靴子流派（额外：摔落保护 IV，foot_armor 专属；以及 boots 互斥组的 depth_strider / frost_walker）----
+    private static EnchantGroup bootsProtectionDepth(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "保护流·深海", Enchantments.PROTECTION, Enchantments.DEPTH_STRIDER);
+    }
+    private static EnchantGroup bootsProtectionFrost(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "保护流·冰霜", Enchantments.PROTECTION, Enchantments.FROST_WALKER);
+    }
+    private static EnchantGroup bootsFireProtectionDepth(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "火焰保护流·深海", Enchantments.FIRE_PROTECTION, Enchantments.DEPTH_STRIDER);
+    }
+    private static EnchantGroup bootsFireProtectionFrost(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "火焰保护流·冰霜", Enchantments.FIRE_PROTECTION, Enchantments.FROST_WALKER);
+    }
+    private static EnchantGroup bootsBlastProtectionDepth(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "爆炸保护流·深海", Enchantments.BLAST_PROTECTION, Enchantments.DEPTH_STRIDER);
+    }
+    private static EnchantGroup bootsBlastProtectionFrost(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "爆炸保护流·冰霜", Enchantments.BLAST_PROTECTION, Enchantments.FROST_WALKER);
+    }
+    private static EnchantGroup bootsProjectileProtectionDepth(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "弹射物保护流·深海", Enchantments.PROJECTILE_PROTECTION, Enchantments.DEPTH_STRIDER);
+    }
+    private static EnchantGroup bootsProjectileProtectionFrost(HolderLookup.RegistryLookup<Enchantment> l) {
+        return bootsGroup(l, "弹射物保护流·冰霜", Enchantments.PROJECTILE_PROTECTION, Enchantments.FROST_WALKER);
+    }
+
+    /**
+     * 靴子通用：保护类 IV + 摔落保护 IV + 灵魂疾行 III + 移动类（depth_strider III 或 frost_walker II）
+     * + 荆棘 III + 耐久 III + 修补 I
+     */
+    private static EnchantGroup bootsGroup(HolderLookup.RegistryLookup<Enchantment> l, String name,
+                                           ResourceKey<Enchantment> protectionType,
+                                           ResourceKey<Enchantment> movementType) {
+        int movementLevel = movementType == Enchantments.FROST_WALKER ? 2 : 3;
+        return new EnchantGroup(name, List.of(
+                e(l, protectionType, 4),
+                e(l, Enchantments.FEATHER_FALLING, 4),
+                e(l, Enchantments.SOUL_SPEED, 3),
+                e(l, movementType, movementLevel),
+                e(l, Enchantments.THORNS, 3),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
     }
 
     public List<ItemEnchantRecord> getAllRecords() {

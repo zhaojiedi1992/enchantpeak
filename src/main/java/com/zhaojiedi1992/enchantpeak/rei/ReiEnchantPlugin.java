@@ -17,62 +17,23 @@ import me.shedaniel.rei.plugin.common.displays.DefaultInformationDisplay;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.enchantment.Enchantment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * REI 插件入口
  * 参考 REI 官方 DefaultClientPlugin（26.2 分支）实现模式
  *
  * 三层展示策略：
- * 1. registerEntries  —— 可搜索条目（附魔后物品，带中英双语 lore 供搜索）
+ * 1. registerEntries  —— 可搜索条目：真实附魔物品，附魔词条由原版 tooltip 原生渲染
  * 2. registerDisplays —— DefaultInformationDisplay（点击物品 → Information 标签）
- * 3. registerDisplays —— 自定义 Category Display（可视化展示）
+ * 3. registerDisplays —— 自定义 Category Display（原生 Slot 布局，可视化展示）
  *
- * 搜索能力（REI 26.2 默认 tooltipSearch = ALWAYS）：
- * - 物品名（TextArgumentType）：钻石镐、zuanshijiangao（拼音）
- * - Tooltip/Lore（TooltipArgumentType）：时运、shiyun（拼音）、Fortune（英文）
+ * 原则：不重复手写附魔内容。物品一旦附魔，Minecraft 会自动在 tooltip 中渲染附魔词条
+ * （如"时运 III"），REI 的 tooltip 搜索（默认 tooltipSearch = ALWAYS）会直接索引这段
+ * 原生文本，因此搜索"时运"依然有效，无需额外维护一份重复的文字或映射表。
  */
 public class ReiEnchantPlugin implements REIClientPlugin {
-
-    /** 附魔 ID → 中文名 映射（用于双语搜索） */
-    private static final java.util.Map<String, String> ENCH_CN_NAMES = new java.util.HashMap<>();
-    static {
-        ENCH_CN_NAMES.put("efficiency", "效率");
-        ENCH_CN_NAMES.put("fortune", "时运");
-        ENCH_CN_NAMES.put("silk_touch", "精准采集");
-        ENCH_CN_NAMES.put("unbreaking", "耐久");
-        ENCH_CN_NAMES.put("mending", "修补");
-        ENCH_CN_NAMES.put("sharpness", "锋利");
-        ENCH_CN_NAMES.put("knockback", "击退");
-        ENCH_CN_NAMES.put("fire_aspect", "火焰附加");
-        ENCH_CN_NAMES.put("looting", "抢夺");
-        ENCH_CN_NAMES.put("sweeping_edge", "横扫之刃");
-        ENCH_CN_NAMES.put("power", "力量");
-        ENCH_CN_NAMES.put("punch", "冲击");
-        ENCH_CN_NAMES.put("flame", "火矢");
-        ENCH_CN_NAMES.put("infinity", "无限");
-        ENCH_CN_NAMES.put("piercing", "穿透");
-        ENCH_CN_NAMES.put("quick_charge", "快速装填");
-        ENCH_CN_NAMES.put("multishot", "多重射击");
-        ENCH_CN_NAMES.put("loyalty", "忠诚");
-        ENCH_CN_NAMES.put("impaling", "穿刺");
-        ENCH_CN_NAMES.put("riptide", "激流");
-        ENCH_CN_NAMES.put("luck_of_the_sea", "海之眷顾");
-        ENCH_CN_NAMES.put("lure", "引饵");
-        ENCH_CN_NAMES.put("protection", "保护");
-        ENCH_CN_NAMES.put("respiration", "水下呼吸");
-        ENCH_CN_NAMES.put("aqua_affinity", "水下速掘");
-        ENCH_CN_NAMES.put("thorns", "荆棘");
-        ENCH_CN_NAMES.put("feather_falling", "摔落保护");
-        ENCH_CN_NAMES.put("soul_speed", "灵魂疾行");
-        ENCH_CN_NAMES.put("depth_strider", "深海探索者");
-    }
 
     @Override
     public void registerCategories(CategoryRegistry registry) {
@@ -131,24 +92,13 @@ public class ReiEnchantPlugin implements REIClientPlugin {
             for (ItemEnchantRecord record : data.getAllRecords()) {
                 for (EnchantGroup group : record.groups()) {
                     ItemStack base = new ItemStack(record.item());
+                    // 真实附魔：原版会自动在 tooltip 中渲染附魔词条（时运 III 等），
+                    // 不再手动写 Lore 重复这些信息，保持原生 tooltip 展示，避免鼠标悬停时内容重复
                     ItemStack enchanted = group.applyTo(base);
 
-                    // 设置可搜索的自定义名称
+                    // 仅用一个简洁的名称后缀区分同一物品的不同流派，方便在列表中一眼认出
                     String itemName = record.item().getName(base).getString();
-                    String displayName = "★ " + itemName + "（" + group.name() + "）";
-                    enchanted.set(DataComponents.CUSTOM_NAME, Component.literal(displayName));
-
-                    // 构建 lore（中英双语附魔名 + 等级），供 tooltip 搜索
-                    // REI 默认 tooltipSearch = ALWAYS，lore 中的文本会被索引
-                    List<Component> lore = new ArrayList<>();
-                    lore.add(Component.literal("§e附魔方案 / Enchantments:"));
-                    for (EnchantEntry entry : group.enchants()) {
-                        String cnName = getEnchantmentCNName(entry.enchantment());
-                        String enName = getEnchantmentEnName(entry.enchantment());
-                        lore.add(Component.literal("§7" + cnName + " " + entry.levelString()
-                                + " §8(" + enName + " " + entry.levelString() + ")"));
-                    }
-                    enchanted.set(DataComponents.LORE, new ItemLore(lore));
+                    enchanted.set(DataComponents.CUSTOM_NAME, Component.literal(itemName + "（" + group.name() + "）"));
 
                     EntryStack<?> entryStack = EntryStacks.of(enchanted);
                     registry.addEntry(entryStack);
@@ -162,42 +112,8 @@ public class ReiEnchantPlugin implements REIClientPlugin {
         }
     }
 
-    /** 获取附魔的展示名称（本地化） */
+    /** 获取附魔的展示名称（跟随当前游戏语言本地化） */
     private static String getEnchantmentDisplayName(Holder<Enchantment> holder) {
-        try {
-            return holder.value().description().getString();
-        } catch (Exception e) {
-            return getEnchantmentEnName(holder);
-        }
-    }
-
-    /** 获取附魔的中文名称（从静态映射，不依赖游戏语言） */
-    private static String getEnchantmentCNName(Holder<Enchantment> holder) {
-        String enchId = getEnchantmentId(holder);
-        String cnName = ENCH_CN_NAMES.get(enchId);
-        return cnName != null ? cnName : getEnchantmentDisplayName(holder);
-    }
-
-    /** 获取附魔的英文名称（从注册表 ID） */
-    private static String getEnchantmentEnName(Holder<Enchantment> holder) {
-        String enchId = getEnchantmentId(holder);
-        // 将 snake_case 转为 Title Case（如 fortune → Fortune）
-        if (enchId.isEmpty()) return "Unknown";
-        StringBuilder sb = new StringBuilder();
-        for (String word : enchId.split("_")) {
-            if (sb.length() > 0) sb.append(" ");
-            sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
-        }
-        return sb.toString();
-    }
-
-    /** 从 Holder 获取附魔的注册表 ID path（如 "fortune"） */
-    private static String getEnchantmentId(Holder<Enchantment> holder) {
-        return holder.unwrapKey()
-                .map(key -> {
-                    Identifier id = key.identifier();
-                    return id != null ? id.getPath() : "";
-                })
-                .orElse("");
+        return holder.value().description().getString();
     }
 }

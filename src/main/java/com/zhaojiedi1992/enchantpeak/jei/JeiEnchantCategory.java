@@ -1,6 +1,5 @@
 package com.zhaojiedi1992.enchantpeak.jei;
 
-import com.zhaojiedi1992.enchantpeak.common.EnchantEntry;
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -56,16 +55,13 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
 
         int x = 30;
         for (EnchantGroup group : recipe.groups()) {
+            // 真实附魔物品：原版会自动渲染附魔词条（时运 III 等），这里只追加流派名称作为区分，
+            // 不重复罗列附魔内容，避免鼠标悬停 tooltip 中信息出现两次
             ItemStack enchanted = group.applyTo(new ItemStack(recipe.item()));
             builder.addSlot(RecipeIngredientRole.RENDER_ONLY, x, 5)
                     .addItemStack(enchanted)
-                    .addRichTooltipCallback((slotView, tooltip) -> {
-                        tooltip.add(Component.literal("§6▶ " + group.name()));
-                        for (EnchantEntry entry : group.enchants()) {
-                            String enchName = entry.enchantment().value().description().getString();
-                            tooltip.add(Component.literal(" §7" + enchName + " " + entry.levelString()));
-                        }
-                    });
+                    .addRichTooltipCallback((slotView, tooltip) ->
+                            tooltip.add(Component.literal("§6▶ " + group.name())));
             x += 20;
         }
     }

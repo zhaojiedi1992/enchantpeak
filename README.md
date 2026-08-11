@@ -64,38 +64,49 @@ Type in the REI/JEI search bar:
 
 ## 🛠️ Covered Items & Builds
 
+All enchantment levels and incompatibility rules are verified against Minecraft's official datapack (`data/minecraft/enchantment/*.json`).
+
 ### Tools (Diamond / Netherite)
 
-| Item | Build A | Build B |
-|------|---------|---------|
-| **Pickaxe** | Fortune: Efficiency V, Fortune III, Unbreaking III, Mending I | Silk Touch: Efficiency V, Silk Touch I, Unbreaking III, Mending I |
+| Item | Build A (Fortune) | Build B (Silk Touch) |
+|------|-------------------|----------------------|
+| **Pickaxe / Shovel / Hoe** | Efficiency V, Fortune III, Unbreaking III, Mending I | Efficiency V, Silk Touch I, Unbreaking III, Mending I |
 | **Axe** | Logging: Efficiency V, Fortune III, Unbreaking III, Mending I | Combat: Sharpness V, Efficiency V, Unbreaking III, Mending I |
-| **Shovel** | Fortune: Efficiency V, Fortune III, Unbreaking III, Mending I | Silk Touch: Efficiency V, Silk Touch I, Unbreaking III, Mending I |
-| **Hoe** | Fortune: Efficiency V, Fortune III, Unbreaking III, Mending I | Silk Touch: Efficiency V, Silk Touch I, Unbreaking III, Mending I |
 
-### Weapons
+### Melee Weapons
 
 | Item | Builds |
 |------|--------|
-| **Sword** (Diamond/Netherite) | Max: Sharpness V, Knockback II, Fire Aspect II, Looting III, Sweeping Edge III, Unbreaking III, Mending I |
-| **Bow** | Infinity Build (Infinity I) / Mending Build (Mending I) |
-| **Crossbow** | Piercing Build (Piercing IV) / Multishot Build (Multishot I) |
-| **Trident** | Loyalty Build (Loyalty III) / Riptide Build (Riptide III) |
+| **Sword** (Diamond/Netherite) | **Sharpness** / **Smite** / **Bane of Arthropods** (damage group, pick one): + Knockback II, Fire Aspect II, Looting III, Sweeping Edge III, Unbreaking III, Mending I |
+| **Mace** | **Density** (V) / **Breach** (IV) (damage group, pick one): + Fire Aspect II, Wind Burst III, Unbreaking III, Mending I |
+| **Spear** (Diamond/Netherite) | **Sharpness** / **Smite** / **Bane of Arthropods** + Lunge III, Knockback II, Fire Aspect II, Looting III, Unbreaking III, Mending I |
+
+### Ranged & Thrown Weapons
+
+| Item | Builds |
+|------|--------|
+| **Bow** | **Infinity** (Infinity I) / **Mending** (Mending I) (bow group): + Power V, Punch II, Flame I, Unbreaking III |
+| **Crossbow** | **Piercing** (IV) / **Multishot** (I) (crossbow group): + Quick Charge III, Unbreaking III, Mending I |
+| **Trident** | **Loyalty** (Loyalty III + Channeling I + Impaling V) / **Riptide** (Riptide III + Impaling V): + Unbreaking III, Mending I |
 
 ### Armor (Diamond / Netherite)
 
-| Item | Standard Build |
-|------|----------------|
-| **Helmet** | Protection IV, Respiration III, Aqua Affinity I, Thorns III, Unbreaking III, Mending I |
-| **Chestplate** | Protection IV, Thorns III, Unbreaking III, Mending I |
-| **Leggings** | Protection IV, Thorns III, Unbreaking III, Mending I |
-| **Boots** | Protection IV, Feather Falling IV, Soul Speed III, Depth Strider III, Thorns III, Unbreaking III, Mending I |
+Each armor piece offers **4 protection builds** (Protection / Fire Protection / Blast Protection / Projectile Protection — armor group, pick one).
+
+| Item | Common enchants on top of chosen protection |
+|------|----------------------------------------------|
+| **Helmet** | Respiration III, Aqua Affinity I, Thorns III, Unbreaking III, Mending I |
+| **Chestplate** | Thorns III, Unbreaking III, Mending I |
+| **Leggings** | Swift Sneak III, Thorns III, Unbreaking III, Mending I |
+| **Boots** | Feather Falling IV, Soul Speed III, Thorns III, Unbreaking III, Mending I + **Depth Strider III** or **Frost Walker II** (boots group) |
 
 ### Special
 
-| Item | Max Build |
-|------|-----------|
+| Item | Build |
+|------|-------|
 | **Fishing Rod** | Luck of the Sea III, Lure III, Unbreaking III, Mending I |
+
+> **Total: 25 items, 77 builds** (boots alone have 4×2=8 builds due to two independent mutually-exclusive groups).
 
 ---
 

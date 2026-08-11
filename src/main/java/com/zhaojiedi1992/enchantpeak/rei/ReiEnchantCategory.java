@@ -1,7 +1,7 @@
 package com.zhaojiedi1992.enchantpeak.rei;
 
-import com.zhaojiedi1992.enchantpeak.common.EnchantEntry;
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
+import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
@@ -17,12 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 自定义 Category：可视化展示附魔顶配方案
+ * 自定义 Category：可视化展示附魔顶配方案。
+ *
+ * 布局完全交给原生 Slot 渲染：左边输入槽放原始物品，右边若干输出槽放各流派附魔后的物品，
+ * 中间用原生箭头连接。不额外绘制任何文字——物品名称、附魔词条等信息由 REI 的原生 tooltip
+ * （鼠标悬停）自动展示，避免和原生渲染重复。
  */
 public class ReiEnchantCategory implements DisplayCategory<ReiEnchantDisplay> {
 
     public static final CategoryIdentifier<ReiEnchantDisplay> CATEGORY_ID =
             CategoryIdentifier.of("enchantpeak", "best_enchantments");
+
+    private static final int SLOT_SIZE = 18;
+    private static final int GAP = 4;
 
     @Override
     public CategoryIdentifier<? extends ReiEnchantDisplay> getCategoryIdentifier() {
@@ -41,12 +48,14 @@ public class ReiEnchantCategory implements DisplayCategory<ReiEnchantDisplay> {
 
     @Override
     public int getDisplayWidth(ReiEnchantDisplay display) {
-        return 200;
+        int outputCount = display.getRecord().groups().size();
+        // 输入槽 + 箭头 + N 个输出槽，两两之间留间隙
+        return SLOT_SIZE + 24 + outputCount * SLOT_SIZE + (outputCount - 1) * GAP + 12;
     }
 
     @Override
     public int getDisplayHeight() {
-        return 100;
+        return SLOT_SIZE + 12;
     }
 
     @Override
@@ -55,41 +64,26 @@ public class ReiEnchantCategory implements DisplayCategory<ReiEnchantDisplay> {
         widgets.add(Widgets.createRecipeBase(bounds));
 
         var record = display.getRecord();
-        int baseX = bounds.x + 6;
-        int baseY = bounds.y + 6;
+        int centerY = bounds.y + (bounds.height - SLOT_SIZE) / 2;
+        int x = bounds.x + 6;
 
-        // 基础物品图标
-        widgets.add(Widgets.createSlot(new me.shedaniel.math.Point(baseX, baseY))
-                .entry(EntryStacks.of(new ItemStack(record.item())))
+        // 输入槽：原始物品（悬停显示原生名称 + tooltip）
+        widgets.add(Widgets.createSlot(new Point(x, centerY))
+                .entries(display.getInputEntries().get(0))
                 .markInput());
+        x += SLOT_SIZE + 6;
 
-        // 物品名称
-        widgets.add(Widgets.createLabel(
-                new me.shedaniel.math.Point(baseX + 22, baseY + 5),
-                record.item().getName(new ItemStack(record.item()))
-        ).color(0xFFFFFF00).noShadow());
+        // 箭头
+        widgets.add(Widgets.createArrow(new Point(x, centerY - 1)));
+        x += 24;
 
-        // 各流派附魔方案（文本展示）
-        int yPos = baseY + 22;
-        for (EnchantGroup group : record.groups()) {
-            widgets.add(Widgets.createLabel(
-                    new me.shedaniel.math.Point(bounds.x + 6, yPos),
-                    Component.literal("§6▶ " + group.name())
-            ).noShadow());
-            yPos += 12;
-
-            StringBuilder sb = new StringBuilder("§7");
-            for (int i = 0; i < group.enchants().size(); i++) {
-                EnchantEntry entry = group.enchants().get(i);
-                if (i > 0) sb.append("  ");
-                String enchName = entry.enchantment().value().description().getString();
-                sb.append(enchName).append(" ").append(entry.levelString());
-            }
-            widgets.add(Widgets.createLabel(
-                    new me.shedaniel.math.Point(bounds.x + 10, yPos),
-                    Component.literal(sb.toString())
-            ).noShadow());
-            yPos += 14;
+        // 输出槽：每个流派一个，悬停即可看到原生附魔 tooltip（时运 III 等）
+        List<EnchantGroup> groups = record.groups();
+        for (int i = 0; i < groups.size(); i++) {
+            widgets.add(Widgets.createSlot(new Point(x, centerY))
+                    .entries(display.getOutputEntries().get(i))
+                    .markOutput());
+            x += SLOT_SIZE + GAP;
         }
 
         return widgets;
