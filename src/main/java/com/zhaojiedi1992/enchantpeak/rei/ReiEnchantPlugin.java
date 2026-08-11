@@ -191,7 +191,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
     private static String getEnchantmentId(Holder<Enchantment> holder) {
         return holder.unwrapKey()
                 .map(key -> {
-                    Identifier id = key.location();
+                    Identifier id = key.identifier();
                     return id != null ? id.getPath() : "";
                 })
                 .orElse("");
