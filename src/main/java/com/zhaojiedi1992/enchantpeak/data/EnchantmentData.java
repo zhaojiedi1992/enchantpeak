@@ -114,25 +114,33 @@ public class EnchantmentData {
     }
 
     // ==================== 斧子 ====================
-    // 斧子同时属于 mining（可附效率/时运/精准）和 sharp_weapon（可附锋利/亡灵杀手/节肢杀手）
-    // 伐木流：效率 V + 时运 III + 耐久 III + 修补 I
-    // 战斗流：锋利 V + 效率 V + 耐久 III + 修补 I（锋利为 damage 组代表，可与效率共存）
+    // 斧子同时属于 mining_loot（fortune/silk_touch 二选一）和 sharp_weapon（sharpness/smite/
+    // bane_of_arthropods 三选一），两个互斥组互相独立，共 2×3=6 种组合
+    // 通用：效率 V + 耐久 III + 修补 I
 
     private void buildAxes(HolderLookup.RegistryLookup<Enchantment> l) {
-        EnchantGroup logging = new EnchantGroup("伐木流", List.of(
+        List<EnchantGroup> groups = List.of(
+                axeGroup(l, "时运流·锋利", Enchantments.FORTUNE, 3, Enchantments.SHARPNESS, 5),
+                axeGroup(l, "时运流·亡灵杀手", Enchantments.FORTUNE, 3, Enchantments.SMITE, 5),
+                axeGroup(l, "时运流·节肢杀手", Enchantments.FORTUNE, 3, Enchantments.BANE_OF_ARTHROPODS, 5),
+                axeGroup(l, "精准流·锋利", Enchantments.SILK_TOUCH, 1, Enchantments.SHARPNESS, 5),
+                axeGroup(l, "精准流·亡灵杀手", Enchantments.SILK_TOUCH, 1, Enchantments.SMITE, 5),
+                axeGroup(l, "精准流·节肢杀手", Enchantments.SILK_TOUCH, 1, Enchantments.BANE_OF_ARTHROPODS, 5)
+        );
+        records.add(new ItemEnchantRecord(Items.DIAMOND_AXE, groups));
+        records.add(new ItemEnchantRecord(Items.NETHERITE_AXE, groups));
+    }
+
+    private static EnchantGroup axeGroup(HolderLookup.RegistryLookup<Enchantment> l, String name,
+                                         ResourceKey<Enchantment> miningType, int miningLevel,
+                                         ResourceKey<Enchantment> damageType, int damageLevel) {
+        return new EnchantGroup(name, List.of(
                 e(l, Enchantments.EFFICIENCY, 5),
-                e(l, Enchantments.FORTUNE, 3),
+                e(l, miningType, miningLevel),
+                e(l, damageType, damageLevel),
                 e(l, Enchantments.UNBREAKING, 3),
                 e(l, Enchantments.MENDING, 1)
         ));
-        EnchantGroup combat = new EnchantGroup("战斗流（锋利）", List.of(
-                e(l, Enchantments.SHARPNESS, 5),
-                e(l, Enchantments.EFFICIENCY, 5),
-                e(l, Enchantments.UNBREAKING, 3),
-                e(l, Enchantments.MENDING, 1)
-        ));
-        records.add(new ItemEnchantRecord(Items.DIAMOND_AXE, List.of(logging, combat)));
-        records.add(new ItemEnchantRecord(Items.NETHERITE_AXE, List.of(logging, combat)));
     }
 
     // ==================== 剑（钻石 + 下界合金）====================
@@ -188,32 +196,41 @@ public class EnchantmentData {
     }
 
     // ==================== 重锤（Mace，单一材质）====================
-    // 伤害附魔 damage 组：density V 或 breach IV 二选一（两者都在 damage 组互斥）
-    // wind_burst III 可叠加；不可附击退/横扫/火焰附加（mace 不在 melee_weapon/sweeping/fire_aspect 的 applicable 范围）
-    // 实际 mace 在 fire_aspect tag 里（fire_aspect tag 包含 mace），但不在 sweeping/melee_weapon tag
-    // 经核实：mace 可附 fire_aspect，但不可附 knockback/looting/sweeping_edge
+    // damage 组在重锤上实际可选 4 个（比剑/长矛多，因为 mace 同时在 weapon tag 和 mace 专属 tag 里）：
+    //   smite / bane_of_arthropods / density / breach 四选一（sharpness 不适用于 mace，已排除）
+    // 通用可叠加：fire_aspect II、wind_burst III、耐久 III、修补 I
+    // 不可附：knockback / looting / sweeping_edge（mace 不在 melee_weapon / sweeping tag）
 
     private void buildMaces(HolderLookup.RegistryLookup<Enchantment> l) {
         records.add(new ItemEnchantRecord(Items.MACE, List.of(
-                maceDensity(l), maceBreach(l)
+                maceDensity(l), maceBreach(l), maceSmite(l), maceArthropods(l)
         )));
     }
 
-    /** 重锤·密度流：下落攻击伤害最高（density V，与 breach 同属 damage 组互斥，故不带 breach）*/
+    /** 重锤·密度流：下落攻击伤害最高（density V）*/
     private static EnchantGroup maceDensity(HolderLookup.RegistryLookup<Enchantment> l) {
-        return new EnchantGroup("密度流", List.of(
-                e(l, Enchantments.DENSITY, 5),
-                e(l, Enchantments.FIRE_ASPECT, 2),
-                e(l, Enchantments.WIND_BURST, 3),
-                e(l, Enchantments.UNBREAKING, 3),
-                e(l, Enchantments.MENDING, 1)
-        ));
+        return maceGroup(l, "密度流", Enchantments.DENSITY, 5);
     }
 
     /** 重锤·破甲流：无视护甲（breach IV）*/
     private static EnchantGroup maceBreach(HolderLookup.RegistryLookup<Enchantment> l) {
-        return new EnchantGroup("破甲流", List.of(
-                e(l, Enchantments.BREACH, 4),
+        return maceGroup(l, "破甲流", Enchantments.BREACH, 4);
+    }
+
+    /** 重锤·亡灵杀手流：对亡灵生物伤害最高（smite V）*/
+    private static EnchantGroup maceSmite(HolderLookup.RegistryLookup<Enchantment> l) {
+        return maceGroup(l, "亡灵杀手流", Enchantments.SMITE, 5);
+    }
+
+    /** 重锤·节肢杀手流：对节肢生物伤害最高（bane_of_arthropods V）*/
+    private static EnchantGroup maceArthropods(HolderLookup.RegistryLookup<Enchantment> l) {
+        return maceGroup(l, "节肢杀手流", Enchantments.BANE_OF_ARTHROPODS, 5);
+    }
+
+    private static EnchantGroup maceGroup(HolderLookup.RegistryLookup<Enchantment> l, String name,
+                                          ResourceKey<Enchantment> damageType, int damageLevel) {
+        return new EnchantGroup(name, List.of(
+                e(l, damageType, damageLevel),
                 e(l, Enchantments.FIRE_ASPECT, 2),
                 e(l, Enchantments.WIND_BURST, 3),
                 e(l, Enchantments.UNBREAKING, 3),

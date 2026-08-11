@@ -97,10 +97,14 @@ ITEMS = {
         ("精准流", [("efficiency",5),("silk_touch",1),("unbreaking",3),("mending",1)]),
     ],
     "netherite_hoe": "_same_as_diamond_hoe_",
-    # 斧
+    # 斧（mining 2 选一 × damage 3 选一 = 6 种组合）
     "diamond_axe": [
-        ("伐木流", [("efficiency",5),("fortune",3),("unbreaking",3),("mending",1)]),
-        ("战斗流（锋利）", [("sharpness",5),("efficiency",5),("unbreaking",3),("mending",1)]),
+        ("时运流·锋利", [("efficiency",5),("fortune",3),("sharpness",5),("unbreaking",3),("mending",1)]),
+        ("时运流·亡灵杀手", [("efficiency",5),("fortune",3),("smite",5),("unbreaking",3),("mending",1)]),
+        ("时运流·节肢杀手", [("efficiency",5),("fortune",3),("bane_of_arthropods",5),("unbreaking",3),("mending",1)]),
+        ("精准流·锋利", [("efficiency",5),("silk_touch",1),("sharpness",5),("unbreaking",3),("mending",1)]),
+        ("精准流·亡灵杀手", [("efficiency",5),("silk_touch",1),("smite",5),("unbreaking",3),("mending",1)]),
+        ("精准流·节肢杀手", [("efficiency",5),("silk_touch",1),("bane_of_arthropods",5),("unbreaking",3),("mending",1)]),
     ],
     "netherite_axe": "_same_as_diamond_axe_",
     # 剑
@@ -110,10 +114,12 @@ ITEMS = {
         ("节肢杀手流", [("bane_of_arthropods",5),("knockback",2),("fire_aspect",2),("looting",3),("sweeping_edge",3),("unbreaking",3),("mending",1)]),
     ],
     "netherite_sword": "_same_as_diamond_sword_",
-    # 重锤
+    # 重锤（damage 组在 mace 上实际有 4 个可选：smite/bane_of_arthropods/density/breach）
     "mace": [
         ("密度流", [("density",5),("fire_aspect",2),("wind_burst",3),("unbreaking",3),("mending",1)]),
         ("破甲流", [("breach",4),("fire_aspect",2),("wind_burst",3),("unbreaking",3),("mending",1)]),
+        ("亡灵杀手流", [("smite",5),("fire_aspect",2),("wind_burst",3),("unbreaking",3),("mending",1)]),
+        ("节肢杀手流", [("bane_of_arthropods",5),("fire_aspect",2),("wind_burst",3),("unbreaking",3),("mending",1)]),
     ],
     # 长矛
     "diamond_spear": [
@@ -213,14 +219,64 @@ for item_id, groups in ITEMS.items():
             if ench_name in ("loyalty", "channeling") and 'riptide' in seen_exclusive_groups:
                 errors.append(f"{item_id}/{group_name}: 互斥冲突！{ench_name} 与 riptide 互斥（riptide 互斥组）")
 
+# ========== 完整性检测 ==========
+# 对每个物品，检查所有互斥组：代码里出现的附魔集合，是否等于官方规定的该物品实际可用的完整集合
+# 这能发现"遗漏了某个可用附魔分支"的问题（例如重锤本可用 smite，但代码没有覆盖）
+ALL_EXCLUSIVE_GROUPS = set()
+for d in ENCHANTMENTS.values():
+    es = d.get('exclusive_set')
+    if es:
+        ALL_EXCLUSIVE_GROUPS.add(es.split('/')[-1])
+# riptide 反向组特殊处理，已在 riptide.json 里自带 exclusive_set，加入统一遍历
+ALL_EXCLUSIVE_GROUPS.add('riptide')
+
+completeness_warnings = []
+for item_id, groups in ITEMS.items():
+    if isinstance(groups, str) and groups.startswith("_same_as_"):
+        continue
+    # 收集该物品在代码里，每个互斥组实际出现了哪些附魔
+    used_by_group = {}
+    for group_name, enchants in groups:
+        for ench_name, level in enchants:
+            if ench_name not in ENCHANTMENTS:
+                continue
+            es = ENCHANTMENTS[ench_name].get('exclusive_set')
+            if es:
+                eg_name = es.split('/')[-1]
+                used_by_group.setdefault(eg_name, set()).add(ench_name)
+            if ench_name == 'riptide':
+                used_by_group.setdefault('riptide', set()).add('riptide')
+
+    # 对每个用到的互斥组，计算官方在该物品上实际可用的完整附魔集合
+    for eg_name, used in used_by_group.items():
+        if eg_name == 'riptide':
+            continue  # riptide 组已用忠诚/激流表达完整，跳过自动检测（结构特殊）
+        official_full_set = set()
+        for ench_name, d in ENCHANTMENTS.items():
+            official_eg = d.get('exclusive_set')
+            if official_eg and official_eg.split('/')[-1] == eg_name:
+                if item_id in ENCH_ITEMS.get(ench_name, set()):
+                    official_full_set.add(ench_name)
+        missing = official_full_set - used
+        if missing:
+            completeness_warnings.append(
+                f"{item_id} [{eg_name}组]: 代码只用了 {sorted(used)}，遗漏了 {sorted(missing)}（官方该物品在此互斥组的完整可用集合是 {sorted(official_full_set)}）"
+            )
+
 print("=" * 70)
 if errors:
-    print(f"❌ 发现 {len(errors)} 个错误：")
+    print(f"❌ 发现 {len(errors)} 个正确性错误：")
     for err in errors:
         print(f"  ✗ {err}")
     sys.exit(1)
+elif completeness_warnings:
+    print(f"⚠️  正确性通过，但发现 {len(completeness_warnings)} 个完整性遗漏（可能漏了某个流派分支）：")
+    for w in completeness_warnings:
+        print(f"  ⚠ {w}")
+    sys.exit(2)
 else:
     total_items = sum(1 for v in ITEMS.values() if not (isinstance(v, str) and v.startswith("_same_as_")))
     total_groups = sum(len(v) for v in ITEMS.values() if not (isinstance(v, str) and v.startswith("_same_as_")))
-    print(f"✅ 全部核对通过！{total_items} 个物品，{total_groups} 个流派，所有附魔等级、适用性、互斥关系均与官方数据一致。")
+    print(f"✅ 全部核对通过（正确性 + 完整性）！{total_items} 个物品，{total_groups} 个流派，")
+    print(f"   所有附魔等级、适用性、互斥关系均与官方数据一致，且每个互斥组都已覆盖该物品的全部可用选项。")
     sys.exit(0)

@@ -96,9 +96,9 @@ public class ReiEnchantPlugin implements REIClientPlugin {
                     // 不再手动写 Lore 重复这些信息，保持原生 tooltip 展示，避免鼠标悬停时内容重复
                     ItemStack enchanted = group.applyTo(base);
 
-                    // 仅用一个简洁的名称后缀区分同一物品的不同流派，方便在列表中一眼认出
+                    // 名称格式：原生物品名-流派（如"钻石镐-时运流"），用半角连字符连接
                     String itemName = record.item().getName(base).getString();
-                    enchanted.set(DataComponents.CUSTOM_NAME, Component.literal(itemName + "（" + group.name() + "）"));
+                    enchanted.set(DataComponents.CUSTOM_NAME, Component.literal(itemName + "-" + group.name()));
 
                     EntryStack<?> entryStack = EntryStacks.of(enchanted);
                     registry.addEntry(entryStack);
