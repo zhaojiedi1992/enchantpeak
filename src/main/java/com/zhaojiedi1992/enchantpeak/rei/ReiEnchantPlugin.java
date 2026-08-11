@@ -80,7 +80,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
         try {
             registry.add(new ReiEnchantCategory());
             EnchantPeakMod.LOGGER.info("[EnchantPeak] REI category registered");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI category", e);
         }
     }
@@ -88,6 +88,8 @@ public class ReiEnchantPlugin implements REIClientPlugin {
     @Override
     public void registerDisplays(DisplayRegistry registry) {
         try {
+            // BasicDisplay.registryAccess() 委托到 REI Internals，未初始化时抛 AssertionError（非 Exception）
+            // 官方 DefaultClientPlugin 在 registerDisplays 阶段用它是安全的（Internals 此时已就绪）
             EnchantmentData data = new EnchantmentData(BasicDisplay.registryAccess());
             int infoCount = 0;
             int displayCount = 0;
@@ -113,7 +115,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
             }
 
             EnchantPeakMod.LOGGER.info("[EnchantPeak] REI displays registered: {} info, {} custom", infoCount, displayCount);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI displays", e);
         }
     }
@@ -121,6 +123,9 @@ public class ReiEnchantPlugin implements REIClientPlugin {
     @Override
     public void registerEntries(EntryRegistry registry) {
         try {
+            // 官方 DefaultClientPlugin.registerEntries() 从不调用 BasicDisplay.registryAccess()，
+            // 只在 registerDisplays 阶段才用。这里 catch Throwable 兜住潜在的 AssertionError，
+            // 避免注册表未就绪时崩游戏（参考 REI Internals.throwNotSetup()）
             EnchantmentData data = new EnchantmentData(BasicDisplay.registryAccess());
             int count = 0;
 
@@ -153,7 +158,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
             }
 
             EnchantPeakMod.LOGGER.info("[EnchantPeak] REI entries added: {}", count);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI entries", e);
         }
     }

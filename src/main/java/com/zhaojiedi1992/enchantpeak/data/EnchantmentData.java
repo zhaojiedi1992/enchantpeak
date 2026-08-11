@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 原版附魔顶配数据表（MC 26.2）
+ * 原版附魔顶配数据表（MC 26.1 ~ 26.2 系列，附魔注册表 ID 未变）
  */
 public class EnchantmentData {
 

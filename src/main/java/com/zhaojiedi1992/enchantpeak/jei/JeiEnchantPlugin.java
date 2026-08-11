@@ -6,16 +6,18 @@ import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.resources.Identifier;
 
+import java.util.List;
+
 @JeiPlugin
 public class JeiEnchantPlugin implements IModPlugin {
 
-    @SuppressWarnings("deprecation")
-    static final mezz.jei.api.recipe.RecipeType<ItemEnchantRecord> RECIPE_TYPE =
-            mezz.jei.api.recipe.RecipeType.create(EnchantPeakMod.MOD_ID, "best_enchantments", ItemEnchantRecord.class);
+    static final IRecipeType<ItemEnchantRecord> RECIPE_TYPE =
+            IRecipeType.create(EnchantPeakMod.MOD_ID, "best_enchantments", ItemEnchantRecord.class);
 
     @Override
     public Identifier getPluginUid() {
@@ -31,14 +33,15 @@ public class JeiEnchantPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         // JEI 在 registerRecipes 时 registryAccess 应该可用
-        var registryAccess = net.minecraft.client.Minecraft.getInstance().level;
-        if (registryAccess == null) {
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        if (level == null) {
             EnchantPeakMod.LOGGER.warn("[EnchantPeak] JEI: level not available, skipping recipe registration");
             return;
         }
 
-        EnchantmentData data = new EnchantmentData(registryAccess.registryAccess());
-        registration.addRecipes(RECIPE_TYPE, data.getAllRecords());
-        EnchantPeakMod.LOGGER.info("[EnchantPeak] JEI recipes registered: {}", data.getAllRecords().size());
+        EnchantmentData data = new EnchantmentData(level.registryAccess());
+        List<ItemEnchantRecord> records = data.getAllRecords();
+        registration.addRecipes(RECIPE_TYPE, records);
+        EnchantPeakMod.LOGGER.info("[EnchantPeak] JEI recipes registered: {}", records.size());
     }
 }
