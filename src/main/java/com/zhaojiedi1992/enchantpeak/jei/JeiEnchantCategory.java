@@ -63,10 +63,10 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
 
         int x = OUTPUT_START_X;
         for (EnchantGroup group : recipe.groups()) {
-            // 真实附魔物品：原版会自动渲染附魔词条（时运 III 等），这里只追加流派名称作为区分，
-            // 不重复罗列附魔内容，避免鼠标悬停 tooltip 中信息出现两次
+            // 使用 OUTPUT 而非 RENDER_ONLY：JEI 搜索/recipe lookup 会忽略 RENDER_ONLY 槽位，
+            // 导致按附魔后的物品搜索时完全找不到结果。OUTPUT 槽位会正常参与搜索索引。
             ItemStack enchanted = group.applyTo(new ItemStack(recipe.item()));
-            builder.addSlot(RecipeIngredientRole.RENDER_ONLY, x, slotY)
+            builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
                     .addItemStack(enchanted)
                     .addRichTooltipCallback((slotView, tooltip) ->
                             tooltip.add(Component.literal("§6▶ " + group.name())));

@@ -16,7 +16,7 @@ A Minecraft Fabric mod that shows **best enchantment combinations** for diamond 
 - ⭐ **Dedicated Entries** — Each enchantment build appears as a separate entry in REI/JEI with a `★` prefix
 - 📖 **Information Tab** — Press `R` on any diamond/netherite item to see all builds in the REI Information panel
 - 🗂️ **Build-Based Grouping** — Items with conflicting enchantments (e.g., Fortune vs Silk Touch) are split into separate builds
-- ⚔️ **Comprehensive Coverage** — 27 items (tools, weapons, armor, elytra, shield, fishing rod) with 89 builds; all 41 non-curse vanilla enchantments included
+- ⚔️ **Comprehensive Coverage** — 28 items (tools, weapons, armor, elytra, shield, fishing rod, shears) with 90 builds; all 41 non-curse vanilla enchantments included
 - 🌐 **Bilingual** — Supports English and Simplified Chinese UI; search works in both languages plus pinyin
 
 ---
@@ -123,8 +123,9 @@ Each armor piece offers **4 protection builds** (Protection / Fire Protection / 
 | **Fishing Rod** | Luck of the Sea III, Lure III, Unbreaking III, Mending I |
 | **Elytra** | Unbreaking III, Mending I (elytra isn't in the armor tag — no Protection/Thorns) |
 | **Shield** | Unbreaking III, Mending I |
+| **Shears** | Efficiency V, Unbreaking III, Mending I |
 
-> **Total: 27 items, 89 builds.** All 41 non-curse vanilla enchantments are covered somewhere.
+> **Total: 28 items, 90 builds.** All 41 non-curse vanilla enchantments are covered somewhere.
 
 ---
 

@@ -70,6 +70,7 @@ public class EnchantmentData {
         // 实用道具
         buildElytra(l);
         buildShields(l);
+        buildShears(l);
     }
 
     // ==================== 工具 ====================
@@ -380,6 +381,19 @@ public class EnchantmentData {
                 e(l, Enchantments.UNBREAKING, 3),
                 e(l, Enchantments.MENDING, 1)
         ));
+    }
+
+    // ==================== 剪刀 ====================
+    // 剪刀在 #minecraft:enchantable/mining 标签（可附效率），也在 #minecraft:enchantable/durability（耐久+修补）
+    // 不在 mining_loot（无时运/精准），只有单一满配方案
+
+    private void buildShears(HolderLookup.RegistryLookup<Enchantment> l) {
+        EnchantGroup standard = new EnchantGroup("满配流", List.of(
+                e(l, Enchantments.EFFICIENCY, 5),
+                e(l, Enchantments.UNBREAKING, 3),
+                e(l, Enchantments.MENDING, 1)
+        ));
+        records.add(new ItemEnchantRecord(Items.SHEARS, List.of(standard)));
     }
 
     // ==================== 防具（钻石 + 下界合金）====================
