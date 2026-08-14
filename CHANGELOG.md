@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.9
+
+Released on 2026-08-14.
+
+
 ## 1.0.8
 
 Released on 2026-08-14.
