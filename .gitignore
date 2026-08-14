@@ -3,7 +3,12 @@
 # Gradle
 .gradle/
 build/
+dist/
 !gradle/wrapper/gradle-wrapper.jar
+
+# Python verification cache
+__pycache__/
+*.py[cod]
 
 # Eclipse
 .classpath

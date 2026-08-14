@@ -1,6 +1,7 @@
 package com.zhaojiedi1992.enchantpeak.jei;
 
 import com.zhaojiedi1992.enchantpeak.EnchantPeakMod;
+import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
 import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
 import mezz.jei.api.IModPlugin;
@@ -9,8 +10,13 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @JeiPlugin
@@ -32,16 +38,34 @@ public class JeiEnchantPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        // JEI 在 registerRecipes 时 registryAccess 应该可用
-        var level = net.minecraft.client.Minecraft.getInstance().level;
-        if (level == null) {
-            EnchantPeakMod.LOGGER.warn("[EnchantPeak] JEI: level not available, skipping recipe registration");
+        RegistryAccess registryAccess = getRegistryAccess();
+        if (registryAccess == null) {
+            EnchantPeakMod.LOGGER.warn("[EnchantPeak] JEI: registry access not available, skipping recipe registration");
             return;
         }
 
-        EnchantmentData data = new EnchantmentData(level.registryAccess());
+        EnchantmentData data = new EnchantmentData(registryAccess);
         List<ItemEnchantRecord> records = data.getAllRecords();
         registration.addRecipes(RECIPE_TYPE, records);
+        for (ItemEnchantRecord record : records) {
+            for (EnchantGroup group : record.groups()) {
+                List<Component> lines = new ArrayList<>();
+                lines.add(group.displayHeading());
+                lines.addAll(group.enchantmentLines());
+                registration.addItemStackInfo(
+                        new ItemStack(record.item()),
+                        lines.toArray(Component[]::new)
+                );
+            }
+        }
         EnchantPeakMod.LOGGER.info("[EnchantPeak] JEI recipes registered: {}", records.size());
+    }
+
+    private static RegistryAccess getRegistryAccess() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != null) {
+            return minecraft.level.registryAccess();
+        }
+        return minecraft.getConnection() != null ? minecraft.getConnection().registryAccess() : null;
     }
 }

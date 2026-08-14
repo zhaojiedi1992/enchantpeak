@@ -11,6 +11,6 @@ public class EnchantPeakMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        LOGGER.info("[EnchantPeak] Initialized. Showing best enchantments for diamond & netherite items.");
+        LOGGER.info("[EnchantPeak] Initialized. Showing best enchantments for all vanilla enchantable items.");
     }
 }

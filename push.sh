@@ -7,6 +7,18 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
+# 发布必须从完全干净的 main 分支开始，避免漏提交或混入无关暂存内容。
+if [ "$(git branch --show-current)" != "main" ]; then
+    echo "✗ 只能从 main 分支发布" >&2
+    exit 1
+fi
+
+if [ -n "$(git status --porcelain)" ]; then
+    echo "✗ 工作区或暂存区存在未提交改动，请先提交或清理后再发布：" >&2
+    git status --short >&2
+    exit 1
+fi
+
 # ---- 读取当前版本号 ----
 CURRENT_VERSION=$(grep '^mod_version=' gradle.properties | cut -d'=' -f2 | tr -d ' \r\n')
 if [ -z "$CURRENT_VERSION" ]; then
@@ -21,17 +33,20 @@ PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
 PATCH=$((PATCH + 1))
 NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 
+if git rev-parse -q --verify "refs/tags/v${NEW_VERSION}" >/dev/null; then
+    echo "✗ tag v${NEW_VERSION} 已存在" >&2
+    exit 1
+fi
+
 echo "=========================================="
 echo "  EnchantPeak 发布"
 echo "  ${CURRENT_VERSION}  →  ${NEW_VERSION}"
 echo "=========================================="
 
-# ---- 确认未提交变更（如果有自定义改动，先一起带上）----
-if [ -n "$(git status --porcelain)" ]; then
-    echo "⚠ 检测到工作区有未提交的改动："
-    git status --short
-    echo ""
-fi
+# ---- 发布前验证 ----
+echo "正在构建并校验所有受支持的 Minecraft 版本..."
+scripts/build_all_versions.sh
+echo "✓ 所有 Minecraft 目标构建和校验通过"
 
 # ---- 更新 gradle.properties ----
 sed -i "s/^mod_version=.*/mod_version=${NEW_VERSION}/" gradle.properties
@@ -65,10 +80,9 @@ else
 fi
 
 # ---- 提交 + 打 tag + push ----
-# 只提交版本相关文件的改动（gradle.properties + CHANGELOG.md）
-# 如果用户有其他已 staged 的改动也会一起提交
-git add gradle.properties CHANGELOG.md
-git commit -m "update to ${NEW_VERSION}" >/dev/null 2>&1 || {
+# 只提交版本相关文件；发布前的干净工作区检查保证不会夹带其他改动。
+git add -- gradle.properties CHANGELOG.md
+git commit --only -m "update to ${NEW_VERSION}" -- gradle.properties CHANGELOG.md >/dev/null 2>&1 || {
     echo "✗ git commit 失败" >&2
     exit 1
 }

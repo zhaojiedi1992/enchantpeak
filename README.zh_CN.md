@@ -2,22 +2,22 @@
 
 > **中文版** · **[English](README.md)**
 
-Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备的顶配附魔方案。支持中文、英文、**拼音**搜索，快速定位最优配置。
+Minecraft Fabric 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有正向附魔的展示全部极大兼容顶配方案，仅支持诅咒的明确标识为空方案。REI 还会把每个方案注册为可搜索的独立条目。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Minecraft](https://img.shields.io/badge/Minecraft-26.1%20~%2026.2-brightgreen)](https://www.minecraft.net/)
-[![Fabric](https://img.shields.io/badge/Loader-Fabric%200.19.3+-blue)](https://fabricmc.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-26.1--26.2-brightgreen)](https://www.minecraft.net/)
+[![Fabric](https://img.shields.io/badge/Loader-Fabric%200.19.2+-blue)](https://fabricmc.net/)
 
 ---
 
 ## ✨ 功能特性
 
-- 🔍 **智能搜索** — 支持中文、英文、拼音搜索（如 `zuanshijian` → 钻石剑）
-- ⭐ **独立条目** — 每个附魔方案作为独立条目出现在 REI/JEI 中，名称带 `★` 标记
-- 📖 **信息面板** — 在任意钻石/下界合金装备上按 `R` 键，在 Information 标签查看所有方案
+- 🔍 **方案搜索（REI）** — 可按当前游戏语言的物品名或附魔名搜索独立方案条目
+- ⭐ **独立条目（REI）** — 每个附魔方案作为可搜索的独立条目，名称带流派后缀（如 `钻石镐-时运流`）
+- 📖 **信息面板** — 在任意受支持物品上按 `R` 键，在 Information 标签查看所有方案
 - 🗂️ **按用途分流** — 有冲突附魔的物品（如时运 vs 精准采集）分为多个独立流派
-- ⚔️ **全面覆盖** — 28 种物品（工具、武器、防具、鞘翅、盾、钓鱼竿、剪刀），90 个流派方案，41 个原版非诅咒附魔全覆盖
-- 🌐 **中英双语** — 界面支持中英文，搜索支持两种语言 + 拼音
+- ⚔️ **全面覆盖** — 92 种原版可附魔物品全部覆盖：83 种物品共 288 个极大兼容方案，另含 9 种纯诅咒物品
+- 🌐 **多语言** — 界面支持英文、简体中文、日文、韩文、德文、法文、西班牙文
 
 ---
 
@@ -35,7 +35,7 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 
 ![搜索](https://raw.githubusercontent.com/zhaojiedi1992/enchantpeak/main/.github/screenshots/rei-search.png)
 
-*支持按物品名（钻石镐 / `diamond_pickaxe`）、附魔名（时运 / `Fortune`）、甚至拼音（`zuanshigao`）搜索。*
+*REI 会索引每个方案的本地化物品名和原生附魔提示。*
 
 ![悬停详情](https://raw.githubusercontent.com/zhaojiedi1992/enchantpeak/main/.github/screenshots/rei-detail.png)
 
@@ -45,11 +45,11 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 
 ## 📦 下载与安装
 
+**支持版本：** Minecraft **26.1、26.1.1、26.1.2、26.2**。每个游戏版本均有独立构建和官方 datapack 校验，请下载文件名中 `mc版本` 与游戏完全一致的 JAR。
+
 **依赖要求：**
-- Minecraft **26.1 ~ 26.2**（1.21.x 系列）
-- Fabric Loader ≥ 0.19.3
-- Fabric API ≥ 0.152.0
-- **JEI**（≥ 30.18.0）**或** **REI**（≥ 26.1）— 至少安装一个
+- Fabric Loader、Fabric API：使用该 Minecraft 版本的对应发行版
+- **JEI** 或 **REI**：至少安装一个，并使用对应 Minecraft 版本的发行版
 
 **下载地址：**
 - [Modrinth](https://modrinth.com/mod/enchantpeak)
@@ -57,25 +57,25 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
 
 **安装步骤：**
-1. 下载最新的 `enchantpeak-x.x.x.jar`
+1. 下载最新且版本匹配的 `enchantpeak-mc<游戏版本>-x.x.x.jar`
 2. 放入 `.minecraft/mods/` 文件夹
 3. 确保已安装 Fabric + Fabric API + JEI/REI
-4. 启动游戏，打开 JEI/REI 搜索即可看到附魔方案
+4. 启动游戏，在 JEI/REI 中打开 **最强附魔方案** 分类；REI 还可直接搜索每个方案条目
 
 ---
 
 ## 🎯 使用方法
 
-### 方式一：直接搜索
-在 REI/JEI 搜索框输入：
-- 物品名：`diamond pickaxe`、`钻石镐`、`zuanshigao`（拼音）
-- 附魔名：`fortune`、`时运`、`shiyun`（拼音）
-- 找到带 `★` 前缀的条目即为 EnchantPeak 方案
+### 方式一：直接搜索（仅 REI）
+在 REI 搜索框输入：
+- 当前游戏语言的物品名，例如 `diamond pickaxe` 或 `钻石镐`
+- 当前游戏语言的附魔名，例如 `fortune` 或 `时运`
+- 找到名称带流派后缀（如 `钻石镐-时运流`）的条目即为 EnchantPeak 方案
 
-### 方式二：信息面板（仅 REI）
-1. 在 REI 中找到任意钻石或下界合金装备
+### 方式二：信息页（JEI/REI）
+1. 在 JEI/REI 中找到任意受支持的可附魔物品
 2. 点击后按 `R` 键（或右键 → Uses）
-3. 切换到 **Information** 标签页即可查看该物品的所有附魔方案
+3. 打开 **Information** 页面，查看每个方案的本地化详情
 
 ### 方式三：自定义分类（JEI/REI）
 1. 打开 JEI/REI
@@ -88,7 +88,7 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 
 所有附魔等级和互斥关系均对照 Minecraft 官方 datapack（`data/minecraft/enchantment/*.json`）逐项核对。
 
-### 工具（钻石 / 下界合金）
+### 工具（木 / 石 / 铜 / 铁 / 金 / 钻石 / 下界合金）
 
 | 物品 | 方案 A（时运） | 方案 B（精准） |
 |------|---------------|---------------|
@@ -99,9 +99,9 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 
 | 物品 | 方案 |
 |------|------|
-| **剑**（钻石/下界合金）| **锋利 / 亡灵杀手 / 节肢杀手**（damage 组三选一）+ 击退 II、火焰附加 II、抢夺 III、横扫之刃 III、耐久 III、修补 I |
-| **重锤**（Mace）| **密度 V / 破甲 IV**（damage 组二选一）+ 火焰附加 II、疾风 III、耐久 III、修补 I |
-| **长矛**（钻石/下界合金）| **锋利 / 亡灵杀手 / 节肢杀手** + 突进 III、击退 II、火焰附加 II、抢夺 III、耐久 III、修补 I |
+| **剑**（全部材质）| **锋利 / 亡灵杀手 / 节肢杀手**（damage 组三选一）+ 击退 II、火焰附加 II、抢夺 III、横扫之刃 III、耐久 III、修补 I |
+| **重锤**（Mace）| **密度 V / 破甲 IV / 亡灵杀手 V / 节肢杀手 V**（damage 组四选一）+ 火焰附加 II、疾风 III、耐久 III、修补 I |
+| **长矛**（全部材质）| **锋利 / 亡灵杀手 / 节肢杀手** + 突进 III、击退 II、火焰附加 II、抢夺 III、耐久 III、修补 I |
 
 ### 远程 / 投掷武器
 
@@ -111,13 +111,13 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 | **弩** | **穿透流**（穿透 IV）/ **多重流**（多重射击 I）（crossbow 组二选一）+ 快速装填 III、耐久 III、修补 I |
 | **三叉戟** | **忠诚流**（忠诚 III + 引雷 I + 穿刺 V）/ **激流流**（激流 III + 穿刺 V）+ 耐久 III、修补 I |
 
-### 防具（钻石 / 下界合金）
+### 防具（皮革 / 锁链 / 铜 / 铁 / 金 / 钻石 / 下界合金）
 
 每件防具提供 **4 种保护流派**（保护 / 火焰保护 / 爆炸保护 / 弹射物保护 —— armor 组四选一）。
 
 | 物品 | 除选定保护外的通用附魔 |
 |------|------------------------|
-| **头盔** | 水下呼吸 III、水下速掘 I、荆棘 III、耐久 III、修补 I |
+| **头盔**（含海龟壳）| 水下呼吸 III、水下速掘 I、荆棘 III、耐久 III、修补 I |
 | **胸甲** | 荆棘 III、耐久 III、修补 I |
 | **护腿** | 迅捷潜行 III、荆棘 III、耐久 III、修补 I |
 | **靴子** | 摔落保护 IV、灵魂疾行 III、荆棘 III、耐久 III、修补 I + **深海探索者 III** 或 **冰霜行者 II**（boots 组二选一）|
@@ -130,8 +130,10 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 | **鞘翅** | 耐久 III、修补 I（鞘翅不在防具 tag 里，无法附保护/荆棘）|
 | **盾** | 耐久 III、修补 I |
 | **剪刀** | 效率 V、耐久 III、修补 I |
+| **刷子 / 打火石 / 胡萝卜钓竿 / 诡异菌钓竿** | 耐久 III、修补 I |
+| **雕刻南瓜 / 指南针 / 生物与玩家头颅** | 无非诅咒附魔；不推荐附加诅咒 |
 
-> **合计：28 种物品，90 个流派方案**，41 个原版非诅咒附魔全部覆盖。
+> **合计：92/92 种可附魔物品。**83 种物品有 288 个正向顶配方案，覆盖 41/41 个非诅咒附魔；9 种纯诅咒物品提供明确的空推荐方案。
 
 ---
 
@@ -143,7 +145,16 @@ cd enchantpeak
 ./gradlew build
 ```
 
-输出文件：`build/libs/enchantpeak-x.x.x.jar`
+默认构建 26.2，输出文件：`build/libs/enchantpeak-mc26.2-x.x.x.jar`。
+
+构建单个目标或一次构建全部目标：
+
+```bash
+./gradlew clean build -Ptarget_mc=26.1.2
+scripts/build_all_versions.sh
+```
+
+全部目标产物位于 `dist/`。受支持目标及其依赖版本统一维护在 `versions/minecraft.json`。
 
 **环境要求：** Java 25（或更高版本）
 
@@ -151,19 +162,28 @@ cd enchantpeak
 
 ## ❓ 常见问题
 
-**Q: 搜索找不到 `★` 条目？**  
-A: 确保已进入世界（单人或多人）。REI/JEI 条目在游戏加载注册表后才会注册。
+**Q: 搜索找不到附魔方案条目？**
 
-**Q: 只支持 JEI 还是 REI 也支持？**  
-A: 两个都支持。REI 功能最完整（搜索条目 + 信息面板 + 自定义分类），JEI 提供自定义分类视图。
+A: 独立方案条目仅在 REI 中提供。请确保已进入世界以加载注册表；JEI 用户请打开 **最强附魔方案** 分类查看。
 
-**Q: 为什么没有石制/铁制装备？**  
-A: 本模组专注于终极装备（钻石和下界合金）。石制和铁制物品附魔价值有限。
+**Q: 只支持 JEI 还是 REI 也支持？**
 
-**Q: 会添加模组附魔吗？**  
+A: 两者都支持自定义分类、从原物品查看方案、本地化提示和信息页。REI 额外把每个方案注册为全局搜索中的独立条目。
+
+**Q: 是否遗漏了可附魔的原版物品？**
+
+A: 所有至少支持一种非诅咒附魔的物品均已覆盖。雕刻南瓜、指南针和七种生物/玩家头颅只支持诅咒，因此不会生成正向顶配方案。
+
+**Q: 是否支持任意 26.x 版本？**
+
+A: 支持所有当前正式发布并通过构建与官方数据校验的 26.x 版本：26.1、26.1.1、26.1.2、26.2。未来的 26.x 正式版需要加入构建矩阵并校验通过后才会声明支持，不会用宽泛版本范围冒充兼容。
+
+**Q: 会添加模组附魔吗？**
+
 A: 目前仅支持原版附魔。如果有需求，未来版本会考虑模组附魔支持。
 
-**Q: 可以用在整合包里吗？**  
+**Q: 可以用在整合包里吗？**
+
 A: 可以！EnchantPeak 使用 MIT 协议。欢迎在任何整合包中自由使用。
 
 ---

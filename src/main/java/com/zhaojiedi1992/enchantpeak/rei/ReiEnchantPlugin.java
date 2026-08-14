@@ -1,7 +1,6 @@
 package com.zhaojiedi1992.enchantpeak.rei;
 
 import com.zhaojiedi1992.enchantpeak.EnchantPeakMod;
-import com.zhaojiedi1992.enchantpeak.common.EnchantEntry;
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
 import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
@@ -14,11 +13,8 @@ import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import me.shedaniel.rei.plugin.common.displays.DefaultInformationDisplay;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
 
 /**
  * REI 插件入口
@@ -59,11 +55,10 @@ public class ReiEnchantPlugin implements REIClientPlugin {
                 for (EnchantGroup group : record.groups()) {
                     DefaultInformationDisplay info = DefaultInformationDisplay.createFromEntries(
                             EntryIngredients.of(record.item()),
-                            Component.literal("§6▶ " + group.name())
+                            group.displayHeading()
                     );
-                    for (EnchantEntry entry : group.enchants()) {
-                        String enchName = getEnchantmentDisplayName(entry.enchantment());
-                        info.line(Component.literal("§7" + enchName + " " + entry.levelString()));
+                    for (Component line : group.enchantmentLines()) {
+                        info.line(line);
                     }
                     registry.add(info);
                     infoCount++;
@@ -96,10 +91,6 @@ public class ReiEnchantPlugin implements REIClientPlugin {
                     // 不再手动写 Lore 重复这些信息，保持原生 tooltip 展示，避免鼠标悬停时内容重复
                     ItemStack enchanted = group.applyTo(base);
 
-                    // 名称格式：原生物品名-流派（如"钻石镐-时运流"），用半角连字符连接
-                    String itemName = record.item().getName(base).getString();
-                    enchanted.set(DataComponents.CUSTOM_NAME, Component.literal(itemName + "-" + group.name()));
-
                     EntryStack<?> entryStack = EntryStacks.of(enchanted);
                     registry.addEntry(entryStack);
                     count++;
@@ -110,10 +101,5 @@ public class ReiEnchantPlugin implements REIClientPlugin {
         } catch (Throwable e) {
             EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI entries", e);
         }
-    }
-
-    /** 获取附魔的展示名称（跟随当前游戏语言本地化） */
-    private static String getEnchantmentDisplayName(Holder<Enchantment> holder) {
-        return holder.value().description().getString();
     }
 }

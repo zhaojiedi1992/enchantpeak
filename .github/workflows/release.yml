@@ -1,6 +1,5 @@
 name: Build and Release
 
-# 触发条件：push 一个 v开头的 tag，例如 v1.0.0
 on:
   push:
     tags:
@@ -10,7 +9,33 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  release-info:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.info.outputs.matrix }}
+      version: ${{ steps.info.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read release information
+        id: info
+        run: |
+          PROJECT_VERSION=$(sed -n 's/^mod_version=//p' gradle.properties)
+          RELEASE_VERSION=${GITHUB_REF_NAME#v}
+          if [ "$PROJECT_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Tag version $RELEASE_VERSION does not match mod_version $PROJECT_VERSION" >&2
+            exit 1
+          fi
+          echo "matrix=$(jq -c '.targets | keys' versions/minecraft.json)" >> "$GITHUB_OUTPUT"
+          echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: release-info
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ${{ fromJSON(needs.release-info.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,86 +47,94 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+      - name: Build Minecraft ${{ matrix.minecraft }}
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.minecraft }}
 
-      - name: Locate built jar
-        id: jar
-        run: |
-          JAR_PATH=$(find build/libs -maxdepth 1 -name "*.jar" ! -name "*-sources.jar" | head -n 1)
-          echo "path=$JAR_PATH" >> "$GITHUB_OUTPUT"
-          echo "Found jar: $JAR_PATH"
+      - name: Verify Minecraft ${{ matrix.minecraft }} enchantment data
+        run: python3 scripts/verify_enchants.py --minecraft-version ${{ matrix.minecraft }}
 
-      - name: Extract version from tag
-        id: version
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Upload Minecraft ${{ matrix.minecraft }} jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchantpeak-mc${{ matrix.minecraft }}
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+          if-no-files-found: error
 
-      # ---- 发布到 GitHub Releases ----
+  github-release:
+    needs: [release-info, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all Minecraft jars
+        uses: actions/download-artifact@v4
+        with:
+          pattern: enchantpeak-mc*
+          path: dist
+          merge-multiple: true
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.jar.outputs.path }}
-          name: "EnchantPeak ${{ steps.version.outputs.version }}"
+          files: dist/*.jar
+          name: EnchantPeak ${{ needs.release-info.outputs.version }}
           generate_release_notes: true
 
-      # ---- 发布到 Modrinth ----
-      - name: Publish to Modrinth
+  platform-release:
+    needs: [release-info, build]
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ${{ fromJSON(needs.release-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Minecraft ${{ matrix.minecraft }} jar
+        uses: actions/download-artifact@v4
+        with:
+          name: enchantpeak-mc${{ matrix.minecraft }}
+          path: dist
+
+      - name: Publish Minecraft ${{ matrix.minecraft }} to Modrinth
         uses: Kira-NT/mc-publish@v3
         with:
           modrinth-id: Ieptg3ne
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
-          files: ${{ steps.jar.outputs.path }}
-          name: "EnchantPeak ${{ steps.version.outputs.version }}"
-          version: ${{ steps.version.outputs.version }}
+          files: dist/*.jar
+          name: EnchantPeak ${{ needs.release-info.outputs.version }} for MC ${{ matrix.minecraft }}
+          version: ${{ needs.release-info.outputs.version }}+mc${{ matrix.minecraft }}
           version-type: release
           changelog-file: CHANGELOG.md
-
           loaders: |
             fabric
             quilt
-          game-versions: |
-            26.1
-            26.1.1
-            26.1.2
-            26.2
-          java: |
-            Java 25
-
+          game-versions: ${{ matrix.minecraft }}
+          java: Java 25
           dependencies: |
-            fabric-api@0.157.0(required){modrinth:P7dR8mSH}
+            fabric-api(required){modrinth:P7dR8mSH}
             rei(optional){modrinth:nfn13YXA}
             jei(optional){modrinth:u6dRKJwZ}
 
-      # ---- 发布到 CurseForge ----
-      - name: Publish to CurseForge
+      - name: Publish Minecraft ${{ matrix.minecraft }} to CurseForge
         uses: Kira-NT/mc-publish@v3
         with:
           curseforge-id: 1648044
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-
-          files: ${{ steps.jar.outputs.path }}
-          name: "EnchantPeak ${{ steps.version.outputs.version }}"
-          version: ${{ steps.version.outputs.version }}
+          files: dist/*.jar
+          name: EnchantPeak ${{ needs.release-info.outputs.version }} for MC ${{ matrix.minecraft }}
+          version: ${{ needs.release-info.outputs.version }}+mc${{ matrix.minecraft }}
           version-type: release
           changelog-file: CHANGELOG.md
-
           loaders: |
             fabric
             quilt
-          game-versions: |
-            26.1
-            26.1.1
-            26.1.2
-            26.2
-          java: |
-            Java 25
-
+          game-versions: ${{ matrix.minecraft }}
+          java: Java 25
           dependencies: |
             fabric-api(required){curseforge:306612}
             rei(optional){curseforge:310111}

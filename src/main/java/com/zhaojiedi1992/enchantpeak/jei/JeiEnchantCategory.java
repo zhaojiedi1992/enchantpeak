@@ -59,7 +59,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
     public void setRecipe(IRecipeLayoutBuilder builder, ItemEnchantRecord recipe, IFocusGroup focuses) {
         int slotY = (HEIGHT - SLOT_SIZE) / 2;
         builder.addSlot(RecipeIngredientRole.INPUT, INPUT_SLOT_X, slotY)
-                .addItemStack(new ItemStack(recipe.item()));
+                .add(new ItemStack(recipe.item()));
 
         int x = OUTPUT_START_X;
         for (EnchantGroup group : recipe.groups()) {
@@ -67,9 +67,9 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
             // 导致按附魔后的物品搜索时完全找不到结果。OUTPUT 槽位会正常参与搜索索引。
             ItemStack enchanted = group.applyTo(new ItemStack(recipe.item()));
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
-                    .addItemStack(enchanted)
+                    .add(enchanted)
                     .addRichTooltipCallback((slotView, tooltip) ->
-                            tooltip.add(Component.literal("§6▶ " + group.name())));
+                            tooltip.add(Component.literal("§6▶ ").append(group.displayName())));
             x += SLOT_SIZE + SLOT_GAP;
         }
     }

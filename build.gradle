@@ -3,11 +3,24 @@ plugins {
     id 'maven-publish'
 }
 
+def versionMatrix = new groovy.json.JsonSlurper().parse(file('versions/minecraft.json'))
+def targetMinecraftVersion = providers.gradleProperty('target_mc')
+        .orElse(versionMatrix.default as String)
+        .get()
+def targetVersions = versionMatrix.targets[targetMinecraftVersion]
+if (targetVersions == null) {
+    throw new GradleException(
+            "Unsupported Minecraft target '${targetMinecraftVersion}'. " +
+            "Supported targets: ${versionMatrix.targets.keySet().join(', ')}"
+    )
+}
+targetVersions.each { key, value -> project.ext.set(key as String, value as String) }
+
 version = project.mod_version
 group = "com.${project.mod_author}"
 
 base {
-    archivesName = project.mod_id
+    archivesName = "${project.mod_id}-mc${project.minecraft_version}"
 }
 
 repositories {
@@ -38,8 +51,8 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     // JEI - compileOnly，运行时可选
-    compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}")
-    compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}")
+    compileOnly("mezz.jei:jei-${project.jei_minecraft_version}-fabric-api:${project.jei_version}")
+    compileOnly("mezz.jei:jei-${project.jei_minecraft_version}-fabric:${project.jei_version}")
 
     // REI - compileOnly，运行时可选
     compileOnly("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}")
@@ -49,12 +62,28 @@ dependencies {
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.properties([
+            version               : project.version,
+            minecraft_version     : project.minecraft_version,
+            fabric_loader_version : project.fabric_loader_version,
+            fabric_api_min_version: project.fabric_api_min_version,
+            jei_min_version       : project.jei_min_version,
+            rei_min_version       : project.rei_min_version
+    ])
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
                "minecraft_version": project.minecraft_version,
-               "fabric_loader_version": project.fabric_loader_version
+               "fabric_loader_version": project.fabric_loader_version,
+               "fabric_api_min_version": project.fabric_api_min_version,
+               "jei_min_version": project.jei_min_version,
+               "rei_min_version": project.rei_min_version
+    }
+}
+
+tasks.register('printMinecraftVersion') {
+    doLast {
+        println project.minecraft_version
     }
 }
 

@@ -1,56 +1,107 @@
 #!/usr/bin/env python3
 """
 EnchantPeak 附魔数据深度校验脚本（整合包分发级）
-对照 MC 26.2 官方 datapack JSON，执行 4 项检查：
+对照目标 Minecraft 版本的官方 datapack JSON，执行 5 项检查：
 
-1. 【无冲突】每个流派内没有互斥附魔组合（同 exclusive_set 组出现 2 个以上）
-2. 【顶配】每个出现的附魔，等级都等于官方 max_level（不能低配）
-3. 【组合打满】每个物品能附的所有非诅咒附魔，都必须出现在至少一个流派里
-4. 【适用性】每个附魔确实适用于该物品（supported_items tag 包含该物品）
+1. 【方案顶配】每个方案都已加入所有仍可兼容的非诅咒附魔
+2. 【等级最大】每个附魔等级都等于官方 max_level
+3. 【组合完整】每件物品的全部极大兼容组合均已枚举，且没有多余组合
+4. 【无冲突】每个方案内任意两个附魔均不互斥
+5. 【无遗漏】所有原版非诅咒附魔都至少被一个方案覆盖
 
-用法：python3 scripts/verify_enchants_deep.py
-前置：需要解压 MC client.jar 到 /tmp/mc_data（或修改下方路径）
+通常通过 python3 scripts/verify_enchants.py 调用。
+直接运行时必须通过 MC_DATA_DIR 指定已解压的 Minecraft 数据目录。
 """
+import hashlib
 import json
 import os
+from pathlib import Path
+import re
 import sys
 
-DATA_DIR = os.environ.get("MC_DATA_DIR", "/tmp/mc_data")
-ENCH_DIR = f"{DATA_DIR}/data/minecraft/enchantment"
-TAG_DIR = f"{DATA_DIR}/data/minecraft/tags"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_SOURCE = REPO_ROOT / "src/main/java/com/zhaojiedi1992/enchantpeak/data/EnchantmentData.java"
+EXPECTED_DATA_SOURCE_HASH = "3213eedb9450c9f11c924b0190b23cce0d527463d890520f394afc71a3c746a2"
+
+DATA_DIR_VALUE = os.environ.get("MC_DATA_DIR")
+if not DATA_DIR_VALUE:
+    print("缺少 MC_DATA_DIR；请改用 scripts/verify_enchants.py 运行校验", file=sys.stderr)
+    sys.exit(1)
+
+DATA_DIR = Path(DATA_DIR_VALUE).resolve()
+ENCH_DIR = DATA_DIR / "data/minecraft/enchantment"
+TAG_DIR = DATA_DIR / "data/minecraft/tags"
+if not ENCH_DIR.is_dir() or not TAG_DIR.is_dir():
+    print(f"MC_DATA_DIR 不包含有效的 Minecraft datapack：{DATA_DIR}", file=sys.stderr)
+    sys.exit(1)
+
+
+def normalized_source_hash(path):
+    source = path.read_text(encoding="utf-8")
+    source = re.sub(r"/\*.*?\*/|//[^\n]*", "", source, flags=re.S)
+    source = re.sub(r"\s+", "", source)
+    return hashlib.sha256(source.encode()).hexdigest()
+
+
+if normalized_source_hash(DATA_SOURCE) != EXPECTED_DATA_SOURCE_HASH:
+    print(
+        "EnchantmentData.java 已变化，但校验规格尚未同步；请核对 ITEMS 后更新 "
+        "EXPECTED_DATA_SOURCE_HASH",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 def load_enchantment(name):
-    return json.load(open(f"{ENCH_DIR}/{name}.json"))
+    with (ENCH_DIR / f"{name}.json").open(encoding="utf-8") as handle:
+        return json.load(handle)
 
 def load_item_tag(tag_path):
     tag_path = tag_path.lstrip('#').replace('minecraft:', '')
-    f = f"{TAG_DIR}/item/{tag_path}.json"
-    if not os.path.exists(f):
+    f = TAG_DIR / "item" / f"{tag_path}.json"
+    if not f.exists():
         return set()
     result = set()
-    for v in json.load(open(f))['values']:
+    with f.open(encoding="utf-8") as handle:
+        values = json.load(handle)['values']
+    for v in values:
         if v.startswith('#'):
             result |= load_item_tag(v)
         else:
             result.add(v.replace('minecraft:', ''))
     return result
 
-def load_ench_tag(tag_path):
+def load_ench_tag(tag_path, visited=None):
     tag_path = tag_path.lstrip('#').replace('minecraft:', '')
-    f = f"{TAG_DIR}/enchantment/{tag_path}.json"
-    if not os.path.exists(f):
+    visited = set() if visited is None else visited
+    if tag_path in visited:
         return set()
-    return {v.replace('minecraft:', '') for v in json.load(open(f))['values']}
+    visited.add(tag_path)
+    f = TAG_DIR / "enchantment" / f"{tag_path}.json"
+    if not f.exists():
+        return set()
+    with f.open(encoding="utf-8") as handle:
+        values = json.load(handle)['values']
+    result = set()
+    for value in values:
+        value = value.get('id', '') if isinstance(value, dict) else value
+        if value.startswith('#'):
+            result |= load_ench_tag(value, visited)
+        elif value:
+            result.add(value.replace('minecraft:', ''))
+    return result
 
 # 加载官方数据
-ENCHANTMENTS = {f.removesuffix('.json'): load_enchantment(f.removesuffix('.json'))
-                for f in os.listdir(ENCH_DIR) if f.endswith('.json')}
-TREASURE = load_ench_tag('#minecraft:treasure') if os.path.exists(f"{TAG_DIR}/enchantment/treasure.json") else set()
+ENCHANTMENTS = {f.stem: load_enchantment(f.stem) for f in ENCH_DIR.glob("*.json")}
 
 ENCH_ITEMS = {}
 for name, d in ENCHANTMENTS.items():
     si = d.get('supported_items', '')
     ENCH_ITEMS[name] = load_item_tag(si) if si else set()
+
+ENCH_EXCLUSIONS = {}
+for name, definition in ENCHANTMENTS.items():
+    exclusive_set = definition.get('exclusive_set')
+    ENCH_EXCLUSIONS[name] = load_ench_tag(exclusive_set) if exclusive_set else set()
 
 # 从代码重建规格（与 verify_enchants.py 同源，手工列出，代表 EnchantmentData.java 的逻辑）
 ITEMS = {
@@ -139,28 +190,118 @@ ITEMS = {
     "shield": [
         ("满配流", [("unbreaking",3),("mending",1)]),
     ],
+    "shears": [
+        ("满配流", [("efficiency",5),("unbreaking",3),("mending",1)]),
+    ],
 }
-# 下界合金复用钻石规格（代码里也是复用同一组 EnchantGroup 对象）
-DIAMOND_TO_NETHERITE = {
-    "diamond_pickaxe": "netherite_pickaxe", "diamond_shovel": "netherite_shovel",
-    "diamond_hoe": "netherite_hoe", "diamond_axe": "netherite_axe",
-    "diamond_sword": "netherite_sword", "diamond_spear": "netherite_spear",
-    "diamond_helmet": "netherite_helmet", "diamond_chestplate": "netherite_chestplate",
-    "diamond_leggings": "netherite_leggings", "diamond_boots": "netherite_boots",
+# 同类材质复用同一套方案。键为目标物品，值为上方的方案模板物品。
+ITEM_ALIASES = {}
+for item_type in ("pickaxe", "shovel", "hoe", "axe", "sword", "spear"):
+    template = f"diamond_{item_type}"
+    for material in ("wooden", "stone", "copper", "iron", "golden", "netherite"):
+        ITEM_ALIASES[f"{material}_{item_type}"] = template
+for armor_type in ("helmet", "chestplate", "leggings", "boots"):
+    template = f"diamond_{armor_type}"
+    for material in ("leather", "chainmail", "copper", "iron", "golden", "netherite"):
+        ITEM_ALIASES[f"{material}_{armor_type}"] = template
+ITEM_ALIASES["turtle_helmet"] = "diamond_helmet"
+for utility_item in ("brush", "flint_and_steel", "carrot_on_a_stick", "warped_fungus_on_a_stick"):
+    ITEM_ALIASES[utility_item] = "elytra"
+CURSE_ONLY_ITEMS = {
+    "carved_pumpkin", "compass", "creeper_head", "dragon_head", "piglin_head",
+    "player_head", "skeleton_skull", "wither_skeleton_skull", "zombie_head",
 }
 
 CURSE = {"binding_curse", "vanishing_curse"}
 errors = []
-
-# ========== 检查 1：无冲突 + 检查 2：顶配 + 检查 4：适用性 ==========
-print("【检查 1/4】无冲突 + 顶配 + 适用性...")
 all_items = dict(ITEMS)
-for d, n in DIAMOND_TO_NETHERITE.items():
-    all_items[n] = ITEMS[d]
+for item_id, template_id in ITEM_ALIASES.items():
+    all_items[item_id] = ITEMS[template_id]
+for item_id in CURSE_ONLY_ITEMS:
+    all_items[item_id] = [("无非诅咒附魔", [])]
 
+
+def incompatible(first, second):
+    """官方互斥声明可能只写在一侧，因此按双向关系判断。"""
+    return second in ENCH_EXCLUSIONS.get(first, set()) or first in ENCH_EXCLUSIONS.get(second, set())
+
+
+def compatible_set(enchants):
+    enchants = list(enchants)
+    return all(
+        not incompatible(enchants[i], enchants[j])
+        for i in range(len(enchants))
+        for j in range(i + 1, len(enchants))
+    )
+
+
+def supported_non_curse(item_id):
+    return {
+        name for name in ENCHANTMENTS
+        if name not in CURSE and item_id in ENCH_ITEMS.get(name, set())
+    }
+
+
+official_non_curse_items = set().union(*(ENCH_ITEMS[name] for name in ENCHANTMENTS if name not in CURSE))
+official_all_items = set().union(*ENCH_ITEMS.values())
+official_curse_only_items = official_all_items - official_non_curse_items
+expected_curse_only_items = CURSE_ONLY_ITEMS
+configured_items = set(all_items)
+java_registered_items = {
+    item.lower()
+    for item in re.findall(r"Items\.([A-Z0-9_]+)", DATA_SOURCE.read_text(encoding="utf-8"))
+}
+missing_items = official_all_items - configured_items
+extra_items = configured_items - official_all_items
+if missing_items:
+    errors.append(f"遗漏官方可附魔物品：{sorted(missing_items)}")
+if extra_items:
+    errors.append(f"配置了官方不可附魔物品：{sorted(extra_items)}")
+missing_java_items = configured_items - java_registered_items
+extra_java_items = java_registered_items - configured_items
+if missing_java_items:
+    errors.append(f"Java 实现未注册校验规格中的物品：{sorted(missing_java_items)}")
+if extra_java_items:
+    errors.append(f"Java 实现注册了校验规格外的物品：{sorted(extra_java_items)}")
+if official_curse_only_items != expected_curse_only_items:
+    errors.append(
+        "官方纯诅咒物品集合发生变化："
+        f"expected={sorted(expected_curse_only_items)}, actual={sorted(official_curse_only_items)}"
+    )
+
+
+def maximal_compatible_sets(enchants):
+    """枚举附魔集合中的全部极大兼容子集。当前单物品候选量很小，可直接穷举。"""
+    ordered = sorted(enchants)
+    compatible = []
+    for mask in range(1 << len(ordered)):
+        candidate = frozenset(ordered[index] for index in range(len(ordered)) if mask & (1 << index))
+        if compatible_set(candidate):
+            compatible.append(candidate)
+    return {
+        candidate for candidate in compatible
+        if not any(candidate < other for other in compatible)
+    }
+
+
+# ========== 检查 1：每个方案都是无法继续添加兼容附魔的顶配集合 ==========
+print("【检查 1/5】方案顶配（每个方案均已加满兼容附魔）...")
+for item_id, groups in all_items.items():
+    official_supported = supported_non_curse(item_id)
+    for group_name, enchants in groups:
+        configured = {name for name, _ in enchants}
+        addable = {
+            name for name in official_supported - configured
+            if all(not incompatible(name, existing) for existing in configured)
+        }
+        if addable:
+            errors.append(f"{item_id}/{group_name}: 方案未顶配，仍可加入 {sorted(addable)}")
+print("  完成")
+
+# ========== 检查 2：等级最大值与适用性 ==========
+print("【检查 2/5】等级最大（逐项对照官方 max_level）...")
 for item_id, groups in all_items.items():
     for group_name, enchants in groups:
-        seen_groups = {}
         for ench_name, level in enchants:
             if ench_name not in ENCHANTMENTS:
                 errors.append(f"{item_id}/{group_name}: 未知附魔 '{ench_name}'")
@@ -173,43 +314,37 @@ for item_id, groups in all_items.items():
             # 检查 4：适用性
             if item_id not in ENCH_ITEMS.get(ench_name, set()):
                 errors.append(f"{item_id}/{group_name}: {ench_name} 不适用于 {item_id}")
-            # 检查 1：无冲突
-            es = official.get('exclusive_set')
-            if es:
-                eg = es.split('/')[-1]
-                if eg in seen_groups:
-                    errors.append(f"{item_id}/{group_name}: 互斥冲突！{ench_name} 与 {seen_groups[eg]} 同属 {eg} 组")
-                else:
-                    seen_groups[eg] = ench_name
-            if ench_name == 'riptide':
-                seen_groups.setdefault('riptide', ench_name)
-            if ench_name in ('loyalty','channeling') and 'riptide' in seen_groups:
-                errors.append(f"{item_id}/{group_name}: {ench_name} 与 riptide 互斥")
 print("  完成")
 
-# ========== 检查 3：组合打满 ==========
-# 对每个物品，官方规定它能附的所有非诅咒附魔，都必须出现在至少一个流派里
-print("【检查 3/4】组合打满（每个可附附魔都出现在某流派）...")
+# ========== 检查 3：全部极大兼容组合精确匹配 ==========
+print("【检查 3/5】组合完整（全部极大兼容组合逐一匹配）...")
 for item_id, groups in all_items.items():
-    # 官方规定该物品能附的全部非诅咒附魔
-    official_supported = set()
-    for ench_name in ENCHANTMENTS:
-        if ench_name in CURSE:
-            continue
-        if item_id in ENCH_ITEMS.get(ench_name, set()):
-            official_supported.add(ench_name)
-    # 代码里该物品所有流派出现的附魔并集
-    code_used = set()
-    for _, enchants in groups:
-        for ench_name, _ in enchants:
-            code_used.add(ench_name)
-    missing = official_supported - code_used
-    if missing:
-        errors.append(f"{item_id}: 组合未打满！官方支持但代码未覆盖的附魔：{sorted(missing)}")
+    expected = maximal_compatible_sets(supported_non_curse(item_id))
+    configured_list = [frozenset(name for name, _ in enchants) for _, enchants in groups]
+    configured = set(configured_list)
+    if len(configured_list) != len(configured):
+        errors.append(f"{item_id}: 存在内容相同的重复方案")
+    missing = expected - configured
+    extra = configured - expected
+    for combination in sorted(missing, key=lambda value: sorted(value)):
+        errors.append(f"{item_id}: 遗漏顶配组合 {sorted(combination)}")
+    for combination in sorted(extra, key=lambda value: sorted(value)):
+        errors.append(f"{item_id}: 存在非顶配或无效组合 {sorted(combination)}")
 print("  完成")
 
-# ========== 附魔书完整性（bonus：确认所有非诅咒附魔至少在某个物品的某流派里出现）==========
-print("【检查 4/4】附魔书覆盖（所有非诅咒附魔都被用到）...")
+# ========== 检查 4：每个方案内部无互斥冲突 ==========
+print("【检查 4/5】无冲突（官方 exclusive_set 双向校验）...")
+for item_id, groups in all_items.items():
+    for group_name, enchants in groups:
+        configured = [name for name, _ in enchants]
+        for index, first in enumerate(configured):
+            for second in configured[index + 1:]:
+                if incompatible(first, second):
+                    errors.append(f"{item_id}/{group_name}: {first} 与 {second} 互斥")
+print("  完成")
+
+# ========== 检查 5：所有原版非诅咒附魔至少覆盖一次 ==========
+print("【检查 5/5】无遗漏（所有非诅咒附魔全局覆盖）...")
 all_used = set()
 for groups in all_items.values():
     for _, enchants in groups:
@@ -218,7 +353,7 @@ for groups in all_items.values():
 all_official_non_curse = set(ENCHANTMENTS.keys()) - CURSE
 unused = all_official_non_curse - all_used
 if unused:
-    errors.append(f"以下官方附魔在所有物品的所有流派中从未出现：{sorted(unused)}")
+    errors.append(f"以下官方非诅咒附魔从未出现在任何方案中：{sorted(unused)}")
 print("  完成")
 
 # ========== 汇总 ==========
@@ -232,11 +367,14 @@ else:
     total_items = len(all_items)
     total_builds = sum(len(g) for g in all_items.values())
     total_enchants_used = len(all_used)
-    print(f"✅ 四项检查全部通过！")
-    print(f"   • {total_items} 个物品（钻石+下界合金各算）")
-    print(f"   • {total_builds} 个流派方案")
+    print(f"✅ 五项核心检查全部通过！")
+    positive_builds = total_builds - len(official_curse_only_items)
+    print(f"   • {total_items}/{len(official_all_items)} 个官方可附魔物品")
+    print(f"   • {positive_builds} 个正向顶配方案 + {len(official_curse_only_items)} 个纯诅咒物品空方案")
     print(f"   • {total_enchants_used}/{len(all_official_non_curse)} 个非诅咒附魔被使用")
-    print(f"   • 所有附魔均达官方 max_level（顶配）")
-    print(f"   • 所有流派内无互斥冲突")
-    print(f"   • 每个物品的所有可附附魔都已在某流派中覆盖（组合打满）")
+    print(f"   • 每个方案都是极大兼容集合，无法再加入其他兼容附魔")
+    print(f"   • 每个附魔等级均等于官方 max_level")
+    print(f"   • 每件物品的全部顶配组合均已枚举，无重复、无多余")
+    print(f"   • 所有方案均无官方互斥冲突")
+    print(f"   • 所有非诅咒附魔均至少覆盖一次")
     sys.exit(0)

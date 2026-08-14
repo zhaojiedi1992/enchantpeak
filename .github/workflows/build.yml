@@ -1,6 +1,5 @@
 name: Build
 
-# 每次 push 到任意分支 或 PR 时触发，只做构建验证，不发布
 on:
   push:
     branches-ignore:
@@ -11,7 +10,24 @@ permissions:
   contents: read
 
 jobs:
+  versions:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read supported Minecraft versions
+        id: matrix
+        run: echo "value=$(jq -c '.targets | keys' versions/minecraft.json)" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: versions
+    strategy:
+      fail-fast: false
+      matrix:
+        minecraft: ${{ fromJSON(needs.versions.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,15 +39,21 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+      - name: Build Minecraft ${{ matrix.minecraft }}
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.minecraft }}
 
-      - name: Upload built jar
+      - name: Verify Minecraft ${{ matrix.minecraft }} enchantment data
+        run: python3 scripts/verify_enchants.py --minecraft-version ${{ matrix.minecraft }}
+
+      - name: Upload Minecraft ${{ matrix.minecraft }} jar
         uses: actions/upload-artifact@v4
         with:
-          name: enchantpeak-jar
-          path: build/libs/*.jar
+          name: enchantpeak-mc${{ matrix.minecraft }}
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+          if-no-files-found: error
           retention-days: 14
