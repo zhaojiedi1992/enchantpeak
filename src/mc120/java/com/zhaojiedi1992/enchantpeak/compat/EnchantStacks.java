@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MC 26.x / 1.21.11+ version rendering utilities.
- * Uses 1.21+ DataComponents API: stack.enchant() and holder.value().description()
+ * MC 1.20.1 渲染工具。
+ * 1.20.1 的 Enchantments.XXX 是 Enchantment 实例（非 ResourceKey），
+ * EnchantmentData 中已用 Holder.direct() 包装，这里拆包后走 enchant(Enchantment,int)。
+ * 1.20.1 无 description()（1.21 数据驱动附魔新增），用 getFullname(level)。
  */
 public class EnchantStacks {
 
