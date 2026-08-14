@@ -5,7 +5,7 @@
 A Minecraft Fabric mod that covers every vanilla enchantable item in JEI/REI. It shows maximal non-curse enchantment combinations where available and identifies curse-only items. REI also exposes every build as a standalone searchable entry.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Minecraft](https://img.shields.io/badge/Minecraft-26.1--26.2-brightgreen)](https://www.minecraft.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2%20|%201.19.x%20|%201.20.1%20|%201.21.x%20|%2026.x-brightgreen)](https://www.minecraft.net/)
 [![Fabric](https://img.shields.io/badge/Loader-Fabric%200.19.2+-blue)](https://fabricmc.net/)
 
 ---
@@ -45,11 +45,11 @@ A Minecraft Fabric mod that covers every vanilla enchantable item in JEI/REI. It
 
 ## 📦 Download & Installation
 
-**Supported versions:** Minecraft **26.1, 26.1.1, 26.1.2, and 26.2**. Each game version has a dedicated build verified against its official datapack. Download the JAR whose `mc` version exactly matches your game.
+**Supported versions:** Minecraft **1.18.2, 1.19.2, 1.19.4, 1.20.1, 1.21.1, 1.21.11, 26.1, 26.1.2, and 26.2**. Each game version has a dedicated build verified against its version-specific API. Download the JAR whose `mc` version exactly matches your game.
 
 **Requirements:**
 - Fabric Loader and Fabric API releases matching the Minecraft version
-- **JEI** or **REI** release matching the Minecraft version; at least one is required
+- **JEI** or **REI** (1.18.2+), or **EMI** (1.19.2+) release matching the Minecraft version; at least one is required
 
 **Download from:**
 - [Modrinth](https://modrinth.com/mod/enchantpeak)
@@ -150,13 +150,17 @@ The default target is 26.2. Output: `build/libs/enchantpeak-mc26.2-x.x.x.jar`.
 Build one target or all supported targets:
 
 ```bash
+# 单个版本（指定 target_mc）
+./gradlew clean build -Ptarget_mc=1.21.1
 ./gradlew clean build -Ptarget_mc=26.1.2
-scripts/build_all_versions.sh
+
+# 所有版本
+./build_all_versions.sh
 ```
 
-All-target output is written to `dist/`. Supported targets and dependency versions are defined once in `versions/minecraft.json`.
+All-target output is written to `build/distributions/`. Supported targets and dependency versions are defined once in `versions/minecraft.json`.
 
-**Requirements:** Java 25 (or higher)
+**Requirements:** Java 17 (for MC 1.18.2–1.20.1), Java 21 (for MC 1.21.x), and Java 25 (for MC 26.x). Gradle automatically selects the correct JDK via toolchain.
 
 ---
 
