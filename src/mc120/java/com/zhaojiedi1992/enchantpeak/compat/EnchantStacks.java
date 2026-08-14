@@ -19,7 +19,7 @@ public class EnchantStacks {
      */
     public static void applyTo(ItemStack stack, EnchantGroup group) {
         for (EnchantEntry entry : group.entries()) {
-            stack.enchant(entry.enchantment(), entry.level());
+            stack.enchant(entry.enchantment().value(), entry.level());
         }
     }
 
@@ -29,12 +29,8 @@ public class EnchantStacks {
     public static List<Component> enchantmentLines(EnchantGroup group) {
         List<Component> lines = new ArrayList<>();
         for (EnchantEntry entry : group.entries()) {
-            Component desc = entry.enchantment().value().description();
-            if (entry.level() > 1) {
-                lines.add(Component.translatable("%s %s", desc.getString(), entry.levelString()));
-            } else {
-                lines.add(desc);
-            }
+            // 1.20.1 无 description()（1.21 数据驱动附魔新增），getFullname(level) 返回 "时运 III" 全名
+            lines.add(entry.enchantment().value().getFullname(entry.level()));
         }
         return lines;
     }

@@ -10,31 +10,27 @@ import java.util.List;
 
 /**
  * MC 26.x / 1.21.11+ version rendering utilities.
- * Uses 1.21+ DataComponents API: stack.enchant() and holder.value().description()
+ * MC 1.19.x：Enchantments.XXX 是 Enchantment 实例，Holder.direct() 包装后在此拆包使用
  */
 public class EnchantStacks {
 
     /**
-     * Apply enchantments to an item stack using 1.21+ DataComponents API
+     * Apply enchantments to an item stack (1.19.x style)
      */
     public static void applyTo(ItemStack stack, EnchantGroup group) {
         for (EnchantEntry entry : group.entries()) {
-            stack.enchant(entry.enchantment(), entry.level());
+            stack.enchant(entry.enchantment().value(), entry.level());
         }
     }
 
     /**
-     * Generate display lines for enchantments using 1.21+ description() API
+     * Generate display lines for enchantments (1.19.x style)
      */
     public static List<Component> enchantmentLines(EnchantGroup group) {
         List<Component> lines = new ArrayList<>();
         for (EnchantEntry entry : group.entries()) {
-            Component desc = entry.enchantment().value().description();
-            if (entry.level() > 1) {
-                lines.add(Component.translatable("%s %s", desc.getString(), entry.levelString()));
-            } else {
-                lines.add(desc);
-            }
+            // 1.18/1.19 无 description()（1.21 数据驱动附魔新增），getFullname(level) 返回 "时运 III" 全名
+            lines.add(entry.enchantment().value().getFullname(entry.level()));
         }
         return lines;
     }

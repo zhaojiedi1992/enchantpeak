@@ -9,7 +9,7 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,7 +32,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
     }
 
     @Override
-    public IRecipeType<ItemEnchantRecord> getRecipeType() {
+    public RecipeType<ItemEnchantRecord> getRecipeType() {
         return JeiEnchantPlugin.RECIPE_TYPE;
     }
 
@@ -60,7 +60,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
     public void setRecipe(IRecipeLayoutBuilder builder, ItemEnchantRecord recipe, IFocusGroup focuses) {
         int slotY = (HEIGHT - SLOT_SIZE) / 2;
         builder.addSlot(RecipeIngredientRole.INPUT, INPUT_SLOT_X, slotY)
-                .add(new ItemStack(recipe.item()));
+                .addItemStack(new ItemStack(recipe.item()));
 
         int x = OUTPUT_START_X;
         for (EnchantGroup group : recipe.groups()) {
@@ -69,7 +69,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
             ItemStack enchanted = new ItemStack(recipe.item());
             EnchantStacks.applyTo(enchanted, group);
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
-                    .add(enchanted)
+                    .addItemStack(enchanted)
                     .addRichTooltipCallback((slotView, tooltip) ->
                             tooltip.add(Component.literal("§6▶ ").append(EnchantStacks.displayName(group))));
             x += SLOT_SIZE + SLOT_GAP;

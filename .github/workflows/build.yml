@@ -35,15 +35,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21 (runner JDK for Gradle/Loom)
+      - name: Set up JDK 25 (runner JDK for Gradle/Loom)
         uses: actions/setup-java@v4
         with:
-          java-version: 21
+          java-version: 25
           distribution: 'temurin'
 
-      # Gradle toolchain auto-provisions the exact JDK each target needs:
-      # Java 17 for MC 1.18-1.20, Java 21 for MC 1.21.x, Java 25 for MC 26.x.
-      # The runner JDK (21) is only for Gradle itself and fabric-loom 1.17+.
+      # Runner JDK must be >= 21 for fabric-loom 1.17+, and MC 26.x requires
+      # the Gradle JVM itself to be Java 25. Gradle toolchain auto-provisions
+      # the exact compile JDK per target (17 for 1.18-1.20, 21 for 1.21.x, 25 for 26.x).
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 

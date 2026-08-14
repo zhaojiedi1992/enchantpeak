@@ -32,10 +32,10 @@ def minecraft_jar(version):
     return jar
 
 
-def run_verifier(data_dir):
+def run_verifier(data_dir, family):
     env = os.environ.copy()
     env["MC_DATA_DIR"] = str(data_dir)
-    return subprocess.run([sys.executable, str(DEEP_VERIFIER)], env=env).returncode
+    return subprocess.run([sys.executable, str(DEEP_VERIFIER), "--source", family], env=env).returncode
 
 
 def main():
@@ -48,18 +48,19 @@ def main():
     )
     args = parser.parse_args()
 
-    # Enchantments only became data-driven (bundled datapack) in 1.21.
-    # Older versions hardcode enchantments in code, where the compiler is
-    # the verifier: referencing a nonexistent Enchantments constant fails
-    # the build. Skip datapack verification for pre-1.21 targets.
-    pre_121 = not (args.minecraft_version.startswith("1.21") or args.minecraft_version.startswith("26."))
-    if pre_121:
-        print(f"{args.minecraft_version}: 附魔为代码内建（1.21 前非数据驱动），跳过 datapack 校验，以编译器为校验")
+    # Deep 校验规格（verify_enchants_deep.py 的 ITEMS）覆盖的是"新附魔体系"：
+    # 含 spear/lunge/copper 工具（1.21.11 起与 26.x 完全一致）。
+    # 更早的目标（<=1.21.1）物品集不同，以编译器为校验（引用不存在的常量即编译失败）。
+    with VERSION_MATRIX.open(encoding="utf-8") as handle:
+        matrix = json.load(handle)
+    family = matrix["targets"][args.minecraft_version]["mc_family"]
+    if family not in ("mc2111", "mc26"):
+        print(f"{args.minecraft_version}: 附魔物品集与新体系规格不同，跳过 datapack 深度校验，以编译器为校验")
         return 0
 
     configured_data = os.environ.get("MC_DATA_DIR")
     if configured_data:
-        return run_verifier(Path(configured_data).resolve())
+        return run_verifier(Path(configured_data).resolve(), family)
 
     jar = minecraft_jar(args.minecraft_version)
     with tempfile.TemporaryDirectory(prefix="enchantpeak-mc-data-") as temp_dir:
@@ -71,7 +72,7 @@ def main():
                 or name.startswith("data/minecraft/tags/")
             ]
             archive.extractall(data_dir, members)
-        return run_verifier(data_dir)
+        return run_verifier(data_dir, family)
 
 
 if __name__ == "__main__":

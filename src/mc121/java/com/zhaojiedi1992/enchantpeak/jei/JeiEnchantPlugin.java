@@ -8,7 +8,7 @@ import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.Minecraft;
@@ -23,8 +23,8 @@ import java.util.List;
 @JeiPlugin
 public class JeiEnchantPlugin implements IModPlugin {
 
-    static final IRecipeType<ItemEnchantRecord> RECIPE_TYPE =
-            IRecipeType.create(EnchantPeakMod.MOD_ID, "best_enchantments", ItemEnchantRecord.class);
+    static final RecipeType<ItemEnchantRecord> RECIPE_TYPE =
+            RecipeType.create(EnchantPeakMod.MOD_ID, "best_enchantments", ItemEnchantRecord.class);
 
     @Override
     public ResourceLocation getPluginUid() {

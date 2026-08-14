@@ -38,7 +38,7 @@ public class ReiEnchantCategory implements DisplayCategory<ReiEnchantDisplay> {
 
     @Override
     public Component getTitle() {
-        return Component.translatable("enchantpeak.rei.category.title");
+        return new net.minecraft.network.chat.TranslatableComponent("enchantpeak.rei.category.title");
     }
 
     @Override

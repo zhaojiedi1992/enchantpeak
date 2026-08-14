@@ -8,15 +8,17 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
 
     private final IDrawable icon;
+    private final IDrawable background;
     private static final int SLOT_SIZE = 18;
     private static final int SLOT_GAP = 2;
     // JEI 的 getWidth()/getHeight() 是固定值（不像 REI 按 display 动态计算），
@@ -29,16 +31,22 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
 
     public JeiEnchantCategory(IGuiHelper guiHelper) {
         this.icon = guiHelper.createDrawableItemStack(new ItemStack(Items.DIAMOND_PICKAXE));
+        this.background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
     }
 
     @Override
-    public IRecipeType<ItemEnchantRecord> getRecipeType() {
+    public RecipeType<ItemEnchantRecord> getRecipeType() {
         return JeiEnchantPlugin.RECIPE_TYPE;
     }
 
     @Override
     public Component getTitle() {
-        return Component.translatable("enchantpeak.jei.category.title");
+        return new net.minecraft.network.chat.TranslatableComponent("enchantpeak.jei.category.title");
+    }
+
+    @Override
+    public IDrawable getBackground() {
+        return background;
     }
 
     @Override
@@ -60,7 +68,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
     public void setRecipe(IRecipeLayoutBuilder builder, ItemEnchantRecord recipe, IFocusGroup focuses) {
         int slotY = (HEIGHT - SLOT_SIZE) / 2;
         builder.addSlot(RecipeIngredientRole.INPUT, INPUT_SLOT_X, slotY)
-                .add(new ItemStack(recipe.item()));
+                .addItemStack(new ItemStack(recipe.item()));
 
         int x = OUTPUT_START_X;
         for (EnchantGroup group : recipe.groups()) {
@@ -69,9 +77,9 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
             ItemStack enchanted = new ItemStack(recipe.item());
             EnchantStacks.applyTo(enchanted, group);
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
-                    .add(enchanted)
-                    .addRichTooltipCallback((slotView, tooltip) ->
-                            tooltip.add(Component.literal("§6▶ ").append(EnchantStacks.displayName(group))));
+                    .addItemStack(enchanted)
+                    .addTooltipCallback((slotView, tooltip) ->
+                            tooltip.add(new TextComponent("§6▶ ").append(EnchantStacks.displayName(group))));
             x += SLOT_SIZE + SLOT_GAP;
         }
     }

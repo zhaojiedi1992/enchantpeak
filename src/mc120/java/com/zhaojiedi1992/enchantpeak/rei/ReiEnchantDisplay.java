@@ -5,7 +5,6 @@ import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
 import com.zhaojiedi1992.enchantpeak.compat.EnchantStacks;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
-import me.shedaniel.rei.api.common.display.DisplaySerializer;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import net.minecraft.resources.ResourceLocation;
@@ -60,11 +59,6 @@ public class ReiEnchantDisplay implements Display {
     @Override
     public Optional<ResourceLocation> getDisplayLocation() {
         return Optional.empty();
-    }
-
-    @Override
-    public DisplaySerializer<? extends Display> getSerializer() {
-        return null;
     }
 
     public ItemEnchantRecord getRecord() {

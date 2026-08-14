@@ -91,19 +91,19 @@ public class EnchantmentData {
 
     private void buildPickaxes(HolderLookup.RegistryLookup<Enchantment> l) {
         addRecords(List.of(toolFortune(l), toolSilk(l)),
-                Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE,
+                Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.COPPER_PICKAXE, Items.IRON_PICKAXE,
                 Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
     }
 
     private void buildShovels(HolderLookup.RegistryLookup<Enchantment> l) {
         addRecords(List.of(toolFortune(l), toolSilk(l)),
-                Items.WOODEN_SHOVEL, Items.STONE_SHOVEL, Items.IRON_SHOVEL,
+                Items.WOODEN_SHOVEL, Items.STONE_SHOVEL, Items.COPPER_SHOVEL, Items.IRON_SHOVEL,
                 Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL);
     }
 
     private void buildHoes(HolderLookup.RegistryLookup<Enchantment> l) {
         addRecords(List.of(toolFortune(l), toolSilk(l)),
-                Items.WOODEN_HOE, Items.STONE_HOE, Items.IRON_HOE,
+                Items.WOODEN_HOE, Items.STONE_HOE, Items.COPPER_HOE, Items.IRON_HOE,
                 Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE);
     }
 
@@ -141,7 +141,7 @@ public class EnchantmentData {
                 axeGroup(l, "axe_silk_smite", Enchantments.SILK_TOUCH, 1, Enchantments.SMITE, 5),
                 axeGroup(l, "axe_silk_bane", Enchantments.SILK_TOUCH, 1, Enchantments.BANE_OF_ARTHROPODS, 5)
         );
-        addRecords(groups, Items.WOODEN_AXE, Items.STONE_AXE, Items.IRON_AXE,
+        addRecords(groups, Items.WOODEN_AXE, Items.STONE_AXE, Items.COPPER_AXE, Items.IRON_AXE,
                 Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE);
     }
 
@@ -163,7 +163,7 @@ public class EnchantmentData {
 
     private void buildSwords(HolderLookup.RegistryLookup<Enchantment> l) {
         List<EnchantGroup> groups = List.of(swordSharp(l), swordSmite(l), swordArthropods(l));
-        addRecords(groups, Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD,
+        addRecords(groups, Items.WOODEN_SWORD, Items.STONE_SWORD, Items.COPPER_SWORD, Items.IRON_SWORD,
                 Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD);
     }
 

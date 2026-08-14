@@ -53,11 +53,6 @@ repositories {
         name = 'Architectury'
         url = 'https://maven.architectury.dev/'
     }
-    // EMI
-    maven {
-        name = 'EMI'
-        url = 'https://repo.sleeping.town/'
-    }
 }
 
 // ====== Source set configuration for version families ======
@@ -107,7 +102,10 @@ dependencies {
     String modCfg = useMojangMappings ? "mod${cap(mcFamily)}CompileOnly" : "compileOnly"
     if (!project.hasProperty('jei_enabled') || project.jei_enabled.toBoolean()) {
         "${modCfg}"("mezz.jei:jei-${project.jei_minecraft_version}-fabric-api:${project.jei_version}")
-        "${modCfg}"("mezz.jei:jei-${project.jei_minecraft_version}-fabric:${project.jei_version}")
+        if (project.hasProperty('jei_runtime_enabled') && project.jei_runtime_enabled.toBoolean()) {
+            // 运行时模块：1.18.2 的 10.6.1 未发布 core/lib/gui（仅到 10.2.1），不可解析
+            "${modCfg}"("mezz.jei:jei-${project.jei_minecraft_version}-fabric:${project.jei_version}")
+        }
     }
 
     // REI - compileOnly for version-specific source set，运行时可选
@@ -116,11 +114,6 @@ dependencies {
     "${modCfg}"("me.shedaniel:RoughlyEnoughItems-default-plugin-fabric:${project.rei_version}")
     "${modCfg}"("dev.architectury:architectury-fabric:${project.architectury_version}")
 
-    // EMI - compileOnly for version-specific source set，运行时可选
-    // EMI may not be available in all environments, skip if emi_version is not set
-    if (project.hasProperty('emi_version') && project.emi_version != null && !project.emi_version.isEmpty()) {
-        "${modCfg}"("dev.emi:emi-fabric:${project.emi_version}")
-    }
 }
 
 // MC 26.x is pre-deobfuscated (empty mappings) - sources jar has no "named"
@@ -130,14 +123,6 @@ if (!useMojangMappings) {
 }
 
 processResources {
-    // EMI entrypoint/suggest lines are conditionally injected: only targets
-    // that have an EMI build (1.19.4+ up to 1.21.x) get the emi entries
-    def hasEmi = project.hasProperty('emi_version')
-            && project.emi_version != null
-            && !project.emi_version.toString().isEmpty()
-    def emiEntrypoint = hasEmi ? ',\n    "emi": [\n      "com.zhaojiedi1992.enchantpeak.emi.EmiEnchantPlugin"\n    ]' : ''
-    def emiSuggest = hasEmi && project.hasProperty('emi_min_version') ? ',\n    "emi": ">=${emi_min_version}"' : ''
-
     def props = [
             version               : project.version,
             minecraft_version     : project.minecraft_version,
@@ -146,12 +131,7 @@ processResources {
             jei_min_version       : project.jei_min_version,
             rei_min_version       : project.rei_min_version,
             java_version          : project.java_version,
-            emi_entrypoint        : emiEntrypoint,
-            emi_suggest           : emiSuggest
     ]
-    if (hasEmi && project.hasProperty('emi_min_version')) {
-        props.put('emi_min_version', project.emi_min_version)
-    }
     inputs.properties(props)
 
     filesMatching("fabric.mod.json") {
@@ -182,7 +162,7 @@ java {
 
 jar {
     // Include the active version family's compiled classes (EnchantmentData,
-    // JEI/REI/EMI plugins, EnchantStacks) alongside main's shared classes
+    // JEI/REI plugins, EnchantStacks) alongside main's shared classes
     from sourceSets[mcFamily].output
     from('LICENSE') {
         rename { "${it}_${base.archivesName.get()}" }

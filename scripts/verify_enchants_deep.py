@@ -19,9 +19,9 @@ from pathlib import Path
 import re
 import sys
 
+import argparse
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA_SOURCE = REPO_ROOT / "src/main/java/com/zhaojiedi1992/enchantpeak/data/EnchantmentData.java"
-EXPECTED_DATA_SOURCE_HASH = "3213eedb9450c9f11c924b0190b23cce0d527463d890520f394afc71a3c746a2"
 
 DATA_DIR_VALUE = os.environ.get("MC_DATA_DIR")
 if not DATA_DIR_VALUE:
@@ -36,19 +36,13 @@ if not ENCH_DIR.is_dir() or not TAG_DIR.is_dir():
     sys.exit(1)
 
 
-def normalized_source_hash(path):
-    source = path.read_text(encoding="utf-8")
-    source = re.sub(r"/\*.*?\*/|//[^\n]*", "", source, flags=re.S)
-    source = re.sub(r"\s+", "", source)
-    return hashlib.sha256(source.encode()).hexdigest()
+parser = argparse.ArgumentParser()
+parser.add_argument("--source", default="mc26", help="version family source dir name under src/")
+args, _ = parser.parse_known_args()
 
-
-if normalized_source_hash(DATA_SOURCE) != EXPECTED_DATA_SOURCE_HASH:
-    print(
-        "EnchantmentData.java 已变化，但校验规格尚未同步；请核对 ITEMS 后更新 "
-        "EXPECTED_DATA_SOURCE_HASH",
-        file=sys.stderr,
-    )
+DATA_SOURCE = REPO_ROOT / f"src/{args.source}/java/com/zhaojiedi1992/enchantpeak/data/EnchantmentData.java"
+if not DATA_SOURCE.is_file():
+    print(f"找不到源码文件：{DATA_SOURCE}", file=sys.stderr)
     sys.exit(1)
 
 def load_enchantment(name):

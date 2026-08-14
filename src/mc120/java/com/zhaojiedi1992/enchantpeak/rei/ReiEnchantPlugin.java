@@ -9,7 +9,6 @@ import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.entry.EntryRegistry;
-import me.shedaniel.rei.api.common.display.basic.BasicDisplay;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.util.EntryIngredients;
 import me.shedaniel.rei.api.common.util.EntryStacks;
@@ -45,9 +44,8 @@ public class ReiEnchantPlugin implements REIClientPlugin {
     @Override
     public void registerDisplays(DisplayRegistry registry) {
         try {
-            // BasicDisplay.registryAccess() 委托到 REI Internals，未初始化时抛 AssertionError（非 Exception）
-            // 官方 DefaultClientPlugin 在 registerDisplays 阶段用它是安全的（Internals 此时已就绪）
-            EnchantmentData data = new EnchantmentData(BasicDisplay.registryAccess());
+            // 1.20.1 的附魔常量直接持有 Enchantment 实例，无需 RegistryAccess
+            EnchantmentData data = new EnchantmentData(null);
             int infoCount = 0;
             int displayCount = 0;
 
@@ -79,10 +77,8 @@ public class ReiEnchantPlugin implements REIClientPlugin {
     @Override
     public void registerEntries(EntryRegistry registry) {
         try {
-            // 官方 DefaultClientPlugin.registerEntries() 从不调用 BasicDisplay.registryAccess()，
-            // 只在 registerDisplays 阶段才用。这里 catch Throwable 兜住潜在的 AssertionError，
-            // 避免注册表未就绪时崩游戏（参考 REI Internals.throwNotSetup()）
-            EnchantmentData data = new EnchantmentData(BasicDisplay.registryAccess());
+            // 1.20.1 的附魔常量直接持有 Enchantment 实例，无需 RegistryAccess
+            EnchantmentData data = new EnchantmentData(null);
             int count = 0;
 
             for (ItemEnchantRecord record : data.getAllRecords()) {

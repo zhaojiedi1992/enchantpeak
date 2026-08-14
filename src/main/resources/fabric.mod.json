@@ -21,7 +21,7 @@
     ],
     "jei_mod_plugin": [
       "com.zhaojiedi1992.enchantpeak.jei.JeiEnchantPlugin"
-    ]${emi_entrypoint}
+    ]
   },
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
@@ -31,6 +31,6 @@
   },
   "suggests": {
     "jei": ">=${jei_min_version}",
-    "roughlyenoughitems": ">=${rei_min_version}"${emi_suggest}
+    "roughlyenoughitems": ">=${rei_min_version}"
   }
 }

@@ -9,14 +9,15 @@
       "fabric_api_version": "0.77.0+1.18.2",
       "fabric_api_min_version": "0.76.0",
       "use_mojang_mappings": "true",
-      "jei_enabled": "false",
+      "jei_enabled": "true",
       "jei_minecraft_version": "1.18.2",
       "jei_version": "10.6.1.1022",
       "jei_min_version": "10.6.1",
       "rei_version": "8.4.778",
       "rei_min_version": "8.4",
       "cloth_config_version": "6.5.102",
-      "architectury_version": "4.12.94"
+      "architectury_version": "4.12.94",
+      "jei_runtime_enabled": "false"
     },
     "1.19.2": {
       "minecraft_version": "1.19.2",
@@ -34,8 +35,7 @@
       "rei_min_version": "9.2",
       "cloth_config_version": "8.3.134",
       "architectury_version": "6.6.92",
-      "emi_version": "1.1.24+1.19.2",
-      "emi_min_version": "1.1.24"
+      "jei_runtime_enabled": "true"
     },
     "1.19.4": {
       "minecraft_version": "1.19.4",
@@ -53,8 +53,7 @@
       "rei_min_version": "11.1",
       "cloth_config_version": "10.1.135",
       "architectury_version": "8.2.91",
-      "emi_version": "1.1.22+1.19.4",
-      "emi_min_version": "1.1.22"
+      "jei_runtime_enabled": "true"
     },
     "1.20.1": {
       "minecraft_version": "1.20.1",
@@ -72,8 +71,7 @@
       "rei_min_version": "12.1",
       "cloth_config_version": "11.1.136",
       "architectury_version": "9.2.14",
-      "emi_version": "1.1.24+1.20.1",
-      "emi_min_version": "1.1.24"
+      "jei_runtime_enabled": "true"
     },
     "1.21.1": {
       "minecraft_version": "1.21.1",
@@ -91,8 +89,7 @@
       "rei_min_version": "16.0",
       "cloth_config_version": "15.0.140",
       "architectury_version": "13.0.11",
-      "emi_version": "1.1.18+1.21.1",
-      "emi_min_version": "1.1.18"
+      "jei_runtime_enabled": "true"
     },
     "1.21.11": {
       "minecraft_version": "1.21.11",
@@ -109,7 +106,8 @@
       "rei_version": "21.11.816",
       "rei_min_version": "21.11",
       "cloth_config_version": "21.11.151",
-      "architectury_version": "19.0.1"
+      "architectury_version": "19.0.1",
+      "jei_runtime_enabled": "true"
     },
     "26.1": {
       "minecraft_version": "26.1",
@@ -126,7 +124,8 @@
       "rei_version": "26.1.819",
       "rei_min_version": "26.1",
       "cloth_config_version": "26.1.154",
-      "architectury_version": "20.0.6"
+      "architectury_version": "20.0.6",
+      "jei_runtime_enabled": "true"
     },
     "26.1.1": {
       "minecraft_version": "26.1.1",
@@ -143,7 +142,8 @@
       "rei_version": "26.1.819",
       "rei_min_version": "26.1",
       "cloth_config_version": "26.1.154",
-      "architectury_version": "20.0.6"
+      "architectury_version": "20.0.6",
+      "jei_runtime_enabled": "true"
     },
     "26.1.2": {
       "minecraft_version": "26.1.2",
@@ -160,7 +160,8 @@
       "rei_version": "26.1.819",
       "rei_min_version": "26.1",
       "cloth_config_version": "26.1.154",
-      "architectury_version": "20.0.6"
+      "architectury_version": "20.0.6",
+      "jei_runtime_enabled": "true"
     },
     "26.2": {
       "minecraft_version": "26.2",
@@ -177,7 +178,8 @@
       "rei_version": "26.2.820",
       "rei_min_version": "26.2",
       "cloth_config_version": "26.2.155",
-      "architectury_version": "21.0.7"
+      "architectury_version": "21.0.7",
+      "jei_runtime_enabled": "true"
     }
   }
 }
