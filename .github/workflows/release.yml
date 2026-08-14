@@ -100,6 +100,12 @@ jobs:
           name: enchantpeak-mc${{ matrix.minecraft }}
           path: dist
 
+      - name: Read game versions for ${{ matrix.minecraft }}
+        id: game-versions
+        run: |
+          VERSIONS=$(jq -r '.targets["${{ matrix.minecraft }}"].game_versions | join(" ")' versions/minecraft.json)
+          echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
+
       - name: Publish Minecraft ${{ matrix.minecraft }} to Modrinth
         uses: Kira-NT/mc-publish@v3
         with:
@@ -113,7 +119,7 @@ jobs:
           loaders: |
             fabric
             quilt
-          game-versions: ${{ matrix.minecraft }}
+          game-versions: ${{ steps.game-versions.outputs.versions }}
           java: Java 25
           dependencies: |
             fabric-api(required){modrinth:P7dR8mSH}
@@ -133,7 +139,7 @@ jobs:
           loaders: |
             fabric
             quilt
-          game-versions: ${{ matrix.minecraft }}
+          game-versions: ${{ steps.game-versions.outputs.versions }}
           java: Java 25
           dependencies: |
             fabric-api(required){curseforge:306612}

@@ -18,10 +18,7 @@
     ],
     "rei_client": [
       "com.zhaojiedi1992.enchantpeak.rei.ReiEnchantPlugin"
-    ],
-    "jei_mod_plugin": [
-      "com.zhaojiedi1992.enchantpeak.jei.JeiEnchantPlugin"
-    ]
+    ]${jei_entrypoint}
   },
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
@@ -30,7 +27,6 @@
     "fabric-api": ">=${fabric_api_min_version}"
   },
   "suggests": {
-    "jei": ">=${jei_min_version}",
-    "roughlyenoughitems": ">=${rei_min_version}"
+    "roughlyenoughitems": ">=${rei_min_version}"${jei_suggest}
   }
 }

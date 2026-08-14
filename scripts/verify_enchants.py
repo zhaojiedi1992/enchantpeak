@@ -53,7 +53,9 @@ def main():
     # 更早的目标（<=1.21.1）物品集不同，以编译器为校验（引用不存在的常量即编译失败）。
     with VERSION_MATRIX.open(encoding="utf-8") as handle:
         matrix = json.load(handle)
-    family = matrix["targets"][args.minecraft_version]["mc_family"]
+    target = matrix["targets"][args.minecraft_version]
+    family = target["mc_family"]
+    build_version = target["minecraft_version"]
     if family not in ("mc2111", "mc26"):
         print(f"{args.minecraft_version}: 附魔物品集与新体系规格不同，跳过 datapack 深度校验，以编译器为校验")
         return 0
@@ -62,7 +64,7 @@ def main():
     if configured_data:
         return run_verifier(Path(configured_data).resolve(), family)
 
-    jar = minecraft_jar(args.minecraft_version)
+    jar = minecraft_jar(build_version)
     with tempfile.TemporaryDirectory(prefix="enchantpeak-mc-data-") as temp_dir:
         data_dir = Path(temp_dir)
         with zipfile.ZipFile(jar) as archive:
