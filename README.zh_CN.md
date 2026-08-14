@@ -21,6 +21,12 @@ Minecraft Fabric 模组，在 JEI/REI 中一键查看钻石与下界合金装备
 
 ---
 
+## 🎬 视频介绍
+
+[▶ 前往 B 站观看 EnchantPeak 介绍视频](https://www.bilibili.com/video/BV1ChgW6vELA/)
+
+---
+
 ## 📸 游戏截图
 
 ![流派方案总览](https://raw.githubusercontent.com/zhaojiedi1992/enchantpeak/main/.github/screenshots/rei-overview.png)

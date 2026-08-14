@@ -21,6 +21,12 @@ A Minecraft Fabric mod that shows **best enchantment combinations** for diamond 
 
 ---
 
+## 🎬 Video
+
+[▶ Watch the EnchantPeak introduction on Bilibili](https://www.bilibili.com/video/BV1ChgW6vELA/)
+
+---
+
 ## 📸 Screenshots
 
 ![Builds overview](https://raw.githubusercontent.com/zhaojiedi1992/enchantpeak/main/.github/screenshots/rei-overview.png)
