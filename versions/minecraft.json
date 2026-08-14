@@ -9,7 +9,7 @@
       "fabric_api_version": "0.77.0+1.18.2",
       "fabric_api_min_version": "0.76.0",
       "use_mojang_mappings": "true",
-      "jei_enabled": "true",
+      "jei_enabled": "false",
       "jei_minecraft_version": "1.18.2",
       "jei_version": "10.6.1.1022",
       "jei_min_version": "10.6.1",
@@ -91,12 +91,12 @@
       "rei_min_version": "16.0",
       "cloth_config_version": "15.0.140",
       "architectury_version": "13.0.11",
-      "emi_version": "1.1.24+1.21.1",
-      "emi_min_version": "1.1.24"
+      "emi_version": "1.1.18+1.21.1",
+      "emi_min_version": "1.1.18"
     },
     "1.21.11": {
       "minecraft_version": "1.21.11",
-      "mc_family": "mc26",
+      "mc_family": "mc2111",
       "fabric_loader_version": "0.18.2",
       "fabric_api_version": "0.141.6+1.21.11",
       "fabric_api_min_version": "0.139.5",
