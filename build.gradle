@@ -86,8 +86,9 @@ dependencies {
         // MC 1.21.x and earlier use official Mojang mappings
         mappings loom.officialMojangMappings()
     } else {
-        // MC 26.x is pre-deobfuscated - use Fabric's special 0.0.0 intermediary (empty mappings layer)
-        mappings "net.fabricmc:intermediary:${minecraft_version}:v2"
+        // MC 26.x is pre-deobfuscated - Fabric publishes a fixed empty
+        // intermediary (version 0.0.0) for these versions, not one per MC version
+        mappings "net.fabricmc:intermediary:0.0.0:v2"
     }
 
     implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
