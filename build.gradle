@@ -66,10 +66,6 @@ sourceSets {
 }
 
 loom {
-    if (!useMojangMappings) {
-        // MC 26.x is unobfuscated - disable intermediate mappings
-        noIntermediateMappings()
-    }
     if (useMojangMappings) {
         // Only create remap configurations for obfuscated Minecraft versions
         createRemapConfigurations(sourceSets[mcFamily])
@@ -87,12 +83,11 @@ dependencies {
 
     // Mappings configuration
     if (useMojangMappings) {
-        // MC 1.21.x uses official Mojang mappings
+        // MC 1.21.x and earlier use official Mojang mappings
         mappings loom.officialMojangMappings()
     } else {
-        // MC 26.x is unobfuscated - use empty layered mappings
-        // This satisfies Loom's requirement for a mappings configuration without actual remapping
-        mappings loom.layered()
+        // MC 26.x is pre-deobfuscated - use Fabric's special 0.0.0 intermediary (empty mappings layer)
+        mappings "net.fabricmc:intermediary:${minecraft_version}:v2"
     }
 
     implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
