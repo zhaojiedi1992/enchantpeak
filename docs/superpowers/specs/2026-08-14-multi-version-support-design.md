@@ -36,6 +36,8 @@
 
 ## 总体架构
 
+**术语定义**：**版本族（Version Family）**：一组共享相同 Minecraft API 的版本集合。例如 mc120 = {1.20.1, 1.20.4, 1.20.6}，这些版本使用相同的附魔 API 和物品注册方式，可以共享一套实现代码。
+
 ```
 src/
   main/java/com/zhaojiedi1992/enchantpeak/
@@ -68,6 +70,39 @@ src/
 3. **版本族 source set 内的类名完全对齐。** 每个族都提供同名同包的 `EnchantmentData` / `JeiEnchantPlugin` / `ReiEnchantPlugin` / `EmiEnchantPlugin`，因此一份 `fabric.mod.json` 对所有版本生效，entrypoint 类名无需参数化。
 
 4. **一次构建只激活一个版本族。** `build.gradle` 根据 `versions/minecraft.json` 中目标条目的 `mc_family` 字段把对应 source set 挂进编译和 jar；不激活的族完全不参与编译，天然避免类冲突。
+
+### EnchantPeakMod 调用流程
+
+**问题**：`EnchantPeakMod` 如何在运行时调用版本族特定的 `EnchantStacks` 实现？
+
+**解决方案**：利用 Gradle 的 source set 合并机制，每个版本族的 `EnchantStacks` 类具有相同的全限定类名（`com.zhaojiedi1992.enchantpeak.compat.EnchantStacks`），编译时只有当前激活的版本族 source set 参与构建，最终 jar 中只包含一个 `EnchantStacks` 实现。
+
+**调用示例**：
+```java
+// EnchantPeakMod.java（版本无关）
+import com.zhaojiedi1992.enchantpeak.compat.EnchantStacks;
+import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
+
+public class EnchantPeakMod implements ModInitializer {
+    @Override
+    public void onInitialize() {
+        // EnchantmentData 和 EnchantStacks 在编译时根据 mc_family 解析到对应版本族实现
+        List<ItemEnchantRecord> records = EnchantmentData.getAllRecords(registryAccess);
+        
+        // 使用当前版本族的 EnchantStacks
+        ItemStack stack = new ItemStack(Items.DIAMOND_SWORD);
+        EnchantGroup group = records.get(0).groups().get(0);
+        EnchantStacks.applyTo(stack, group);  // 内部实现根据版本族不同（NBT vs DataComponent）
+    }
+}
+```
+
+**JEI/REI/EMI 插件入口**同理：`fabric.mod.json` 中写死类名 `com.zhaojiedi1992.enchantpeak.jei.JeiEnchantPlugin`，运行时加载的是当前构建版本对应的实现。
+
+**关键点**：
+1. `EnchantPeakMod` 不感知版本差异，只调用接口相同的静态方法
+2. 各版本族的 `EnchantStacks.applyTo()` 方法签名必须完全一致：`static void applyTo(ItemStack stack, EnchantGroup group)`
+3. 内部实现根据版本使用不同 API（mc26/mc121 用 `stack.enchant()`，mc118-120 用 `EnchantmentHelper.setEnchantments()`）
 
 ## Gradle 构建组织
 
@@ -155,16 +190,19 @@ plugins {
     id 'fabric-loom' version '1.8-SNAPSHOT'
 }
 
+// ====== 版本条件判断集中定义 ======
+def mcVersion = project.minecraft_version
+def is26x = mcVersion.startsWith('26.') || mcVersion == '1.21.11'
+def is121x = mcVersion.startsWith('1.21')
+def javaVersion = is26x ? 25 : (is121x ? 21 : 17)  // 来自 minecraft.json 但也可推导
+def mcFamily = project.ext.mc_family  // 来自 versions/minecraft.json
+
 repositories {
     maven { url 'https://maven.blamejared.com' }       // JEI
     maven { url 'https://maven.shedaniel.me/' }        // REI
     maven { url 'https://maven.architectury.dev/' }    // Architectury
     maven { url 'https://repo.sleeping.town' }         // EMI（原 maven.terraformersmc.com）
 }
-
-def mcFamily = project.ext.mc_family
-def mcVer = project.minecraft_version
-def is26x = mcVer.startsWith('26.') || mcVer == '1.21.11'
 
 sourceSets {
     create(mcFamily) {
@@ -187,7 +225,7 @@ loom {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${mcVer}"
+    minecraft "com.mojang:minecraft:${mcVersion}"
     
     if (is26x) {
         implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
@@ -329,7 +367,7 @@ processResources {
 
 ### mc119（新写）
 
-同 mc120，附魔实例模式；1.19.4 起提供 EMI 插件，1.19.2 条目不启用 EMI。JEI v11 API。无 Swift Sneak 差异——Swift Sneak 是 1.19 加入，保留；1.19.0 才有，1.19.x 全族一致。
+同 mc120，附魔实例模式；1.19.4 起提供 EMI 插件，1.19.2 条目不启用 EMI。JEI v11 API。Swift Sneak 自 1.19.0 加入，mc119 全族保留。
 
 ### mc118（新写）
 
@@ -345,6 +383,17 @@ processResources {
 
 ## 构建与发布
 
+**实施顺序（PR 拆分）**：
+
+1. **PR1**：common 层重构（EnchantGroup 纯数据化 + EnchantEntry/ItemEnchantRecord 零 MC API 依赖化）
+2. **PR2**：mc26 迁移（现有代码移入 `src/mc26/java/` + 新增 `EnchantStacks` + EMI 插件）
+3. **PR3**：mc121 新增（从 mc26 复制改造，去掉 Spear/Copper 工具）
+4. **PR4**：mc120 新增（切换到 `BuiltInRegistries` 实例模式 + NBT 路径）
+5. **PR5**：mc119 新增（继承 mc120，增加 1.19.4 EMI 条件支持）
+6. **PR6**：mc118 新增（去掉 Swift Sneak，无 EMI）
+7. **PR7**：CI 和文档（`build_all_versions.sh` + README 版本矩阵）
+
+**构建脚本**：
 - `scripts/build_all_versions.sh` 遍历 `minecraft.json` 全部条目，逐条 `-Ptarget_mc=X clean build`，产物按现有命名 `enchantpeak-mc<version>-<mod_version>.jar` 输出到 `dist/`。
 - README 增加版本支持矩阵表格（MC 版本 × JEI/REI/EMI 可用性）。
 - 版本号策略：本次重构后 mod_version 升至 1.1.0。
