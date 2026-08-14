@@ -2,6 +2,7 @@ package com.zhaojiedi1992.enchantpeak.rei;
 
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
+import com.zhaojiedi1992.enchantpeak.compat.EnchantStacks;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.display.DisplaySerializer;
@@ -34,7 +35,8 @@ public class ReiEnchantDisplay implements Display {
         // 输出：每个流派附魔后的物品
         List<EntryIngredient> outs = new ArrayList<>();
         for (EnchantGroup group : record.groups()) {
-            ItemStack enchanted = group.applyTo(new ItemStack(record.item()));
+            ItemStack enchanted = new ItemStack(record.item());
+            EnchantStacks.applyTo(enchanted, group);
             outs.add(EntryIngredient.of(EntryStacks.of(enchanted)));
         }
         this.outputs = outs;

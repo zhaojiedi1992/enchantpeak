@@ -2,6 +2,7 @@ package com.zhaojiedi1992.enchantpeak.jei;
 
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
+import com.zhaojiedi1992.enchantpeak.compat.EnchantStacks;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -65,11 +66,12 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
         for (EnchantGroup group : recipe.groups()) {
             // 使用 OUTPUT 而非 RENDER_ONLY：JEI 搜索/recipe lookup 会忽略 RENDER_ONLY 槽位，
             // 导致按附魔后的物品搜索时完全找不到结果。OUTPUT 槽位会正常参与搜索索引。
-            ItemStack enchanted = group.applyTo(new ItemStack(recipe.item()));
+            ItemStack enchanted = new ItemStack(recipe.item());
+            EnchantStacks.applyTo(enchanted, group);
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
                     .add(enchanted)
                     .addRichTooltipCallback((slotView, tooltip) ->
-                            tooltip.add(Component.literal("§6▶ ").append(group.displayName())));
+                            tooltip.add(Component.literal("§6▶ ").append(EnchantStacks.displayName(group))));
             x += SLOT_SIZE + SLOT_GAP;
         }
     }

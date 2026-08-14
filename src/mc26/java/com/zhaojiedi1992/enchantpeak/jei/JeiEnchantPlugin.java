@@ -3,6 +3,7 @@ package com.zhaojiedi1992.enchantpeak.jei;
 import com.zhaojiedi1992.enchantpeak.EnchantPeakMod;
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
+import com.zhaojiedi1992.enchantpeak.compat.EnchantStacks;
 import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -50,8 +51,8 @@ public class JeiEnchantPlugin implements IModPlugin {
         for (ItemEnchantRecord record : records) {
             for (EnchantGroup group : record.groups()) {
                 List<Component> lines = new ArrayList<>();
-                lines.add(group.displayHeading());
-                lines.addAll(group.enchantmentLines());
+                lines.add(EnchantStacks.displayHeading(group));
+                lines.addAll(EnchantStacks.enchantmentLines(group));
                 registration.addItemStackInfo(
                         new ItemStack(record.item()),
                         lines.toArray(Component[]::new)

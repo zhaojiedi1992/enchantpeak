@@ -584,4 +584,8 @@ public class EnchantmentData {
     public List<ItemEnchantRecord> getAllRecords() {
         return records;
     }
+
+    public static List<ItemEnchantRecord> getAllRecords(RegistryAccess registryAccess) {
+        return new EnchantmentData(registryAccess).getAllRecords();
+    }
 }

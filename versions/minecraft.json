@@ -3,6 +3,7 @@
   "targets": {
     "1.21.11": {
       "minecraft_version": "1.21.11",
+      "mc_family": "mc26",
       "fabric_loader_version": "0.18.2",
       "fabric_api_version": "0.141.6+1.21.11",
       "fabric_api_min_version": "0.139.5",
@@ -15,10 +16,13 @@
       "rei_version": "21.11.816",
       "rei_min_version": "21.11",
       "cloth_config_version": "21.11.151",
-      "architectury_version": "19.0.1"
+      "architectury_version": "19.0.1",
+      "emi_version": "1.1.18+1.21.11",
+      "emi_min_version": "1.1.18"
     },
     "26.1": {
       "minecraft_version": "26.1",
+      "mc_family": "mc26",
       "fabric_loader_version": "0.19.2",
       "fabric_api_version": "0.145.1+26.1",
       "fabric_api_min_version": "0.145.1",
@@ -31,10 +35,13 @@
       "rei_version": "26.1.819",
       "rei_min_version": "26.1",
       "cloth_config_version": "26.1.154",
-      "architectury_version": "20.0.6"
+      "architectury_version": "20.0.6",
+      "emi_version": "1.1.18+26.1",
+      "emi_min_version": "1.1.18"
     },
     "26.1.1": {
       "minecraft_version": "26.1.1",
+      "mc_family": "mc26",
       "fabric_loader_version": "0.19.2",
       "fabric_api_version": "0.145.4+26.1.1",
       "fabric_api_min_version": "0.145.4",
@@ -47,10 +54,13 @@
       "rei_version": "26.1.819",
       "rei_min_version": "26.1",
       "cloth_config_version": "26.1.154",
-      "architectury_version": "20.0.6"
+      "architectury_version": "20.0.6",
+      "emi_version": "1.1.18+26.1.1",
+      "emi_min_version": "1.1.18"
     },
     "26.1.2": {
       "minecraft_version": "26.1.2",
+      "mc_family": "mc26",
       "fabric_loader_version": "0.19.2",
       "fabric_api_version": "0.155.2+26.1.2",
       "fabric_api_min_version": "0.155.2",
@@ -63,10 +73,13 @@
       "rei_version": "26.1.819",
       "rei_min_version": "26.1",
       "cloth_config_version": "26.1.154",
-      "architectury_version": "20.0.6"
+      "architectury_version": "20.0.6",
+      "emi_version": "1.1.18+26.1.2",
+      "emi_min_version": "1.1.18"
     },
     "26.2": {
       "minecraft_version": "26.2",
+      "mc_family": "mc26",
       "fabric_loader_version": "0.19.3",
       "fabric_api_version": "0.157.0+26.2",
       "fabric_api_min_version": "0.157.0",
@@ -79,7 +92,9 @@
       "rei_version": "26.2.820",
       "rei_min_version": "26.2",
       "cloth_config_version": "26.2.155",
-      "architectury_version": "21.0.7"
+      "architectury_version": "21.0.7",
+      "emi_version": "1.1.18+26.2",
+      "emi_min_version": "1.1.18"
     }
   }
 }

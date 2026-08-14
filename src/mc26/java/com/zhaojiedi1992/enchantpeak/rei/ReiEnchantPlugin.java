@@ -3,6 +3,7 @@ package com.zhaojiedi1992.enchantpeak.rei;
 import com.zhaojiedi1992.enchantpeak.EnchantPeakMod;
 import com.zhaojiedi1992.enchantpeak.common.EnchantGroup;
 import com.zhaojiedi1992.enchantpeak.common.ItemEnchantRecord;
+import com.zhaojiedi1992.enchantpeak.compat.EnchantStacks;
 import com.zhaojiedi1992.enchantpeak.data.EnchantmentData;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
@@ -55,9 +56,9 @@ public class ReiEnchantPlugin implements REIClientPlugin {
                 for (EnchantGroup group : record.groups()) {
                     DefaultInformationDisplay info = DefaultInformationDisplay.createFromEntries(
                             EntryIngredients.of(record.item()),
-                            group.displayHeading()
+                            EnchantStacks.displayHeading(group)
                     );
-                    for (Component line : group.enchantmentLines()) {
+                    for (Component line : EnchantStacks.enchantmentLines(group)) {
                         info.line(line);
                     }
                     registry.add(info);
@@ -89,9 +90,9 @@ public class ReiEnchantPlugin implements REIClientPlugin {
                     ItemStack base = new ItemStack(record.item());
                     // 真实附魔：原版会自动在 tooltip 中渲染附魔词条（时运 III 等），
                     // 不再手动写 Lore 重复这些信息，保持原生 tooltip 展示，避免鼠标悬停时内容重复
-                    ItemStack enchanted = group.applyTo(base);
+                    EnchantStacks.applyTo(base, group);
 
-                    EntryStack<?> entryStack = EntryStacks.of(enchanted);
+                    EntryStack<?> entryStack = EntryStacks.of(base);
                     registry.addEntry(entryStack);
                     count++;
                 }

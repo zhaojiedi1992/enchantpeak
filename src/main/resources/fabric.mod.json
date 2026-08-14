@@ -21,6 +21,9 @@
     ],
     "jei_mod_plugin": [
       "com.zhaojiedi1992.enchantpeak.jei.JeiEnchantPlugin"
+    ],
+    "emi": [
+      "com.zhaojiedi1992.enchantpeak.emi.EmiEnchantPlugin"
     ]
   },
   "depends": {
@@ -31,6 +34,7 @@
   },
   "suggests": {
     "jei": ">=${jei_min_version}",
-    "roughlyenoughitems": ">=${rei_min_version}"
+    "roughlyenoughitems": ">=${rei_min_version}",
+    "emi": ">=${emi_min_version}"
   }
 }
