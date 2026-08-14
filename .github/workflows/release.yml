@@ -103,8 +103,12 @@ jobs:
       - name: Read game versions for ${{ matrix.minecraft }}
         id: game-versions
         run: |
-          VERSIONS=$(jq -r '.targets["${{ matrix.minecraft }}"].game_versions | join(" ")' versions/minecraft.json)
-          echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
+          VERSIONS=$(jq -r '.targets["${{ matrix.minecraft }}"].game_versions | join("\n")' versions/minecraft.json)
+          {
+            echo "versions<<GAME_VERSIONS_EOF"
+            echo "$VERSIONS"
+            echo "GAME_VERSIONS_EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Publish Minecraft ${{ matrix.minecraft }} to Modrinth
         uses: Kira-NT/mc-publish@v3
