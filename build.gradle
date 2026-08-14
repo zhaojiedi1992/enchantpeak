@@ -29,13 +29,11 @@ static String cap(String s) { s.isEmpty() ? s : s.substring(0, 1).toUpperCase() 
 group = "com.${project.mod_author}"
 
 base {
-    archivesName = "${project.mod_id}-fabric"
+    // 使用 jar_name_suffix（范围标识）而非 jar_mc_version（簇代表版本）
+    // 例如：构建用 1.19.2，suffix 为 "1.19.2-1.19.4"，jar 名变成 enchantpeak-fabric-1.0.11+mc1.19.2-1.19.4.jar
+    def jarSuffix = project.hasProperty('jar_name_suffix') ? project.jar_name_suffix : project.minecraft_version
+    archivesName = "${project.mod_id}-fabric-${project.mod_version}+mc${jarSuffix}"
 }
-
-// jar 名对齐社区规范（Sodium/Fabric API 风格）：<modid>-fabric-<modver>+mc<cluster>.jar
-// jar_mc_version 是簇代表版本（构建用 1.19.2 -> jar 名用 1.19；构建用 1.21.11 -> 用 1.21.9）
-def jarMcVer = project.hasProperty('jar_mc_version') ? project.jar_mc_version : project.minecraft_version
-version = project.mod_version + '+mc' + jarMcVer
 
 repositories {
     maven {
