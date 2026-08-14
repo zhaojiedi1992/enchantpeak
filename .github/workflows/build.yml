@@ -18,27 +18,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read supported Minecraft versions
+      - name: Read supported Minecraft versions and Java requirements
         id: matrix
-        run: echo "value=$(jq -c '.targets | keys' versions/minecraft.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          MATRIX=$(jq -c '.targets | to_entries | map({minecraft: .key, java: (.value.java_version | tonumber)})' versions/minecraft.json)
+          echo "value=${MATRIX}" >> "$GITHUB_OUTPUT"
 
   build:
     needs: versions
     strategy:
       fail-fast: false
       matrix:
-        minecraft: ${{ fromJSON(needs.versions.outputs.matrix) }}
+        include: ${{ fromJSON(needs.versions.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 25
+      - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
+          java-version: ${{ matrix.java }}
           distribution: 'temurin'
 
+      # Gradle toolchain resolves the exact JDK each target needs
+      # (17 for 1.18-1.20, 21 for 1.21.x, 25 for 26.x); installing
+      # both the runner JDK and letting toolchain auto-provision covers all.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 

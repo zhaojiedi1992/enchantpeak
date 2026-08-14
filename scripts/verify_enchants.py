@@ -48,6 +48,15 @@ def main():
     )
     args = parser.parse_args()
 
+    # Enchantments only became data-driven (bundled datapack) in 1.21.
+    # Older versions hardcode enchantments in code, where the compiler is
+    # the verifier: referencing a nonexistent Enchantments constant fails
+    # the build. Skip datapack verification for pre-1.21 targets.
+    pre_121 = not (args.minecraft_version.startswith("1.21") or args.minecraft_version.startswith("26."))
+    if pre_121:
+        print(f"{args.minecraft_version}: 附魔为代码内建（1.21 前非数据驱动），跳过 datapack 校验，以编译器为校验")
+        return 0
+
     configured_data = os.environ.get("MC_DATA_DIR")
     if configured_data:
         return run_verifier(Path(configured_data).resolve())
