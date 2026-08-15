@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 1.0.16
+
+Released on 2026-08-16.
+
+### Highlights
+
+Code-review fixes + data completeness for all legacy versions.
+
+- Fixed: enchantment tooltips now show 'Efficiency V' not 'EfficiencyV' (missing
+  space regression in v1.0.15 affected all 1.21+ and 26.x builds, both loaders)
+- Fixed: push.sh tag push failures were silently ignored (grep pipe inverted the
+  exit code); now aborts loudly with recovery hint
+- Fixed: push.sh build failure after version bump left dirty working tree; now
+  auto-reverts gradle.properties and CHANGELOG.md
+- Fixed: old families (1.18.2-1.20.6) were missing flint_and_steel and 9 curse-only
+  items (carved pumpkin, compass, all 7 head items); they are now registered and
+  verified by the JVM deep test in all four old families
+- Fixed: axe data lines in all 13 family copies had 40-space indentation instead
+  of 20-space (cosmetic, no functional impact)
+
 - Fixed: release metadata now uses the correct Java version per target (was hardcoded
   Java 25/Java 21 for all Fabric/NeoForge uploads — Java 17/21 players couldn't see
   the 1.18.2-1.21.x files on Modrinth)
@@ -27,6 +47,7 @@
   the release
 - Cleanup: removed dead EnchantEntry.levelString(), stale forge maven entry,
   empty emi directories
+
 
 ## 1.0.15
 
