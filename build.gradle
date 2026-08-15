@@ -101,7 +101,7 @@ dependencies {
     }
 
     implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    // fabric-api：mod 本身不直接引用；REI/JEI 才需要它（fabric.mod.json 已声明 suggests）
 
     // JEI - compileOnly for version-specific source set，运行时可选
     // Obfuscated targets (1.21.x): Loom's createRemapConfigurations() generates

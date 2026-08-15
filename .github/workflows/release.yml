@@ -178,6 +178,7 @@ jobs:
             echo "versions<<GAME_VERSIONS_EOF"
             echo "$VERSIONS"
             echo "GAME_VERSIONS_EOF"
+            echo "java=Java $(jq -r '.["${{ matrix.target }}"].java' neoforge/targets.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Extract changelog for ${{ needs.release-info.outputs.version }}
@@ -198,7 +199,7 @@ jobs:
           changelog-file: .gh-changelog.md
           loaders: neoforge
           game-versions: ${{ steps.game-versions.outputs.versions }}
-          java: Java 21
+          java: ${{ steps.game-versions.outputs.java }}
           dependencies: |
             jei(optional){modrinth:u6dRKJwZ}
 
@@ -214,7 +215,7 @@ jobs:
           changelog-file: .gh-changelog.md
           loaders: neoforge
           game-versions: ${{ steps.game-versions.outputs.versions }}
-          java: Java 21
+          java: ${{ steps.game-versions.outputs.java }}
           dependencies: |
             jei(optional){curseforge:238222}
 
@@ -243,6 +244,7 @@ jobs:
             echo "versions<<GAME_VERSIONS_EOF"
             echo "$VERSIONS"
             echo "GAME_VERSIONS_EOF"
+            echo "java=Java $(jq -r '.targets["${{ matrix.minecraft }}"].java_version' versions/minecraft.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Extract changelog for ${{ needs.release-info.outputs.version }}
@@ -265,9 +267,9 @@ jobs:
             fabric
             quilt
           game-versions: ${{ steps.game-versions.outputs.versions }}
-          java: Java 25
+          java: ${{ steps.game-versions.outputs.java }}
           dependencies: |
-            fabric-api(required){modrinth:P7dR8mSH}
+            fabric-api(optional){modrinth:P7dR8mSH}
             rei(optional){modrinth:nfn13YXA}
             jei(optional){modrinth:u6dRKJwZ}
 
@@ -285,8 +287,8 @@ jobs:
             fabric
             quilt
           game-versions: ${{ steps.game-versions.outputs.versions }}
-          java: Java 25
+          java: ${{ steps.game-versions.outputs.java }}
           dependencies: |
-            fabric-api(required){curseforge:306612}
+            fabric-api(optional){curseforge:306612}
             rei(optional){curseforge:310111}
             jei(optional){curseforge:238222}
