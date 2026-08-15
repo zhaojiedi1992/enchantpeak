@@ -39,22 +39,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21 (Gradle daemon; toolchain provisions target JDK)
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Set up JDK 25 (for MC 26.x targets)
+      # 25 先装（供 toolchain 编译 MC 26.x），21 后装（成为默认 JAVA_HOME，
+      # Gradle 8.14 daemon 不支持 Java 25，必须用 21 跑）
+      - name: Set up JDK 25 (toolchain target for MC 26.x)
         uses: actions/setup-java@v4
         with:
           java-version: 25
           distribution: 'temurin'
 
+      - name: Set up JDK 21 (Gradle daemon)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          build-root-directory: neoforge
+          gradle-home-cache-includes: |
+            caches/neoformruntime
 
       - name: Build NeoForge target ${{ matrix.target }}
         working-directory: neoforge
