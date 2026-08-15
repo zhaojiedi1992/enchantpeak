@@ -34,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "Blast Protection + Frost Walker",
   "enchantpeak.build.projectile_protection_depth": "Projectile Protection + Depth Strider",
   "enchantpeak.build.projectile_protection_frost": "Projectile Protection + Frost Walker",
-  "enchantpeak.build.no_positive_enchantments": "No Non-Curse Enchantments"
+  "enchantpeak.build.no_positive_enchantments": "No Non-Curse Enchantments",
+  "enchantpeak.build.knockback": "Knockback Build",
+  "enchantpeak.build.fire_aspect": "Fire Aspect Build",
+  "enchantpeak.build.wind_burst": "Wind Burst Build",
+  "enchantpeak.build.axe_fortune": "Fortune Build",
+  "enchantpeak.build.axe_sharpness": "Sharpness Build",
+  "enchantpeak.build.axe_silk": "Silk Touch Build"
 }

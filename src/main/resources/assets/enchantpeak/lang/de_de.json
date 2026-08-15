@@ -34,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "Explosionsschutz + Eisgänger",
   "enchantpeak.build.projectile_protection_depth": "Geschossschutz + Wasserläufer",
   "enchantpeak.build.projectile_protection_frost": "Geschossschutz + Eisgänger",
-  "enchantpeak.build.no_positive_enchantments": "Keine Verzauberungen ohne Fluch"
+  "enchantpeak.build.no_positive_enchantments": "Keine Verzauberungen ohne Fluch",
+  "enchantpeak.build.knockback": "Rückstoß-Build",
+  "enchantpeak.build.fire_aspect": "Brand-Aspekt-Build",
+  "enchantpeak.build.wind_burst": "Windstoß-Build",
+  "enchantpeak.build.axe_fortune": "Glück-Build",
+  "enchantpeak.build.axe_sharpness": "Schärfe-Build",
+  "enchantpeak.build.axe_silk": "Seidenberührung-Build"
 }

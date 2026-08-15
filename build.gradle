@@ -122,6 +122,11 @@ dependencies {
     "${modCfg}"("me.shedaniel:RoughlyEnoughItems-default-plugin-fabric:${project.rei_version}")
     "${modCfg}"("dev.architectury:architectury-fabric:${project.architectury_version}")
 
+    // 测试需要看到当前版本族的类与 Minecraft 依赖
+    testImplementation platform('org.junit:junit-bom:5.12.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation sourceSets[mcFamily].output
 }
 
 // MC 26.x is pre-deobfuscated (empty mappings) - sources jar has no "named"
@@ -163,6 +168,12 @@ tasks.register('printMinecraftVersion') {
     doLast {
         println project.minecraft_version
     }
+}
+
+test {
+    useJUnitPlatform()
+    // LangCoverageTest 通过该属性定位当前版本族的源码目录
+    systemProperty 'enchantpeak.familyDir', "src/${mcFamily}/java"
 }
 
 tasks.withType(JavaCompile).configureEach {

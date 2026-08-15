@@ -14,7 +14,7 @@ mkdir -p dist
 # ===== Fabric：根项目构建 =====
 for minecraft_version in "${versions[@]}"; do
     echo "==> Building Minecraft ${minecraft_version} (fabric)"
-    ./gradlew clean build --no-daemon -Ptarget_mc="${minecraft_version}"
+    ./gradlew clean build test --no-daemon -Ptarget_mc="${minecraft_version}"
     python3 scripts/verify_enchants.py --minecraft-version "${minecraft_version}"
 
     jar_path=$(find build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -print -quit)
@@ -59,4 +59,8 @@ done
 cd ..
 
 echo "NeoForge 全部目标构建通过：${neoforge_versions[*]}"
+
+# ===== 端到端校验：逐 jar 对照版本矩阵检查元数据 =====
+python3 scripts/verify_jars.py
+
 echo "全部完成：Fabric ${#versions[@]} 个 + NeoForge ${#neoforge_versions[@]} 个目标，产物在 dist/"

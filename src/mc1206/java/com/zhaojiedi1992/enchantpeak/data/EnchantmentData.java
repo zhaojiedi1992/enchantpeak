@@ -64,8 +64,8 @@ public class EnchantmentData {
                 Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
         for (Item item : pickaxes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("时运", List.of(e(Enchantments.FORTUNE, 3), e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("精准采集", List.of(e(Enchantments.SILK_TOUCH, 1), e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("fortune", List.of(e(Enchantments.FORTUNE, 3), e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("silk_touch", List.of(e(Enchantments.SILK_TOUCH, 1), e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -75,8 +75,8 @@ public class EnchantmentData {
                 Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE);
         for (Item item : axes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("伐木", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.FORTUNE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("战斗", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("axe_fortune", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.FORTUNE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_sharpness", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -86,7 +86,7 @@ public class EnchantmentData {
                 Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL);
         for (Item item : shovels) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("挖掘", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1), e(Enchantments.SILK_TOUCH, 1)))
+                    new EnchantGroup("axe_silk", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1), e(Enchantments.SILK_TOUCH, 1)))
             )));
         }
     }
@@ -96,7 +96,7 @@ public class EnchantmentData {
                 Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE);
         for (Item item : hoes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("耕作", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("full_build", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -106,11 +106,11 @@ public class EnchantmentData {
                 Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD);
         for (Item item : swords) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("锋利", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("亡灵杀手", List.of(e(Enchantments.SMITE, 5), e(Enchantments.LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("节肢杀手", List.of(e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("击退", List.of(e(Enchantments.KNOCKBACK, 2), e(Enchantments.SHARPNESS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("火焰附加", List.of(e(Enchantments.FIRE_ASPECT, 2), e(Enchantments.SHARPNESS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("sharpness", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("smite", List.of(e(Enchantments.SMITE, 5), e(Enchantments.LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("bane", List.of(e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("knockback", List.of(e(Enchantments.KNOCKBACK, 2), e(Enchantments.SHARPNESS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_aspect", List.of(e(Enchantments.FIRE_ASPECT, 2), e(Enchantments.SHARPNESS, 5), e(Enchantments.LOOTING, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -120,22 +120,22 @@ public class EnchantmentData {
 
     private void buildBows() {
         records.add(new ItemEnchantRecord(Items.BOW, List.of(
-                new EnchantGroup("无限", List.of(e(Enchantments.INFINITY, 1), e(Enchantments.POWER, 5), e(Enchantments.FLAME, 1), e(Enchantments.PUNCH, 2), e(Enchantments.UNBREAKING, 3))),
-                new EnchantGroup("修补", List.of(e(Enchantments.MENDING, 1), e(Enchantments.POWER, 5), e(Enchantments.FLAME, 1), e(Enchantments.PUNCH, 2), e(Enchantments.UNBREAKING, 3)))
+                new EnchantGroup("infinity", List.of(e(Enchantments.INFINITY, 1), e(Enchantments.POWER, 5), e(Enchantments.FLAME, 1), e(Enchantments.PUNCH, 2), e(Enchantments.UNBREAKING, 3))),
+                new EnchantGroup("mending", List.of(e(Enchantments.MENDING, 1), e(Enchantments.POWER, 5), e(Enchantments.FLAME, 1), e(Enchantments.PUNCH, 2), e(Enchantments.UNBREAKING, 3)))
         )));
     }
 
     private void buildCrossbows() {
         records.add(new ItemEnchantRecord(Items.CROSSBOW, List.of(
-                new EnchantGroup("穿透", List.of(e(Enchantments.PIERCING, 4), e(Enchantments.QUICK_CHARGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                new EnchantGroup("多重射击", List.of(e(Enchantments.MULTISHOT, 1), e(Enchantments.QUICK_CHARGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("piercing", List.of(e(Enchantments.PIERCING, 4), e(Enchantments.QUICK_CHARGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                new EnchantGroup("multishot", List.of(e(Enchantments.MULTISHOT, 1), e(Enchantments.QUICK_CHARGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildTridents() {
         records.add(new ItemEnchantRecord(Items.TRIDENT, List.of(
-                new EnchantGroup("忠诚+引雷", List.of(e(Enchantments.LOYALTY, 3), e(Enchantments.CHANNELING, 1), e(Enchantments.IMPALING, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                new EnchantGroup("激流", List.of(e(Enchantments.RIPTIDE, 3), e(Enchantments.IMPALING, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("loyalty", List.of(e(Enchantments.LOYALTY, 3), e(Enchantments.CHANNELING, 1), e(Enchantments.IMPALING, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                new EnchantGroup("riptide", List.of(e(Enchantments.RIPTIDE, 3), e(Enchantments.IMPALING, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
@@ -146,10 +146,10 @@ public class EnchantmentData {
                 Items.GOLDEN_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
         for (Item item : helmets) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("保护", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("火焰保护", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("爆炸保护", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("弹射物保护", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("protection", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -159,10 +159,10 @@ public class EnchantmentData {
                 Items.GOLDEN_CHESTPLATE, Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE);
         for (Item item : chestplates) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("保护", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("火焰保护", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("爆炸保护", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("弹射物保护", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("protection", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -172,10 +172,10 @@ public class EnchantmentData {
                 Items.GOLDEN_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
         for (Item item : leggings) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("保护", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("火焰保护", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("爆炸保护", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("弹射物保护", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("protection", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -185,9 +185,9 @@ public class EnchantmentData {
                 Items.GOLDEN_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
         for (Item item : boots) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("保护+深海探索者", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FEATHER_FALLING, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("保护+冰霜行者", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FEATHER_FALLING, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("火焰保护+深海探索者", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FEATHER_FALLING, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("protection_depth", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FEATHER_FALLING, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("protection_frost", List.of(e(Enchantments.PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FEATHER_FALLING, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection_depth", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FEATHER_FALLING, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -196,43 +196,43 @@ public class EnchantmentData {
 
     private void buildShields() {
         records.add(new ItemEnchantRecord(Items.SHIELD, List.of(
-                new EnchantGroup("通用", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildElytra() {
         records.add(new ItemEnchantRecord(Items.ELYTRA, List.of(
-                new EnchantGroup("通用", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildCarrotStick() {
         records.add(new ItemEnchantRecord(Items.CARROT_ON_A_STICK, List.of(
-                new EnchantGroup("通用", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildWarpedFungusStick() {
         records.add(new ItemEnchantRecord(Items.WARPED_FUNGUS_ON_A_STICK, List.of(
-                new EnchantGroup("通用", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildFishingRods() {
         records.add(new ItemEnchantRecord(Items.FISHING_ROD, List.of(
-                new EnchantGroup("钓鱼", List.of(e(Enchantments.LUCK_OF_THE_SEA, 3), e(Enchantments.LURE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.LUCK_OF_THE_SEA, 3), e(Enchantments.LURE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildBrushes() {
         records.add(new ItemEnchantRecord(Items.BRUSH, List.of(
-                new EnchantGroup("通用", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 
     private void buildShears() {
         records.add(new ItemEnchantRecord(Items.SHEARS, List.of(
-                new EnchantGroup("通用", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                new EnchantGroup("full_build", List.of(e(Enchantments.EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
     }
 

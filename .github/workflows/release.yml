@@ -56,6 +56,11 @@ jobs:
       - name: Verify Minecraft ${{ matrix.minecraft }} enchantment data
         run: python3 scripts/verify_enchants.py --minecraft-version ${{ matrix.minecraft }}
 
+      - name: Verify Minecraft ${{ matrix.minecraft }} jar metadata
+        run: |
+          mkdir -p dist && cp build/libs/*.jar dist/ && rm -f dist/*-sources.jar
+          python3 scripts/verify_jars.py --dist dist
+
       - name: Upload Minecraft ${{ matrix.minecraft }} jar
         uses: actions/upload-artifact@v4
         with:
@@ -133,6 +138,11 @@ jobs:
       - name: Build NeoForge target ${{ matrix.target }}
         working-directory: neoforge
         run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
+
+      - name: Verify NeoForge ${{ matrix.target }} jar metadata
+        run: |
+          mkdir -p dist && cp neoforge/build/libs/*.jar dist/ && rm -f dist/*-sources.jar
+          python3 scripts/verify_jars.py --dist dist
 
       - name: Upload NeoForge ${{ matrix.target }} jar
         uses: actions/upload-artifact@v4

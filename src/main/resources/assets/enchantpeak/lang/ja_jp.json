@@ -34,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "爆発耐性 + 氷渡り",
   "enchantpeak.build.projectile_protection_depth": "飛び道具耐性 + 水中歩行",
   "enchantpeak.build.projectile_protection_frost": "飛び道具耐性 + 氷渡り",
-  "enchantpeak.build.no_positive_enchantments": "呪い以外のエンチャントなし"
+  "enchantpeak.build.no_positive_enchantments": "呪い以外のエンチャントなし",
+  "enchantpeak.build.knockback": "ノックバック構成",
+  "enchantpeak.build.fire_aspect": "火の玉構成",
+  "enchantpeak.build.wind_burst": "突風構成",
+  "enchantpeak.build.axe_fortune": "幸運構成",
+  "enchantpeak.build.axe_sharpness": "鋭さ構成",
+  "enchantpeak.build.axe_silk": "糸玩法構成"
 }

@@ -2,7 +2,6 @@
   "enchantpeak.jei.category.title": "最强附魔方案",
   "enchantpeak.rei.category.title": "最强附魔方案",
   "enchantpeak.jei.info": "点击查看最强附魔方案",
-
   "enchantpeak.build.fortune": "时运流",
   "enchantpeak.build.silk_touch": "精准流",
   "enchantpeak.build.axe_fortune_sharpness": "时运流·锋利",
@@ -35,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "爆炸保护流·冰霜",
   "enchantpeak.build.projectile_protection_depth": "弹射物保护流·深海",
   "enchantpeak.build.projectile_protection_frost": "弹射物保护流·冰霜",
-  "enchantpeak.build.no_positive_enchantments": "无非诅咒附魔"
+  "enchantpeak.build.no_positive_enchantments": "无非诅咒附魔",
+  "enchantpeak.build.knockback": "击退流",
+  "enchantpeak.build.fire_aspect": "火焰附加流",
+  "enchantpeak.build.wind_burst": "风爆流",
+  "enchantpeak.build.axe_fortune": "时运流",
+  "enchantpeak.build.axe_sharpness": "锋利流",
+  "enchantpeak.build.axe_silk": "精准流"
 }
