@@ -28,18 +28,24 @@ static String cap(String s) { s.isEmpty() ? s : s.substring(0, 1).toUpperCase() 
 
 group = "com.${project.mod_author}"
 
+// 使用 jar_name_suffix（范围标识）而非 jar_mc_version（簇代表版本）：
+// 例如：构建用 1.19.2，suffix 为 "1.19.2-1.19.4"，jar 名与 mod 元数据版本均为
+// enchantpeak-fabric-1.0.14+mc1.19.2-1.19.4（社区命名规范）
+def jarSuffix = project.hasProperty('jar_name_suffix') ? project.jar_name_suffix : project.minecraft_version
+
+// project.version 未赋值时 fabric.mod.json 的 ${version} 会展开成 "unspecified"
+version = "${project.mod_version}+mc${jarSuffix}"
+
 base {
-    // 使用 jar_name_suffix（范围标识）而非 jar_mc_version（簇代表版本）
-    // 例如：构建用 1.19.2，suffix 为 "1.19.2-1.19.4"，jar 名变成 enchantpeak-fabric-1.0.11+mc1.19.2-1.19.4.jar
-    def jarSuffix = project.hasProperty('jar_name_suffix') ? project.jar_name_suffix : project.minecraft_version
-    archivesName = "${project.mod_id}-fabric-${project.mod_version}+mc${jarSuffix}"
+    archivesName = "${project.mod_id}-fabric"
 }
 
 repositories {
-    maven {
-        name = 'AliYun Central'
-        url = 'https://maven.aliyun.com/repository/central'
+    if (providers.gradleProperty('use_aliyun_mirror').map { it.toBoolean() }.getOrElse(false)) {
+        // 国内镜像加速（可选）：./gradlew build -Puse_aliyun_mirror=true
+        maven { url = 'https://maven.aliyun.com/repository/central' }
     }
+    mavenCentral()
     maven { url 'https://maven.fabricmc.net/' }
     // JEI
     maven {
@@ -128,10 +134,15 @@ processResources {
     // JEI 未适配的版本（jei_enabled=false）不声明 jei entrypoint，否则类缺失会崩
     def hasJei = !project.hasProperty('jei_enabled') || project.jei_enabled.toBoolean()
     def jeiEntrypoint = hasJei ? ',\n    "jei_mod_plugin": [\n      "com.zhaojiedi1992.enchantpeak.jei.JeiEnchantPlugin"\n    ]' : ''
-    def jeiSuggest = hasJei ? ',\n    "jei": ">=${jei_min_version}"' : ''
+    // 整行注入：jei 未启用的目标不产生空字符串的 "jei" 键（空 semver 范围同样非法）
+    def jeiSuggest = hasJei ? ",\n    \"jei\": \">=${project.jei_min_version}\"" : ''
+    // minecraft 依赖必须覆盖整个版本簇（game_versions 数组，OR 语义），
+    // 只写代表构建版本会把同簇其他版本挡在 loader 依赖检查之外/之外
+    def gameVersions = versionMatrix.targets[targetMinecraftVersion].game_versions
     def props = [
             jei_entrypoint        : jeiEntrypoint,
             jei_suggest           : jeiSuggest,
+            minecraft_versions    : gameVersions.collect { "\"${it}\"" }.join(', '),
             version               : project.version,
             minecraft_version     : project.minecraft_version,
             fabric_loader_version : project.fabric_loader_version,
