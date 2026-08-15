@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 # EnchantPeak 一键发布脚本
-# 用法: ./push.sh
-# 行为: 自动 patch 自增版本号 (1.0.2 -> 1.0.3)，更新 CHANGELOG.md，提交 + 打 tag + push
+# 用法: ./push.sh [-m "更新说明"]
+# 行为: 自动 patch 自增版本号 (1.0.2 -> 1.0.3)，把 CHANGELOG.md 的 Unreleased 段
+#       （含 -m 指定的要点）转为新版本节，提交 + 打 tag + push
 # push tag 后 GitHub Actions 会自动构建并发布到 Modrinth / CurseForge / GitHub Releases
 set -euo pipefail
 
 cd "$(dirname "$0")"
+
+RELEASE_MESSAGE=""
+while getopts "m:h" opt; do
+    case "$opt" in
+        m) RELEASE_MESSAGE="$OPTARG" ;;
+        h) grep '^#' "$0" | head -4; exit 0 ;;
+        *) echo "用法: $0 [-m \"更新说明\"]" >&2; exit 2 ;;
+    esac
+done
 
 # 发布必须从完全干净的 main 分支开始，避免漏提交或混入无关暂存内容。
 if [ "$(git branch --show-current)" != "main" ]; then
@@ -54,30 +64,25 @@ echo "✓ gradle.properties: ${NEW_VERSION}"
 
 # ---- 更新 CHANGELOG.md ----
 TODAY=$(date +%Y-%m-%d)
-if [ -f CHANGELOG.md ] && head -1 CHANGELOG.md | grep -q '^# Changelog'; then
-    # 在标题行后插入新版本节
-    TEMP=$(mktemp)
-    {
-        echo "# Changelog"
+TEMP=$(mktemp)
+{
+    echo "# Changelog"
+    echo ""
+    echo "## Unreleased"
+    echo ""
+    echo "## ${NEW_VERSION}"
+    echo ""
+    echo "Released on ${TODAY}."
+    echo ""
+    if [ -n "$RELEASE_MESSAGE" ]; then
+        echo "$RELEASE_MESSAGE"
         echo ""
-        echo "## ${NEW_VERSION}"
-        echo ""
-        echo "Released on ${TODAY}."
-        echo ""
-        # 保留旧内容（去掉原来的第一行标题）
-        tail -n +2 CHANGELOG.md
-    } > "$TEMP"
-    mv "$TEMP" CHANGELOG.md
-    echo "✓ CHANGELOG.md: 新增 ${NEW_VERSION} 节"
-else
-    echo "# Changelog" > CHANGELOG.md
-    echo "" >> CHANGELOG.md
-    echo "## ${NEW_VERSION}" >> CHANGELOG.md
-    echo "" >> CHANGELOG.md
-    echo "Released on ${TODAY}." >> CHANGELOG.md
-    echo "" >> CHANGELOG.md
-    echo "✓ CHANGELOG.md: 初始化"
-fi
+    fi
+    # 保留旧内容（去掉原来的第一行标题），跳过旧的 Unreleased 段
+    tail -n +2 CHANGELOG.md | sed -e '/^## Unreleased$/,/^## /{/^## /!d}' -e '/^## Unreleased$/d'
+} > "$TEMP"
+mv "$TEMP" CHANGELOG.md
+echo "✓ CHANGELOG.md: 新增 ${NEW_VERSION} 节"
 
 # ---- 提交 + 打 tag + push ----
 # 只提交版本相关文件；发布前的干净工作区检查保证不会夹带其他改动。

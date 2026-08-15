@@ -1,39 +1,75 @@
 # Changelog
 
+## Unreleased
+
+- Fabric jar metadata: `version` no longer builds as `unspecified` (mod version + MC cluster suffix, e.g. `1.0.14+mc1.19.2-1.19.4`)
+- Fabric `minecraft` dependency now lists every version of the cluster (e.g. `["1.19.2","1.19.3","1.19.4"]`) instead of pinning the representative build version — cluster jars now load on all advertised versions
+- Fabric `suggests.jei` no longer embeds the unexpanded `${jei_min_version}` placeholder
+- NeoForge `neoforge.mods.toml` is now generated per cluster: `minecraft` range matches the cluster (e.g. `[1.21,1.21.2)` instead of a blanket `[1.20.3,)`), and mod/JEI/NeoForge version bounds come from `neoforge/targets.json`
+- NeoForge jars now bundle the MIT `LICENSE` notice
+- Added `mc_range` to `neoforge/targets.json` (per-cluster Minecraft version range used for the mods.toml dependency)
+
 ## 1.0.14
 
 Released on 2026-08-15.
 
+### Added
+- NeoForge support: 8 clusters (1.20.3–26.2) alongside Fabric, with JEI integration
+- Local build script now builds all NeoForge targets too
+
+### Fixed
+- CI: JDK setup order for NeoForge jobs (21 must be the default `JAVA_HOME`; Gradle 8.14 daemon cannot run on Java 25)
+- NeoForge mod version now follows the root `gradle.properties` (single source of truth)
+- CI: GitHub release now downloads both Fabric and NeoForge artifacts
 
 ## 1.0.13
 
 Released on 2026-08-15.
 
+### Changed
+- Jar naming now shows the version range (e.g. `mc1.19.2-1.19.4`) for multi-version targets
 
 ## 1.0.12
 
 Released on 2026-08-15.
 
+### Fixed
+- Corrected 26.x `game_versions` for Modrinth/CurseForge API (`26.1`, not `1.26.1`)
 
 ## 1.0.11
 
 Released on 2026-08-15.
 
+### Fixed
+- `game-versions` multi-line output for mc-publish (single-line string was rejected by the Modrinth API)
 
 ## 1.0.10
 
 Released on 2026-08-15.
 
+### Added
+- Full MC 1.18.2–26.x coverage via version-cluster targets with community jar naming (`fabric-<version>+mc<range>`)
 
 ## 1.0.9
 
 Released on 2026-08-14.
 
+### Added
+- Multi-version support for MC 1.18.2–26.x with per-target CI verification
+- Verified version matrix (`versions/minecraft.json`) and per-target dependencies
+
+### Fixed
+- Per-version API corrections for all MC families (1.18.2–26.2)
+- Java 21 as runner JDK for fabric-loom 1.17+ compatibility
 
 ## 1.0.8
 
 Released on 2026-08-14.
 
+### Fixed
+- Removed `registerExtraIngredients` to prevent replacing vanilla items in JEI
+- Hardened the release script against dirty worktrees and unverified builds
+- Made enchantment verification portable and enforced it in CI
 
 ## 1.0.7
 
