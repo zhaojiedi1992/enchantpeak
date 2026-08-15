@@ -87,7 +87,12 @@ echo "✓ CHANGELOG.md: 新增 ${NEW_VERSION} 节"
 echo "检查 Fabric/NeoForge 家族源码同步..."
 python3 scripts/sync_family_sources.py --check
 echo "正在构建并校验所有受支持的 Minecraft 版本..."
-scripts/build_all_versions.sh
+if ! scripts/build_all_versions.sh; then
+    echo "✗ 构建失败，回滚版本变更..." >&2
+    git checkout -- gradle.properties CHANGELOG.md
+    echo "  已还原 gradle.properties 与 CHANGELOG.md；本地未产生提交" >&2
+    exit 1
+fi
 echo "✓ 所有 Minecraft 目标构建和校验通过"
 
 # ---- 提交 + 打 tag + push ----
@@ -103,11 +108,18 @@ git tag "v${NEW_VERSION}"
 echo "✓ git tag: v${NEW_VERSION}"
 
 # push 失败必须显式报错：tag 推不上去 = CI 永远不触发，release 静默失败
-if ! git push origin main 2>&1 | grep -v "^$"; then
+# 注意：不能用管道（如 | grep），否则 shell 反转的是 grep 的退出码而非 git push 的
+push_out=$(git push origin main 2>&1)
+push_rc=$?
+echo "$push_out"
+if [ $push_rc -ne 0 ]; then
     echo "✗ git push main 失败（本地已有提交与 tag，手动重试：git push origin main v${NEW_VERSION}）" >&2
     exit 1
 fi
-if ! git push origin "v${NEW_VERSION}" 2>&1 | grep -v "^$"; then
+push_tag_out=$(git push origin "v${NEW_VERSION}" 2>&1)
+push_tag_rc=$?
+echo "$push_tag_out"
+if [ $push_tag_rc -ne 0 ]; then
     echo "✗ git push tag v${NEW_VERSION} 失败（main 已推送；手动重试：git push origin v${NEW_VERSION}）" >&2
     exit 1
 fi

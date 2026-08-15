@@ -61,11 +61,11 @@ sourceSets {
     }
 }
 
-// 家族代码依赖 main 的输出（EnchantPeakMod、common record 类）
+// 家族代码依赖 main 的输出（common record 类：EnchantEntry/EnchantGroup/ItemEnchantRecord）
+// 注：EnchantPeakMod 入口类在各族源集（src/<family>/java），不在 main
 dependencies {
     "${mcFamily}Implementation" sourceSets.main.output
 }
-// EnchantPeakMod 入口类放在各版本族源集（src/<family>/java）：
 // 新 FML（20.6+）用 @Mod(dist = Dist.CLIENT) 标记 client-only；
 // 1.20.4 的 FML loader 2.x 不支持 dist 属性，该族用不带 dist 的副本
 

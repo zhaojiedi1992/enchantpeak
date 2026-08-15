@@ -82,7 +82,7 @@ public class EnchantmentData {
                 Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE);
         for (Item item : axes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                                        new EnchantGroup("axe_fortune_sharpness", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3), e(l, Enchantments.SHARPNESS, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_fortune_sharpness", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3), e(l, Enchantments.SHARPNESS, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
                     new EnchantGroup("axe_fortune_smite", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3), e(l, Enchantments.SMITE, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
                     new EnchantGroup("axe_fortune_bane", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3), e(l, Enchantments.BANE_OF_ARTHROPODS, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
                     new EnchantGroup("axe_silk_sharpness", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.SILK_TOUCH, 1), e(l, Enchantments.SHARPNESS, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),

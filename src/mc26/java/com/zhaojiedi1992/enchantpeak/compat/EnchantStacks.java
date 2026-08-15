@@ -33,7 +33,7 @@ public class EnchantStacks {
             // 保留样式与 RTL 语言的正确语序（translatable("%s %s") 会丢样式且乱序）
             net.minecraft.network.chat.MutableComponent desc = entry.enchantment().value().description().copy();
             if (entry.level() > 1) {
-                desc.append(Component.translatable("enchantment.level." + entry.level()));
+                desc.append(Component.literal(" ")).append(Component.translatable("enchantment.level." + entry.level()));
             }
             lines.add(desc);
         }

@@ -50,6 +50,8 @@ public class EnchantmentData {
         buildWarpedFungusStick();
         buildFishingRods();
         buildShears();
+        buildUtilityItems();
+        buildCurseOnlyItems();
     }
 
     private void buildPickaxes() {
@@ -68,7 +70,7 @@ public class EnchantmentData {
                 Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE);
         for (Item item : axes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                                        new EnchantGroup("axe_fortune_sharpness", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.SHARPNESS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_fortune_sharpness", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.SHARPNESS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
                     new EnchantGroup("axe_fortune_smite", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.SMITE, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
                     new EnchantGroup("axe_fortune_bane", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
                     new EnchantGroup("axe_silk_sharpness", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.SILK_TOUCH, 1), e(Enchantments.SHARPNESS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
@@ -225,6 +227,25 @@ public class EnchantmentData {
         records.add(new ItemEnchantRecord(Items.SHEARS, List.of(
                 new EnchantGroup("full_build", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
         )));
+    }
+
+
+    private void buildUtilityItems() {
+        records.add(new ItemEnchantRecord(Items.FLINT_AND_STEEL, List.of(
+                new EnchantGroup("full_build", List.of(e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+        )));
+    }
+
+    private void buildCurseOnlyItems() {
+        records.add(new ItemEnchantRecord(Items.CARVED_PUMPKIN, List.of(
+                new EnchantGroup("no_positive_enchantments", List.of()))));
+        records.add(new ItemEnchantRecord(Items.COMPASS, List.of(
+                new EnchantGroup("no_positive_enchantments", List.of()))));
+        for (Item item : List.of(Items.CREEPER_HEAD, Items.DRAGON_HEAD,
+                Items.PLAYER_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.ZOMBIE_HEAD)) {
+            records.add(new ItemEnchantRecord(item, List.of(
+                    new EnchantGroup("no_positive_enchantments", List.of()))));
+        }
     }
 
     public List<ItemEnchantRecord> getAllRecords() {
