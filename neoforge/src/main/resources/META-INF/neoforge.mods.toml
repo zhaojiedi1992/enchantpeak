@@ -5,7 +5,7 @@ issueTrackerURL = "https://github.com/zhaojiedi1992/enchantpeak/issues"
 
 [[mods]]
 modId = "enchantpeak"
-version = "${file.jarVersion}"
+version = "${mod_version}"
 displayName = "EnchantPeak"
 authors = "zhaojiedi1992"
 description = '''
@@ -16,20 +16,20 @@ logoFile = "assets/enchantpeak/icon.png"
 [[dependencies.enchantpeak]]
 modId = "neoforge"
 type = "required"
-versionRange = "[20.4,)"
+versionRange = "[${neoforge_min},)"
 ordering = "NONE"
 side = "CLIENT"
 
 [[dependencies.enchantpeak]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.20.3,)"
+versionRange = "${mc_range}"
 ordering = "NONE"
 side = "CLIENT"
 
 [[dependencies.enchantpeak]]
 modId = "jei"
 type = "optional"
-versionRange = "[17.3,)"
+versionRange = "[${jei_min},)"
 ordering = "NONE"
 side = "CLIENT"

@@ -30,6 +30,10 @@ def neoforgeVersion = neoforgeTarget.neoforge
 def jeiVersion = neoforgeTarget.jei
 def jeiMc = neoforgeTarget.jei_mc
 
+// 依赖范围下界：取簇 NeoForge/JEI 构建版本的主.次.修订（去掉补丁号），
+// 例如 21.1.248 -> [21.1,)，与 Fabric 侧 jei_min_version 的粒度一致
+static String minorBound(String v) { v.replaceFirst(/\.\d+$/, '') }
+
 group = "com.${rootProps.getProperty('mod_author')}"
 
 base {
@@ -40,7 +44,10 @@ base {
 version = rootModVersion + '+mc' + neoforgeTarget.suffix
 
 repositories {
-    maven { url 'https://maven.aliyun.com/repository/central' }
+    if (providers.gradleProperty('use_aliyun_mirror').map { it.toBoolean() }.getOrElse(false)) {
+        maven { url 'https://maven.aliyun.com/repository/central' }
+    }
+    mavenCentral()
     maven { url 'https://maven.blamejared.com' }        // JEI
     maven { url 'https://maven.neoforged.net/releases' }
 }
@@ -67,6 +74,21 @@ dependencies {
     runtimeOnly "mezz.jei:jei-${jeiMc}-neoforge:${jeiVersion}"
 }
 
+// mods.toml 中的占位符按簇展开：minecraft 范围来自 targets.json 的 mc_range，
+// 版本下界取各依赖构建版本的主.次
+processResources {
+    def props = [
+            mod_version    : project.version,
+            mc_range       : neoforgeTarget.mc_range,
+            neoforge_min   : minorBound(neoforgeVersion),
+            jei_min        : minorBound(jeiVersion),
+    ]
+    inputs.properties(props)
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand props
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = 'UTF-8'
     it.options.release = javaVersion
@@ -81,6 +103,10 @@ java {
 
 jar {
     from sourceSets[mcFamily].output
+    // MIT 要求分发副本携带版权声明（与 Fabric 侧 build.gradle 的 jar 一致）
+    from('../LICENSE') {
+        rename { "${it}_${project.name}" }
+    }
     manifest {
         attributes([
                 'Specification-Title'   : rootProps.getProperty('mod_id'),
