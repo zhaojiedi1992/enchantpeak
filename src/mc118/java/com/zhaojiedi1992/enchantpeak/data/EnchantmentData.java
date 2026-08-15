@@ -68,8 +68,12 @@ public class EnchantmentData {
                 Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE);
         for (Item item : axes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("axe_fortune", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("axe_sharpness", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                                        new EnchantGroup("axe_fortune_sharpness", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.SHARPNESS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_fortune_smite", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.SMITE, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_fortune_bane", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_silk_sharpness", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.SILK_TOUCH, 1), e(Enchantments.SHARPNESS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_silk_smite", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.SILK_TOUCH, 1), e(Enchantments.SMITE, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("axe_silk_bane", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.SILK_TOUCH, 1), e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -79,7 +83,8 @@ public class EnchantmentData {
                 Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL);
         for (Item item : shovels) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("axe_silk", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1), e(Enchantments.SILK_TOUCH, 1)))
+                    new EnchantGroup("fortune", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("silk_touch", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.SILK_TOUCH, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -89,7 +94,8 @@ public class EnchantmentData {
                 Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE);
         for (Item item : hoes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("full_build", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("fortune", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.BLOCK_FORTUNE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("silk_touch", List.of(e(Enchantments.BLOCK_EFFICIENCY, 5), e(Enchantments.SILK_TOUCH, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -99,11 +105,9 @@ public class EnchantmentData {
                 Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD);
         for (Item item : swords) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("sharpness", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("smite", List.of(e(Enchantments.SMITE, 5), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("bane", List.of(e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("knockback", List.of(e(Enchantments.KNOCKBACK, 2), e(Enchantments.SHARPNESS, 5), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("fire_aspect", List.of(e(Enchantments.FIRE_ASPECT, 2), e(Enchantments.SHARPNESS, 5), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("sharpness", List.of(e(Enchantments.SHARPNESS, 5), e(Enchantments.KNOCKBACK, 2), e(Enchantments.FIRE_ASPECT, 2), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("smite", List.of(e(Enchantments.SMITE, 5), e(Enchantments.KNOCKBACK, 2), e(Enchantments.FIRE_ASPECT, 2), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("bane", List.of(e(Enchantments.BANE_OF_ARTHROPODS, 5), e(Enchantments.KNOCKBACK, 2), e(Enchantments.FIRE_ASPECT, 2), e(Enchantments.MOB_LOOTING, 3), e(Enchantments.SWEEPING_EDGE, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -134,10 +138,10 @@ public class EnchantmentData {
                 Items.GOLDEN_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
         for (Item item : helmets) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("protection", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.RESPIRATION, 3), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("protection", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.RESPIRATION, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.RESPIRATION, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.RESPIRATION, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.AQUA_AFFINITY, 1), e(Enchantments.RESPIRATION, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -147,10 +151,10 @@ public class EnchantmentData {
                 Items.GOLDEN_CHESTPLATE, Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE);
         for (Item item : chestplates) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("protection", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    new EnchantGroup("protection", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -160,10 +164,11 @@ public class EnchantmentData {
                 Items.GOLDEN_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
         for (Item item : leggings) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("protection", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    // 1.18.2 无 SWIFT_SNEAK（1.19+ 新增），护腿不含该附魔
+                    new EnchantGroup("protection", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -173,10 +178,15 @@ public class EnchantmentData {
                 Items.GOLDEN_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
         for (Item item : boots) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    // 1.18.2 无 SOUL_SPEED（1.19+ 新增）
-                    new EnchantGroup("protection_depth", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("protection_frost", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
-                    new EnchantGroup("fire_protection_depth", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
+                    // 1.18.2 即有 SOUL_SPEED（1.16+ 新增），与其他靴子附魔全部兼容
+                    new EnchantGroup("protection_depth", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("protection_frost", List.of(e(Enchantments.ALL_DAMAGE_PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection_depth", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("fire_protection_frost", List.of(e(Enchantments.FIRE_PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection_depth", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("blast_protection_frost", List.of(e(Enchantments.BLAST_PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection_depth", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.DEPTH_STRIDER, 3), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1))),
+                    new EnchantGroup("projectile_protection_frost", List.of(e(Enchantments.PROJECTILE_PROTECTION, 4), e(Enchantments.FROST_WALKER, 2), e(Enchantments.FALL_PROTECTION, 4), e(Enchantments.SOUL_SPEED, 3), e(Enchantments.THORNS, 3), e(Enchantments.UNBREAKING, 3), e(Enchantments.MENDING, 1)))
             )));
         }
     }

@@ -189,14 +189,22 @@ ITEMS = {
     ],
 }
 # 同类材质复用同一套方案。键为目标物品，值为上方的方案模板物品。
+# 1.21 族（mc121/mc1214/mc1216）没有 spear / lunge / 铜质工具（26.x 新增）
+IS_121_FAMILY = args.source.startswith("mc121")
+_item_types = ("pickaxe", "shovel", "hoe", "axe", "sword") + (() if IS_121_FAMILY else ("spear",))
+_materials = ("wooden", "stone", "copper", "iron", "golden", "netherite") \
+    if not IS_121_FAMILY else ("wooden", "stone", "iron", "golden", "netherite")
+
 ITEM_ALIASES = {}
-for item_type in ("pickaxe", "shovel", "hoe", "axe", "sword", "spear"):
+for item_type in _item_types:
     template = f"diamond_{item_type}"
-    for material in ("wooden", "stone", "copper", "iron", "golden", "netherite"):
+    for material in _materials:
         ITEM_ALIASES[f"{material}_{item_type}"] = template
 for armor_type in ("helmet", "chestplate", "leggings", "boots"):
     template = f"diamond_{armor_type}"
-    for material in ("leather", "chainmail", "copper", "iron", "golden", "netherite"):
+    _armor_materials = ("leather", "chainmail", "copper", "iron", "golden", "netherite") \
+        if not IS_121_FAMILY else ("leather", "chainmail", "iron", "golden", "netherite")
+    for material in _armor_materials:
         ITEM_ALIASES[f"{material}_{armor_type}"] = template
 ITEM_ALIASES["turtle_helmet"] = "diamond_helmet"
 for utility_item in ("brush", "flint_and_steel", "carrot_on_a_stick", "warped_fungus_on_a_stick"):
@@ -209,6 +217,9 @@ CURSE_ONLY_ITEMS = {
 CURSE = {"binding_curse", "vanishing_curse"}
 errors = []
 all_items = dict(ITEMS)
+_121_exclude_items = {"diamond_spear"} if IS_121_FAMILY else set()
+for item_id in _121_exclude_items:
+    all_items.pop(item_id, None)
 for item_id, template_id in ITEM_ALIASES.items():
     all_items[item_id] = ITEMS[template_id]
 for item_id in CURSE_ONLY_ITEMS:

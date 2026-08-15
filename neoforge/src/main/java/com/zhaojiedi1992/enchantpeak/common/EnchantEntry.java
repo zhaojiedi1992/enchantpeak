@@ -8,14 +8,4 @@ import net.minecraft.world.item.enchantment.Enchantment;
  */
 public record EnchantEntry(Holder<Enchantment> enchantment, int level) {
 
-    public String levelString() {
-        return switch (level) {
-            case 1 -> "I";
-            case 2 -> "II";
-            case 3 -> "III";
-            case 4 -> "IV";
-            case 5 -> "V";
-            default -> String.valueOf(level);
-        };
-    }
 }

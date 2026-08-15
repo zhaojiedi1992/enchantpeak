@@ -53,16 +53,11 @@ echo "  EnchantPeak 发布"
 echo "  ${CURRENT_VERSION}  →  ${NEW_VERSION}"
 echo "=========================================="
 
-# ---- 发布前验证 ----
-echo "正在构建并校验所有受支持的 Minecraft 版本..."
-scripts/build_all_versions.sh
-echo "✓ 所有 Minecraft 目标构建和校验通过"
-
-# ---- 更新 gradle.properties ----
+# ---- 先 bump 版本号再构建：dist/ 产物的文件名与 jar 内元数据即最终发布版本 ----
 sed -i "s/^mod_version=.*/mod_version=${NEW_VERSION}/" gradle.properties
 echo "✓ gradle.properties: ${NEW_VERSION}"
 
-# ---- 更新 CHANGELOG.md ----
+# ---- 更新 CHANGELOG.md（构建前完成，保证工作区随后保持干净） ----
 # Unreleased 段的既有内容并入新版本节（-m 消息放最前），否则攒下的说明会丢失
 TODAY=$(date +%Y-%m-%d)
 TEMP=$(mktemp)
@@ -88,6 +83,13 @@ TEMP=$(mktemp)
 mv "$TEMP" CHANGELOG.md
 echo "✓ CHANGELOG.md: 新增 ${NEW_VERSION} 节"
 
+# ---- 发布前验证（版本号已 bump，dist/ 产物即为待发布版本）----
+echo "检查 Fabric/NeoForge 家族源码同步..."
+python3 scripts/sync_family_sources.py --check
+echo "正在构建并校验所有受支持的 Minecraft 版本..."
+scripts/build_all_versions.sh
+echo "✓ 所有 Minecraft 目标构建和校验通过"
+
 # ---- 提交 + 打 tag + push ----
 # 只提交版本相关文件；发布前的干净工作区检查保证不会夹带其他改动。
 git add -- gradle.properties CHANGELOG.md
@@ -100,8 +102,15 @@ echo "✓ git commit: update to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 echo "✓ git tag: v${NEW_VERSION}"
 
-git push origin main >/dev/null 2>&1 || git push >/dev/null 2>&1
-git push origin "v${NEW_VERSION}" >/dev/null 2>&1
+# push 失败必须显式报错：tag 推不上去 = CI 永远不触发，release 静默失败
+if ! git push origin main 2>&1 | grep -v "^$"; then
+    echo "✗ git push main 失败（本地已有提交与 tag，手动重试：git push origin main v${NEW_VERSION}）" >&2
+    exit 1
+fi
+if ! git push origin "v${NEW_VERSION}" 2>&1 | grep -v "^$"; then
+    echo "✗ git push tag v${NEW_VERSION} 失败（main 已推送；手动重试：git push origin v${NEW_VERSION}）" >&2
+    exit 1
+fi
 echo "✓ git push: main + v${NEW_VERSION}"
 
 echo ""

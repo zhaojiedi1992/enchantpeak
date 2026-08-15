@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+- Fixed: release metadata now uses the correct Java version per target (was hardcoded
+  Java 25/Java 21 for all Fabric/NeoForge uploads — Java 17/21 players couldn't see
+  the 1.18.2-1.21.x files on Modrinth)
+- Fixed: fabric-api is no longer a required dependency (the mod never used it;
+  it is now a suggestion, matching REI/JEI)
+- Fixed: legacy family enchantment data now matches vanilla semantics exactly —
+  deep JVM verification (max level, applicability, exclusivity, maximality,
+  complete enumeration of maximal compatible sets) found and fixed incorrect
+  axe/sword/armor/shovel/hoe builds in 1.18.2-1.21.8, plus 10 missing items
+  (flint_and_steel + curse-only entries) in the 1.21 families
+- Added: family source sync guard (scripts/sync_family_sources.py, wired into CI
+  and push.sh) — the 13 shared family directories between Fabric and NeoForge can
+  no longer silently drift
+- Added: datapack deep verification now covers the 1.21 families too (was 1.21.9+/26.x
+  only); 1.20.5/1.20.6 remain compile-only (no enchantment data source exists)
+- Fixed: enchantment tooltips now use the vanilla enchantment.level.N translation
+  key (styles and RTL word order preserved; was a %s %s string format hack)
+- Fixed: NeoForge builds are marked client-only via @Mod(dist = Dist.CLIENT)
+  (dedicated servers no longer load the mod; 1.20.4's older FML doesn't support
+  the attribute and keeps a plain @Mod)
+- Changed: push.sh bumps the version before building so dist/ artifacts carry the
+  release version; tag push failures now abort loudly instead of silently skipping
+  the release
+- Cleanup: removed dead EnchantEntry.levelString(), stale forge maven entry,
+  empty emi directories
+
 ## 1.0.15
 
 Released on 2026-08-15.

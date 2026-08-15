@@ -1,8 +1,10 @@
 pluginManagement {
     repositories {
+        if (settings.providers.gradleProperty('use_aliyun_mirror').map { it.toBoolean() }.getOrElse(false)) {
+            maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        }
         maven { url 'https://maven.fabricmc.net/' }
         maven { url 'https://maven.architectury.dev/' }
-        maven { url 'https://maven.minecraftforge.net/' }
         gradlePluginPortal()
     }
 }

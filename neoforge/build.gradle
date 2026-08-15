@@ -65,6 +65,9 @@ sourceSets {
 dependencies {
     "${mcFamily}Implementation" sourceSets.main.output
 }
+// EnchantPeakMod 入口类放在各版本族源集（src/<family>/java）：
+// 新 FML（20.6+）用 @Mod(dist = Dist.CLIENT) 标记 client-only；
+// 1.20.4 的 FML loader 2.x 不支持 dist 属性，该族用不带 dist 的副本
 
 dependencies {
     implementation "net.neoforged:neoforge:${neoforgeVersion}"

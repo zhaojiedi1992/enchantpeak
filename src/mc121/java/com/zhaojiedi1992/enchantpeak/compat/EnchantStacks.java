@@ -29,12 +29,13 @@ public class EnchantStacks {
     public static List<Component> enchantmentLines(EnchantGroup group) {
         List<Component> lines = new ArrayList<>();
         for (EnchantEntry entry : group.entries()) {
-            Component desc = entry.enchantment().value().description();
+            // 原版 tooltip 风格：附魔名 + enchantment.level.N 翻译键拼接，
+            // 保留样式与 RTL 语言的正确语序（translatable("%s %s") 会丢样式且乱序）
+            net.minecraft.network.chat.MutableComponent desc = entry.enchantment().value().description().copy();
             if (entry.level() > 1) {
-                lines.add(Component.translatable("%s %s", desc.getString(), entry.levelString()));
-            } else {
-                lines.add(desc);
+                desc.append(Component.translatable("enchantment.level." + entry.level()));
             }
+            lines.add(desc);
         }
         return lines;
     }

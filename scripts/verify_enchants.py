@@ -56,8 +56,13 @@ def main():
     target = matrix["targets"][args.minecraft_version]
     family = target["mc_family"]
     build_version = target["minecraft_version"]
-    if family not in ("mc2111", "mc26"):
-        print(f"{args.minecraft_version}: 附魔物品集与新体系规格不同，跳过 datapack 深度校验，以编译器为校验")
+    if family in ("mc1206",):
+        # 1.20.6：jar 内无附魔定义 JSON（1.20.5 数据驱动化的过渡版本，定义不在分发包里），
+        # JVM 测试也无法接线（canEnchant 恒 false）——目前唯一仅编译器校验的族
+        print(f"{args.minecraft_version}: 1.20.6 过渡版本无可用附魔数据源，跳过深度校验（仅编译器校验）")
+        return 0
+    if family not in ("mc2111", "mc26") and not family.startswith("mc121"):
+        print(f"{args.minecraft_version}: 附魔物品集与新体系规格不同，跳过 datapack 深度校验（1.18.2-1.20.4 由 JVM 深度测试覆盖）")
         return 0
 
     configured_data = os.environ.get("MC_DATA_DIR")
