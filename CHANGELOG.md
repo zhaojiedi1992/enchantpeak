@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Fixed: legacy version families (1.18.2-1.21.8) showed raw translation keys / Chinese
+  build names in-game — build group names now use the same English keys as 1.21.9+/26.x
+  across all 7 locales
+- Added: JVM test suite (record invariants, source-level data consistency across all
+  version families, runtime registry assembly for 1.18-1.21.8), run per target in CI
+- Added: `scripts/verify_jars.py` end-to-end jar metadata verification, wired into
+  `scripts/build_all_versions.sh` and the CI build/release workflows
+- Docs: added CONTRIBUTING.md and issue templates
+- CI: workflows now run on main pushes and PRs only; Aliyun mirror is opt-in via
+  `-Puse_aliyun_mirror=true`; NeoForge JEI 26.1 baseline aligned with Fabric
+- Changelog: 1.0.9-1.0.14 backfilled from git history; `push.sh` accepts `-m` notes
+  and CI extracts only the released version's section for platform changelogs
+
 - Fabric jar metadata: `version` no longer builds as `unspecified` (mod version + MC cluster suffix, e.g. `1.0.14+mc1.19.2-1.19.4`)
 - Fabric `minecraft` dependency now lists every version of the cluster (e.g. `["1.19.2","1.19.3","1.19.4"]`) instead of pinning the representative build version — cluster jars now load on all advertised versions
 - Fabric `suggests.jei` no longer embeds the unexpanded `${jei_min_version}` placeholder
