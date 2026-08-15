@@ -34,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "Protección contra explosiones + Paso helado",
   "enchantpeak.build.projectile_protection_depth": "Protección contra proyectiles + Paso acuático",
   "enchantpeak.build.projectile_protection_frost": "Protección contra proyectiles + Paso helado",
-  "enchantpeak.build.no_positive_enchantments": "Sin encantamientos que no sean maldiciones"
+  "enchantpeak.build.no_positive_enchantments": "Sin encantamientos que no sean maldiciones",
+  "enchantpeak.build.knockback": "Build Derribo",
+  "enchantpeak.build.fire_aspect": "Build Aspecto de Fuego",
+  "enchantpeak.build.wind_burst": "Build Ráfaga de Viento",
+  "enchantpeak.build.axe_fortune": "Build Fortuna",
+  "enchantpeak.build.axe_sharpness": "Build Filo",
+  "enchantpeak.build.axe_silk": "Build Toque de Seda"
 }

@@ -34,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "Protection contre les explosions + Semelles givrantes",
   "enchantpeak.build.projectile_protection_depth": "Protection contre les projectiles + Agilité aquatique",
   "enchantpeak.build.projectile_protection_frost": "Protection contre les projectiles + Semelles givrantes",
-  "enchantpeak.build.no_positive_enchantments": "Aucun enchantement hors malédiction"
+  "enchantpeak.build.no_positive_enchantments": "Aucun enchantement hors malédiction",
+  "enchantpeak.build.knockback": "Build Recul",
+  "enchantpeak.build.fire_aspect": "Build Aura de Feu",
+  "enchantpeak.build.wind_burst": "Build Rafale de Vent",
+  "enchantpeak.build.axe_fortune": "Build Fortune",
+  "enchantpeak.build.axe_sharpness": "Build Tranchant",
+  "enchantpeak.build.axe_silk": "Build Toucher de Soie"
 }

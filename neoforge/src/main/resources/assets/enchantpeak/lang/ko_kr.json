@@ -34,5 +34,11 @@
   "enchantpeak.build.blast_protection_frost": "폭발 보호 + 서리 걸음",
   "enchantpeak.build.projectile_protection_depth": "발사체 보호 + 물갈퀴",
   "enchantpeak.build.projectile_protection_frost": "발사체 보호 + 서리 걸음",
-  "enchantpeak.build.no_positive_enchantments": "저주 외 마법 부여 없음"
+  "enchantpeak.build.no_positive_enchantments": "저주 외 마법 부여 없음",
+  "enchantpeak.build.knockback": "넉백 빌드",
+  "enchantpeak.build.fire_aspect": "발화 빌드",
+  "enchantpeak.build.wind_burst": "돌풍 빌드",
+  "enchantpeak.build.axe_fortune": "행운 빌드",
+  "enchantpeak.build.axe_sharpness": "날카로움 빌드",
+  "enchantpeak.build.axe_silk": "섬세한 손길 빌드"
 }
