@@ -83,6 +83,121 @@ jobs:
           name: EnchantPeak ${{ needs.release-info.outputs.version }}
           generate_release_notes: true
 
+  # ===== NeoForge 构建（独立 Gradle 构建，见 neoforge/）=====
+  neoforge-info:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read NeoForge target keys
+        id: targets
+        run: |
+          TARGETS=$(jq -c 'keys' neoforge/targets.json)
+          echo "value=${TARGETS}" >> "$GITHUB_OUTPUT"
+
+  neoforge-build:
+    needs: [release-info, neoforge-info]
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.neoforge-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Gradle daemon)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Set up JDK 25 (for MC 26.x targets)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: neoforge
+
+      - name: Build NeoForge target ${{ matrix.target }}
+        working-directory: neoforge
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
+
+      - name: Upload NeoForge ${{ matrix.target }} jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchantpeak-neoforge-mc${{ matrix.target }}
+          path: |
+            neoforge/build/libs/*.jar
+            !neoforge/build/libs/*-sources.jar
+          if-no-files-found: error
+
+  neoforge-release:
+    needs: [release-info, neoforge-info, neoforge-build]
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.neoforge-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download NeoForge ${{ matrix.target }} jar
+        uses: actions/download-artifact@v4
+        with:
+          name: enchantpeak-neoforge-mc${{ matrix.target }}
+          path: dist
+
+      - name: Read NeoForge game versions for ${{ matrix.target }}
+        id: game-versions
+        run: |
+          VERSIONS=$(jq -r '.["${{ matrix.target }}"].game_versions | join("\n")' neoforge/targets.json)
+          {
+            echo "versions<<GAME_VERSIONS_EOF"
+            echo "$VERSIONS"
+            echo "GAME_VERSIONS_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish NeoForge ${{ matrix.target }} to Modrinth
+        uses: Kira-NT/mc-publish@v3
+        with:
+          modrinth-id: Ieptg3ne
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: dist/*.jar
+          name: EnchantPeak NeoForge ${{ needs.release-info.outputs.version }} for MC ${{ matrix.target }}
+          version: ${{ needs.release-info.outputs.version }}+neoforge-mc${{ matrix.target }}
+          version-type: release
+          changelog-file: CHANGELOG.md
+          loaders: neoforge
+          game-versions: ${{ steps.game-versions.outputs.versions }}
+          java: Java 21
+          dependencies: |
+            jei(optional){modrinth:u6dRKJwZ}
+
+      - name: Publish NeoForge ${{ matrix.target }} to CurseForge
+        uses: Kira-NT/mc-publish@v3
+        with:
+          curseforge-id: 1648044
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: dist/*.jar
+          name: EnchantPeak NeoForge ${{ needs.release-info.outputs.version }} for MC ${{ matrix.target }}
+          version: ${{ needs.release-info.outputs.version }}+neoforge-mc${{ matrix.target }}
+          version-type: release
+          changelog-file: CHANGELOG.md
+          loaders: neoforge
+          game-versions: ${{ steps.game-versions.outputs.versions }}
+          java: Java 21
+          dependencies: |
+            jei(optional){curseforge:238222}
+
   platform-release:
     needs: [release-info, build]
     strategy:

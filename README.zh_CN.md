@@ -2,11 +2,14 @@
 
 > **中文版** · **[English](README.md)**
 
-Minecraft Fabric 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有正向附魔的展示全部极大兼容顶配方案，仅支持诅咒的明确标识为空方案。REI 还会把每个方案注册为可搜索的独立条目。
+Minecraft 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有正向附魔的展示全部极大兼容顶配方案，仅支持诅咒的明确标识为空方案。REI 还会把每个方案注册为可搜索的独立条目。
+
+> 💡 **推荐组合：Fabric + REI** — 独立可搜索方案条目体验最佳。同时也为所有可适配的版本簇提供 NeoForge 构建（JEI 集成）。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Minecraft](https://img.shields.io/badge/Minecraft-26.1--26.2-brightgreen)](https://www.minecraft.net/)
-[![Fabric](https://img.shields.io/badge/Loader-Fabric%200.19.2+-blue)](https://fabricmc.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2~26.2-brightgreen)](https://www.minecraft.net/)
+[![Fabric](https://img.shields.io/badge/Loader-Fabric-blue)](https://fabricmc.net/)
+[![NeoForge](https://img.shields.io/badge/Loader-NeoForge-orange)](https://neoforged.net/)
 
 ---
 
@@ -45,11 +48,40 @@ Minecraft Fabric 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有
 
 ## 📦 下载与安装
 
-**支持版本：** Minecraft **26.1、26.1.1、26.1.2、26.2**。每个游戏版本均有独立构建和官方 datapack 校验，请下载文件名中 `mc版本` 与游戏完全一致的 JAR。
+每个 JAR 覆盖一个 API 兼容簇（文件名中的 `mc` 范围即所含版本，如 `mc1.19.2-1.19.4`）。选择包含你游戏版本的那一行即可。
+
+**Fabric（推荐 — 含 REI 独立搜索条目）：**
+
+| JAR `mc` 范围 | 覆盖版本 |
+|---|---|
+| `mc1.18.2` | 1.18.2 |
+| `mc1.19.2-1.19.4` | 1.19.2 / 1.19.3 / 1.19.4 |
+| `mc1.20.1-1.20.2` | 1.20.1 / 1.20.2 |
+| `mc1.20.3-1.20.4` | 1.20.3 / 1.20.4 |
+| `mc1.20.5-1.20.6` | 1.20.5 / 1.20.6 |
+| `mc1.21-1.21.1` | 1.21 / 1.21.1 |
+| `mc1.21.2-1.21.4` | 1.21.2 / 1.21.3 / 1.21.4 |
+| `mc1.21.5-1.21.8` | 1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 |
+| `mc1.21.9-1.21.11` | 1.21.9 / 1.21.10 / 1.21.11 |
+| `mc26.1` / `mc26.1.1` / `mc26.1.2` / `mc26.2` | 26.x 各版本 |
+
+**NeoForge（JEI 集成）：**
+
+| JAR `mc` 范围 | 覆盖版本 |
+|---|---|
+| `mc1.20.3-1.20.4` | 1.20.3 / 1.20.4 |
+| `mc1.20.5-1.20.6` | 1.20.5 / 1.20.6 |
+| `mc1.21-1.21.1` | 1.21 / 1.21.1 |
+| `mc1.21.2-1.21.4` | 1.21.2 / 1.21.3 / 1.21.4 |
+| `mc1.21.5-1.21.8` | 1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 |
+| `mc1.21.9-1.21.11` | 1.21.9 / 1.21.10 / 1.21.11 |
+| `mc26.1` / `mc26.2` | 26.x |
+
+> NeoForge 构建从 1.20.3 起（NeoForge 无 1.20.1 及更早的稳定版，请用 Fabric）。REI 独立搜索条目仅限 Fabric；NeoForge 请使用 JEI 的 **最强附魔方案** 分类。
 
 **依赖要求：**
-- Fabric Loader、Fabric API：使用该 Minecraft 版本的对应发行版
-- **JEI** 或 **REI**：至少安装一个，并使用对应 Minecraft 版本的发行版
+- **Fabric**：Fabric Loader + Fabric API，以及 **REI**（推荐）或 **JEI**
+- **NeoForge**：对应版本 NeoForge + **JEI**
 
 **下载地址：**
 - [Modrinth](https://modrinth.com/mod/enchantpeak)
@@ -57,10 +89,10 @@ Minecraft Fabric 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
 
 **安装步骤：**
-1. 下载最新且版本匹配的 `enchantpeak-mc<游戏版本>-x.x.x.jar`
+1. 下载与你 loader 和游戏版本匹配的 `enchantpeak-fabric-...+mc<范围>.jar` 或 `enchantpeak-neoforge-...+mc<范围>.jar`
 2. 放入 `.minecraft/mods/` 文件夹
-3. 确保已安装 Fabric + Fabric API + JEI/REI
-4. 启动游戏，在 JEI/REI 中打开 **最强附魔方案** 分类；REI 还可直接搜索每个方案条目
+3. 确保已安装对应 loader 的依赖（Fabric + Fabric API + REI/JEI，或 NeoForge + JEI）
+4. 启动游戏，在 JEI/REI 中打开 **最强附魔方案** 分类；REI（Fabric）还可直接搜索每个方案条目
 
 ---
 

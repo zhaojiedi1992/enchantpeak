@@ -1,0 +1,71 @@
+name: Build NeoForge
+
+on:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+  pull_request:
+    paths:
+      - 'neoforge/**'
+      - '.github/workflows/build-neoforge.yml'
+      - 'versions/minecraft.json'
+
+permissions:
+  contents: read
+
+jobs:
+  neoforge-targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read NeoForge target keys
+        id: targets
+        run: |
+          TARGETS=$(jq -c 'keys' neoforge/targets.json)
+          echo "value=${TARGETS}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: neoforge-targets
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.neoforge-targets.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Gradle daemon; toolchain provisions target JDK)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Set up JDK 25 (for MC 26.x targets)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: neoforge
+
+      - name: Build NeoForge target ${{ matrix.target }}
+        working-directory: neoforge
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
+
+      - name: Upload NeoForge ${{ matrix.target }} jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchantpeak-neoforge-mc${{ matrix.target }}
+          path: |
+            neoforge/build/libs/*.jar
+            !neoforge/build/libs/*-sources.jar
+          if-no-files-found: error
+          retention-days: 14

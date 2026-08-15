@@ -1,0 +1,94 @@
+plugins {
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
+    id 'maven-publish'
+}
+
+// NeoForge 独立目标映射：键为 NeoForge 簇代表版本（与 Fabric 主项目矩阵解耦，
+// 因为 NeoForge 簇的构建用 MC 版本与 Fabric 簇不同，如 1.21.8 vs 1.21.6）
+// 字段：neoforge(平台版本) mc_family(源码家族) mc(构建用MC) suffix(jar后缀) jei/jei_mc(java版本)
+def targetMinecraftVersion = providers.gradleProperty('target_mc')
+        .orElse('26.2')
+        .get()
+
+def neoforgeMap = new groovy.json.JsonSlurper().parse(file('targets.json'))
+def neoforgeTarget = neoforgeMap[targetMinecraftVersion]
+if (neoforgeTarget == null) {
+    throw new GradleException(
+            "Target '${targetMinecraftVersion}' has no NeoForge mapping. " +
+            "NeoForge-supported clusters: ${neoforgeMap.keySet().join(', ')}"
+    )
+}
+
+def mcFamily = neoforgeTarget.mc_family
+def javaVersion = (neoforgeTarget.java ?: 21) as int
+def neoforgeVersion = neoforgeTarget.neoforge
+def jeiVersion = neoforgeTarget.jei
+def jeiMc = neoforgeTarget.jei_mc
+
+group = "com.${rootProject.findProperty('mod_author')}"
+
+base {
+    archivesName = "${rootProject.findProperty('mod_id')}-neoforge"
+}
+
+// jar 名对齐社区规范：<modid>-neoforge-<modver>+mc<范围>.jar
+version = rootProject.findProperty('mod_version') + '+mc' + neoforgeTarget.suffix
+
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    maven { url 'https://maven.blamejared.com' }        // JEI
+    maven { url 'https://maven.neoforged.net/releases' }
+}
+
+// 每个版本簇一个 source set，目录名 = 主项目同款 mcFamily（代码从主项目同步生成）
+sourceSets {
+    create(mcFamily) {
+        java { srcDir "src/${mcFamily}/java" }
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+// 家族代码依赖 main 的输出（EnchantPeakMod、common record 类）
+dependencies {
+    "${mcFamily}Implementation" sourceSets.main.output
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neoforgeVersion}"
+
+    // JEI NeoForge（各簇的适配版本来自 neoforgeMap）
+    implementation "mezz.jei:jei-${jeiMc}-neoforge-api:${jeiVersion}"
+    runtimeOnly "mezz.jei:jei-${jeiMc}-neoforge:${jeiVersion}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = javaVersion
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+    withSourcesJar()
+}
+
+jar {
+    from sourceSets[mcFamily].output
+    manifest {
+        attributes([
+                'Specification-Title'   : rootProject.findProperty('mod_id'),
+                'Specification-Vendor'  : rootProject.findProperty('mod_author'),
+                'Specification-Version' : '1',
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor' : rootProject.findProperty('mod_author'),
+        ])
+    }
+}
+
+// CI/本地构建只需要 jar：跳过 run 时的 assets 下载（neoFormJoined DownloadAssets 常因网络卡住）
+tasks.matching { it.name.contains('DownloadAssets') }.configureEach {
+    onlyIf { false }
+}

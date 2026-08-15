@@ -2,11 +2,14 @@
 
 > **[中文版](README.zh_CN.md)** · **English**
 
-A Minecraft Fabric mod that covers every vanilla enchantable item in JEI/REI. It shows maximal non-curse enchantment combinations where available and identifies curse-only items. REI also exposes every build as a standalone searchable entry.
+A Minecraft mod that covers every vanilla enchantable item in JEI/REI. It shows maximal non-curse enchantment combinations where available and identifies curse-only items. REI also exposes every build as a standalone searchable entry.
+
+> 💡 **Recommended setup: Fabric + REI** — the best experience with standalone searchable build entries. NeoForge builds are also provided for every supported cluster where JEI has an adapter.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2%20|%201.19.x%20|%201.20.1%20|%201.21.x%20|%2026.x-brightgreen)](https://www.minecraft.net/)
-[![Fabric](https://img.shields.io/badge/Loader-Fabric%200.19.2+-blue)](https://fabricmc.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2%20~%2026.2-brightgreen)](https://www.minecraft.net/)
+[![Fabric](https://img.shields.io/badge/Loader-Fabric-blue)](https://fabricmc.net/)
+[![NeoForge](https://img.shields.io/badge/Loader-NeoForge-orange)](https://neoforged.net/)
 
 ---
 
@@ -45,11 +48,40 @@ A Minecraft Fabric mod that covers every vanilla enchantable item in JEI/REI. It
 
 ## 📦 Download & Installation
 
-**Supported versions:** Minecraft **1.18.2, 1.19.2, 1.19.4, 1.20.1, 1.21.1, 1.21.11, 26.1, 26.1.2, and 26.2**. Each game version has a dedicated build verified against its version-specific API. Download the JAR whose `mc` version exactly matches your game.
+Each JAR covers an API-compatible version cluster (shown by the `mc` range in its filename, e.g. `mc1.19.2-1.19.4`). Pick the row that contains your game version.
+
+**Fabric (recommended — REI search entries included):**
+
+| JAR `mc` range | Covers |
+|---|---|
+| `mc1.18.2` | 1.18.2 |
+| `mc1.19.2-1.19.4` | 1.19.2 / 1.19.3 / 1.19.4 |
+| `mc1.20.1-1.20.2` | 1.20.1 / 1.20.2 |
+| `mc1.20.3-1.20.4` | 1.20.3 / 1.20.4 |
+| `mc1.20.5-1.20.6` | 1.20.5 / 1.20.6 |
+| `mc1.21-1.21.1` | 1.21 / 1.21.1 |
+| `mc1.21.2-1.21.4` | 1.21.2 / 1.21.3 / 1.21.4 |
+| `mc1.21.5-1.21.8` | 1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 |
+| `mc1.21.9-1.21.11` | 1.21.9 / 1.21.10 / 1.21.11 |
+| `mc26.1` / `mc26.1.1` / `mc26.1.2` / `mc26.2` | 26.x each |
+
+**NeoForge (JEI integration):**
+
+| JAR `mc` range | Covers |
+|---|---|
+| `mc1.20.3-1.20.4` | 1.20.3 / 1.20.4 |
+| `mc1.20.5-1.20.6` | 1.20.5 / 1.20.6 |
+| `mc1.21-1.21.1` | 1.21 / 1.21.1 |
+| `mc1.21.2-1.21.4` | 1.21.2 / 1.21.3 / 1.21.4 |
+| `mc1.21.5-1.21.8` | 1.21.5 / 1.21.6 / 1.21.7 / 1.21.8 |
+| `mc1.21.9-1.21.11` | 1.21.9 / 1.21.10 / 1.21.11 |
+| `mc26.1` / `mc26.2` | 26.x |
+
+> NeoForge builds start at 1.20.3 — NeoForge itself has no stable release for 1.20.1 or earlier (use Fabric there). REI's standalone search entries are Fabric-only; on NeoForge use the JEI **Best Enchantments** category.
 
 **Requirements:**
-- Fabric Loader and Fabric API releases matching the Minecraft version
-- **JEI** or **REI** (1.18.2+), or **EMI** (1.19.2+) release matching the Minecraft version; at least one is required
+- **Fabric**: Fabric Loader + Fabric API, plus **REI** (recommended) or **JEI**
+- **NeoForge**: matching NeoForge, plus **JEI**
 
 **Download from:**
 - [Modrinth](https://modrinth.com/mod/enchantpeak)
@@ -57,10 +89,10 @@ A Minecraft Fabric mod that covers every vanilla enchantable item in JEI/REI. It
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
 
 **Installation:**
-1. Download the matching `enchantpeak-mc<game-version>-x.x.x.jar`
+1. Download the `enchantpeak-fabric-...+mc<your-range>.jar` or `enchantpeak-neoforge-...+mc<your-range>.jar` matching your loader and game version
 2. Place it in your `.minecraft/mods/` folder
-3. Launch the game with Fabric + Fabric API + JEI/REI installed
-4. Open the **Best Enchantments** category in JEI/REI; REI also exposes each build as a searchable entry
+3. Launch the game with your loader's requirements installed (Fabric + Fabric API + REI/JEI, or NeoForge + JEI)
+4. Open the **Best Enchantments** category in JEI/REI; REI (Fabric) also exposes each build as a searchable entry
 
 ---
 
@@ -139,26 +171,26 @@ Each armor piece offers **4 protection builds** (Protection / Fire Protection / 
 
 ## 🔧 Building from Source
 
+**Fabric (root project):**
+
 ```bash
 git clone https://github.com/zhaojiedi1992/enchantpeak.git
 cd enchantpeak
-./gradlew build
+./gradlew build                                  # 默认 26.2
+./gradlew clean build -Ptarget_mc=1.21           # 指定簇（如 1.21 = 1.21/1.21.1）
+./build_all_versions.sh                          # 全部 Fabric 簇
 ```
 
-The default target is 26.2. Output: `build/libs/enchantpeak-mc26.2-x.x.x.jar`.
+Supported targets and dependency versions are defined once in `versions/minecraft.json`.
 
-Build one target or all supported targets:
+**NeoForge (`neoforge/` independent build, Gradle 8.14 + NeoGradle 7.1):**
 
 ```bash
-# 单个版本（指定 target_mc）
-./gradlew clean build -Ptarget_mc=1.21.1
-./gradlew clean build -Ptarget_mc=26.1.2
-
-# 所有版本
-./build_all_versions.sh
+cd neoforge
+./gradlew build -Ptarget_mc=1.21.8               # 指定 NeoForge 簇
 ```
 
-All-target output is written to `build/distributions/`. Supported targets and dependency versions are defined once in `versions/minecraft.json`.
+NeoForge clusters and NeoForge/JEI versions are defined in `neoforge/targets.json`.
 
 **Requirements:** Java 17 (for MC 1.18.2–1.20.1), Java 21 (for MC 1.21.x), and Java 25 (for MC 26.x). Gradle automatically selects the correct JDK via toolchain.
 
