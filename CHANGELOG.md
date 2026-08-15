@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## 1.0.15
+
+Released on 2026-08-15.
+
+### Highlights
+
+Open-source readiness release: jar metadata fixes, full test suite, and parallel builds.
+
+- **Fixed**: Fabric jars now load on every advertised version of a cluster
+  (minecraft dependency lists the whole cluster instead of pinning the
+  representative build version); mod version is no longer "unspecified";
+  JEI suggestion no longer shows a raw ${...} placeholder
+- **Fixed**: NeoForge per-cluster dependency ranges in neoforge.mods.toml
+  (was a blanket [1.20.3,)) and bundled MIT LICENSE notice
+- **Fixed**: legacy families (1.18.2-1.21.8) showed raw translation keys /
+  Chinese build names — group names now use shared English keys in all locales
+- **Added**: JVM test suite + end-to-end jar metadata verification
+  (scripts/verify_jars.py), both wired into CI
+- **Perf**: local all-targets build ~5m40s → ~1m15s (Fabric/NeoForge
+  pipelines run in parallel, daemon reuse)
+
 - Fixed: legacy version families (1.18.2-1.21.8) showed raw translation keys / Chinese
   build names in-game — build group names now use the same English keys as 1.21.9+/26.x
   across all 7 locales
@@ -14,13 +35,13 @@
   `-Puse_aliyun_mirror=true`; NeoForge JEI 26.1 baseline aligned with Fabric
 - Changelog: 1.0.9-1.0.14 backfilled from git history; `push.sh` accepts `-m` notes
   and CI extracts only the released version's section for platform changelogs
-
 - Fabric jar metadata: `version` no longer builds as `unspecified` (mod version + MC cluster suffix, e.g. `1.0.14+mc1.19.2-1.19.4`)
 - Fabric `minecraft` dependency now lists every version of the cluster (e.g. `["1.19.2","1.19.3","1.19.4"]`) instead of pinning the representative build version — cluster jars now load on all advertised versions
 - Fabric `suggests.jei` no longer embeds the unexpanded `${jei_min_version}` placeholder
 - NeoForge `neoforge.mods.toml` is now generated per cluster: `minecraft` range matches the cluster (e.g. `[1.21,1.21.2)` instead of a blanket `[1.20.3,)`), and mod/JEI/NeoForge version bounds come from `neoforge/targets.json`
 - NeoForge jars now bundle the MIT `LICENSE` notice
 - Added `mc_range` to `neoforge/targets.json` (per-cluster Minecraft version range used for the mods.toml dependency)
+
 
 ## 1.0.14
 
