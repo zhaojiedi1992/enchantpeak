@@ -66,13 +66,14 @@ jobs:
           if-no-files-found: error
 
   github-release:
-    needs: [release-info, build]
+    needs: [release-info, build, neoforge-build]
     runs-on: ubuntu-latest
     steps:
-      - name: Download all Minecraft jars
+      - name: Download all Minecraft jars (Fabric + NeoForge)
         uses: actions/download-artifact@v4
         with:
-          pattern: enchantpeak-mc*
+          # 同时匹配 enchantpeak-mc<target>（Fabric）与 enchantpeak-neoforge-mc<target>（NeoForge）
+          pattern: enchantpeak-*
           path: dist
           merge-multiple: true
 
