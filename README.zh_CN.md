@@ -177,9 +177,9 @@ cd enchantpeak
 ./gradlew build
 ```
 
-默认构建 26.2，输出文件：`build/libs/enchantpeak-mc26.2-x.x.x.jar`。
+默认构建 26.2，输出文件：`build/libs/enchantpeak-fabric-<版本>+mc26.2.jar`。
 
-构建单个目标或一次构建全部目标：
+构建单个目标或一次构建全部目标（含 NeoForge，产物在 `dist/`）：
 
 ```bash
 ./gradlew clean build -Ptarget_mc=26.1.2

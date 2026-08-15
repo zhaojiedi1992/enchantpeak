@@ -178,7 +178,7 @@ git clone https://github.com/zhaojiedi1992/enchantpeak.git
 cd enchantpeak
 ./gradlew build                                  # 默认 26.2
 ./gradlew clean build -Ptarget_mc=1.21           # 指定簇（如 1.21 = 1.21/1.21.1）
-./build_all_versions.sh                          # 全部 Fabric 簇
+scripts/build_all_versions.sh                    # 全部 Fabric + NeoForge 簇，产物在 dist/
 ```
 
 Supported targets and dependency versions are defined once in `versions/minecraft.json`.
