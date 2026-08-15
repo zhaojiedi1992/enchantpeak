@@ -63,6 +63,7 @@ sed -i "s/^mod_version=.*/mod_version=${NEW_VERSION}/" gradle.properties
 echo "✓ gradle.properties: ${NEW_VERSION}"
 
 # ---- 更新 CHANGELOG.md ----
+# Unreleased 段的既有内容并入新版本节（-m 消息放最前），否则攒下的说明会丢失
 TODAY=$(date +%Y-%m-%d)
 TEMP=$(mktemp)
 {
@@ -78,7 +79,10 @@ TEMP=$(mktemp)
         echo "$RELEASE_MESSAGE"
         echo ""
     fi
-    # 保留旧内容（去掉原来的第一行标题），跳过旧的 Unreleased 段
+    # 提取旧 Unreleased 段内容（标题行到下一个 ## 之间），并入新版本节
+    awk '/^## Unreleased$/{flag=1;next} /^## /{flag=0} flag && NF' CHANGELOG.md
+    echo ""
+    # 保留旧内容（去掉原标题行与旧 Unreleased 段）
     tail -n +2 CHANGELOG.md | sed -e '/^## Unreleased$/,/^## /{/^## /!d}' -e '/^## Unreleased$/d'
 } > "$TEMP"
 mv "$TEMP" CHANGELOG.md
