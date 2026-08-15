@@ -47,10 +47,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Test Minecraft ${{ matrix.minecraft }}
-        run: ./gradlew test --no-daemon -Ptarget_mc=${{ matrix.minecraft }}
-
-      - name: Build Minecraft ${{ matrix.minecraft }}
+      - name: Build and test Minecraft ${{ matrix.minecraft }}
         run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.minecraft }}
 
       - name: Verify Minecraft ${{ matrix.minecraft }} enchantment data
