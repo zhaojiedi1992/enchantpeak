@@ -2,13 +2,14 @@ name: Build NeoForge
 
 on:
   push:
-    branches-ignore:
-      - 'gh-pages'
-  pull_request:
+    branches:
+      - main
     paths:
       - 'neoforge/**'
       - '.github/workflows/build-neoforge.yml'
       - 'versions/minecraft.json'
+      - 'gradle.properties'
+  pull_request:
 
 permissions:
   contents: read

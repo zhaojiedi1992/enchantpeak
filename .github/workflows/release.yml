@@ -170,6 +170,12 @@ jobs:
             echo "GAME_VERSIONS_EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Extract changelog for ${{ needs.release-info.outputs.version }}
+        run: |
+          awk '/^## ${{ needs.release-info.outputs.version }}$/{flag=1;next} /^## /{flag=0} flag' \
+            CHANGELOG.md > .gh-changelog.md
+          test -s .gh-changelog.md
+
       - name: Publish NeoForge ${{ matrix.target }} to Modrinth
         uses: Kira-NT/mc-publish@v3
         with:
@@ -179,7 +185,7 @@ jobs:
           name: EnchantPeak NeoForge ${{ needs.release-info.outputs.version }} for MC ${{ matrix.target }}
           version: ${{ needs.release-info.outputs.version }}+neoforge-mc${{ matrix.target }}
           version-type: release
-          changelog-file: CHANGELOG.md
+          changelog-file: .gh-changelog.md
           loaders: neoforge
           game-versions: ${{ steps.game-versions.outputs.versions }}
           java: Java 21
@@ -195,7 +201,7 @@ jobs:
           name: EnchantPeak NeoForge ${{ needs.release-info.outputs.version }} for MC ${{ matrix.target }}
           version: ${{ needs.release-info.outputs.version }}+neoforge-mc${{ matrix.target }}
           version-type: release
-          changelog-file: CHANGELOG.md
+          changelog-file: .gh-changelog.md
           loaders: neoforge
           game-versions: ${{ steps.game-versions.outputs.versions }}
           java: Java 21
@@ -229,6 +235,12 @@ jobs:
             echo "GAME_VERSIONS_EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Extract changelog for ${{ needs.release-info.outputs.version }}
+        run: |
+          awk '/^## ${{ needs.release-info.outputs.version }}$/{flag=1;next} /^## /{flag=0} flag' \
+            CHANGELOG.md > .gh-changelog.md
+          test -s .gh-changelog.md
+
       - name: Publish Minecraft ${{ matrix.minecraft }} to Modrinth
         uses: Kira-NT/mc-publish@v3
         with:
@@ -238,7 +250,7 @@ jobs:
           name: EnchantPeak ${{ needs.release-info.outputs.version }} for MC ${{ matrix.minecraft }}
           version: ${{ needs.release-info.outputs.version }}+mc${{ matrix.minecraft }}
           version-type: release
-          changelog-file: CHANGELOG.md
+          changelog-file: .gh-changelog.md
           loaders: |
             fabric
             quilt
@@ -258,7 +270,7 @@ jobs:
           name: EnchantPeak ${{ needs.release-info.outputs.version }} for MC ${{ matrix.minecraft }}
           version: ${{ needs.release-info.outputs.version }}+mc${{ matrix.minecraft }}
           version-type: release
-          changelog-file: CHANGELOG.md
+          changelog-file: .gh-changelog.md
           loaders: |
             fabric
             quilt
