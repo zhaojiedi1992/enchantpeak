@@ -6,6 +6,23 @@
 # push tag 后 GitHub Actions 会自动构建并发布到 Modrinth / CurseForge / GitHub Releases
 set -euo pipefail
 
+# 若启用了 .bashrc 里的 enable_proxy（socks5 代理）则继承环境变量；
+# 否则尝试自动启用（直连 github 失败时）
+if [ -z "${ALL_PROXY:-}" ] && [ -z "${all_proxy:-}" ]; then
+    if ! timeout 5 git ls-remote https://github.com/zhaojiedi1992/enchantpeak.git HEAD >/dev/null 2>&1; then
+        if timeout 3 curl -s -x socks5h://172.28.9.46:10801 -o /dev/null https://github.com 2>/dev/null; then
+            export http_proxy="socks5://172.28.9.46:10801"
+            export https_proxy="socks5://172.28.9.46:10801"
+            export HTTP_PROXY="socks5://172.28.9.46:10801"
+            export HTTPS_PROXY="socks5://172.28.9.46:10801"
+            export ALL_PROXY="socks5://172.28.9.46:10801"
+            echo "✓ 直连不可用，已自动启用代理 socks5://172.28.9.46:10801"
+        else
+            echo "⚠ 直连与代理均不可用，push 阶段可能失败" >&2
+        fi
+    fi
+fi
+
 cd "$(dirname "$0")"
 
 RELEASE_MESSAGE=""
