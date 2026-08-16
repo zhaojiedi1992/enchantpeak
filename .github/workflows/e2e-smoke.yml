@@ -87,39 +87,34 @@ jobs:
 
       - name: Assert EnchantPeak markers in client log
         run: |
-          # 正则经文件传参（heredoc 引号形式不经过 shell 转义，避免反斜杠被吃）
+          # 正则用单引号传递（单引号内反斜杠原样保留，绕开 shell/YAML 双重转义）
           if [ "${{ matrix.rei_only }}" = "true" ]; then
-            cat > /tmp/e2e-require.txt <<'REQUIRES'
-\[EnchantPeak\] Initialized\.
-REI displays registered: \d+ info, \d+ custom
-REI entries added: \d+
-REQUIRES
+            printf '%s\n' \
+              '\[EnchantPeak\] Initialized\.' \
+              'REI displays registered: \d+ info, \d+ custom' \
+              'REI entries added: \d+' > /tmp/e2e-require.txt
           elif [ "${{ matrix.e2e }}" = "true" ]; then
-            cat > /tmp/e2e-require.txt <<'REQUIRES'
-\[EnchantPeak\] Initialized\.
-JEI recipes registered: \d+
-REI displays registered: \d+ info, \d+ custom
-REI entries added: \d+
-\[EnchantPeak E2E\] RESULT: OK
-REQUIRES
+            printf '%s\n' \
+              '\[EnchantPeak\] Initialized\.' \
+              'JEI recipes registered: \d+' \
+              'REI displays registered: \d+ info, \d+ custom' \
+              'REI entries added: \d+' \
+              '\[EnchantPeak E2E\] RESULT: OK' > /tmp/e2e-require.txt
           elif [ "${{ matrix.loader }}" = "neoforge" ]; then
-            cat > /tmp/e2e-require.txt <<'REQUIRES'
-\[EnchantPeak\] NeoForge mod initialized\.
-JEI recipes registered: \d+
-REQUIRES
+            printf '%s\n' \
+              '\[EnchantPeak\] NeoForge mod initialized\.' \
+              'JEI recipes registered: \d+' > /tmp/e2e-require.txt
           else
-            cat > /tmp/e2e-require.txt <<'REQUIRES'
-\[EnchantPeak\] Initialized\.
-JEI recipes registered: \d+
-REI displays registered: \d+ info, \d+ custom
-REI entries added: \d+
-REQUIRES
+            printf '%s\n' \
+              '\[EnchantPeak\] Initialized\.' \
+              'JEI recipes registered: \d+' \
+              'REI displays registered: \d+ info, \d+ custom' \
+              'REI entries added: \d+' > /tmp/e2e-require.txt
           fi
-          cat > /tmp/e2e-forbid.txt <<'FORBIDS'
-注册失败
-当前注册表中缺失
-RESULT: FAIL
-FORBIDS
+          printf '%s\n' \
+            '注册失败' \
+            '当前注册表中缺失' \
+            'RESULT: FAIL' > /tmp/e2e-forbid.txt
           python3 scripts/assert_e2e_log.py --require-file /tmp/e2e-require.txt --forbid-file /tmp/e2e-forbid.txt
 
       - name: Upload client log on failure
