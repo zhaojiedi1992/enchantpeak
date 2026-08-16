@@ -15,15 +15,18 @@ import net.minecraft.client.Minecraft;
 public class E2eClient implements ClientModInitializer {
 
     private static final long WORLD_WAIT_MS = 180_000;
-    private static final long RELOAD_SETTLE_MS = 15_000;
+    // mc-runtime-test 自带的测试 mod 在进世界数秒后就会退出游戏，
+    // 断言必须抢在它前面：世界加载后 2 秒（JEI/REI 重载在同一帧内完成）即执行
+    private static final long RELOAD_SETTLE_MS = 2_000;
 
     @Override
     public void onInitializeClient() {
+        System.out.println("[EnchantPeak E2E] harness armed (waiting for world load)");
         Thread watchdog = new Thread(() -> {
             long deadline = System.currentTimeMillis() + WORLD_WAIT_MS;
             while (Minecraft.getInstance().level == null && System.currentTimeMillis() < deadline) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 } catch (InterruptedException ignored) {
                     break;
                 }
@@ -32,7 +35,6 @@ public class E2eClient implements ClientModInitializer {
                 finish(false, "world never loaded within " + WORLD_WAIT_MS + "ms");
                 return;
             }
-            // 等 JEI/REI 的世界级重载完成（注册表数据在进世界时刷新）
             try {
                 Thread.sleep(RELOAD_SETTLE_MS);
             } catch (InterruptedException ignored) {
