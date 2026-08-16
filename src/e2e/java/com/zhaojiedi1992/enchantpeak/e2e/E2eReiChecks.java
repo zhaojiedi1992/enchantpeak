@@ -58,8 +58,9 @@ final class E2eReiChecks {
     }
 
     /**
-     * 模拟 REI 搜索：检查条目的格式化文本（tooltip）中是否包含关键词。
-     * REI 的默认搜索行为就是匹配 tooltip 文本（tooltipSearch = ALWAYS）。
+     * 模拟 REI 搜索：REI 的 tooltipSearch=ALWAYS 索引的是条目堆的**完整
+     * tooltip 文本**（附魔名如 "Fortune III" 就在其中），而不是条目显示名。
+     * 这里生成原版 tooltip 再匹配关键词，与 REI 搜索框行为等价。
      */
     private static long searchEnchantment(String keyword) {
         return EntryRegistry.getInstance()
@@ -69,9 +70,14 @@ final class E2eReiChecks {
                     if (!(value instanceof ItemStack stack) || !stack.isEnchanted()) {
                         return false;
                     }
-                    // asFormattedText() 返回条目的完整展示文本（包含 tooltip）
-                    String text = entry.asFormattedText().getString().toLowerCase();
-                    return text.contains(keyword.toLowerCase());
+                    java.util.List<net.minecraft.network.chat.Component> lines = stack.getTooltipLines(
+                            net.minecraft.world.item.Item.TooltipContext.EMPTY,
+                            null,
+                            net.minecraft.world.item.TooltipFlag.NORMAL);
+                    return lines.stream()
+                            .map(net.minecraft.network.chat.Component::getString)
+                            .anyMatch(s -> s.toLowerCase(java.util.Locale.ROOT)
+                                    .contains(keyword.toLowerCase(java.util.Locale.ROOT)));
                 })
                 .count();
     }
