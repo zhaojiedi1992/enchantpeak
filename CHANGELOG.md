@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## 1.0.17
+
+Released on 2026-08-16.
+
+### Highlights
+
+Review round 2: test rigor and release-pipeline hardening.
+
+- Fixed: deep verification tests now hard-fail on bootstrap errors for the
+  families they cover (1.18.2-1.20.4) instead of silently skipping — a green
+  CI run now actually means the data was verified
+- Added: item completeness check — every vanilla item that accepts any
+  non-curse enchantment must have a record in the mod data (this is the check
+  that would have caught the missing flint_and_steel / curse-only items)
+- Fixed: release workflow now runs the Fabric/NeoForge family sync check,
+  so manual tag pushes can't ship drifted family code
+- Fixed: push.sh push-failure detection was dead code under set -e; tag
+  push failures abort loudly again
+
+
+
 ## 1.0.16
 
 Released on 2026-08-16.
