@@ -6,22 +6,26 @@
 # push tag 后 GitHub Actions 会自动构建并发布到 Modrinth / CurseForge / GitHub Releases
 set -euo pipefail
 
-# 若启用了 .bashrc 里的 enable_proxy（socks5 代理）则继承环境变量；
-# 否则尝试自动启用（直连 github 失败时）
-if [ -z "${ALL_PROXY:-}" ] && [ -z "${all_proxy:-}" ]; then
-    if ! timeout 5 git ls-remote https://github.com/zhaojiedi1992/enchantpeak.git HEAD >/dev/null 2>&1; then
-        if timeout 3 curl -s -x socks5h://172.28.9.46:10801 -o /dev/null https://github.com 2>/dev/null; then
-            export http_proxy="socks5://172.28.9.46:10801"
-            export https_proxy="socks5://172.28.9.46:10801"
-            export HTTP_PROXY="socks5://172.28.9.46:10801"
-            export HTTPS_PROXY="socks5://172.28.9.46:10801"
-            export ALL_PROXY="socks5://172.28.9.46:10801"
-            echo "✓ 直连不可用，已自动启用代理 socks5://172.28.9.46:10801"
-        else
-            echo "⚠ 直连与代理均不可用，push 阶段可能失败" >&2
-        fi
+# 直连 github 失败时自动启用 socks5 代理（地址可用 ENCHANTPEAK_SOCKS5_PROXY 覆盖）。
+# 必须在 push 前调用：全量构建耗时很长，脚本开头的探测结果到 push 时可能已过期
+# （v1.0.19 发布时因此 push 失败，只能手动重推）。
+enable_proxy_if_needed() {
+    if [ -n "${ALL_PROXY:-}" ] || [ -n "${all_proxy:-}" ]; then
+        return 0  # 用户环境已配置代理（如 .bashrc 的 enable_proxy），不覆盖
     fi
-fi
+    if timeout 8 git ls-remote https://github.com/zhaojiedi1992/enchantpeak.git HEAD >/dev/null 2>&1; then
+        return 0  # 直连可用
+    fi
+    local socks="${ENCHANTPEAK_SOCKS5_PROXY:-172.28.9.46:10801}"
+    if timeout 5 curl -s -x "socks5h://${socks}" -o /dev/null https://github.com 2>/dev/null; then
+        export http_proxy="socks5://${socks}" https_proxy="socks5://${socks}" \
+               HTTP_PROXY="socks5://${socks}" HTTPS_PROXY="socks5://${socks}" \
+               ALL_PROXY="socks5://${socks}"
+        echo "✓ 直连不可用，已自动启用代理 socks5://${socks}"
+    else
+        echo "⚠ 直连与代理均不可用，push 阶段可能失败" >&2
+    fi
+}
 
 cd "$(dirname "$0")"
 
@@ -124,6 +128,9 @@ echo "✓ git commit: update to ${NEW_VERSION}"
 
 git tag "v${NEW_VERSION}"
 echo "✓ git tag: v${NEW_VERSION}"
+
+# push 前再探测一次网络（构建可能耗时近一小时，开头的结果已过期）
+enable_proxy_if_needed
 
 # push 失败必须显式报错：tag 推不上去 = CI 永远不触发，release 静默失败。
 # 注意：set -e 下赋值语句的命令替换失败会直接退出脚本，rc 检查必须是 if 包裹
