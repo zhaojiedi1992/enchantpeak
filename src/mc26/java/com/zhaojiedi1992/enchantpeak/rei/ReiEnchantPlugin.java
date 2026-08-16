@@ -78,16 +78,24 @@ public class ReiEnchantPlugin implements REIClientPlugin {
 
     @Override
     public void registerEntries(EntryRegistry registry) {
+        // 标题界面（未连服务器）时 BasicDisplay.registryAccess() 会抛
+        // IllegalStateException：此时直接跳过条目注册，进世界后 REI 重载会补上。
+        // 不能依赖 catch (Throwable) 兜底——那会让错误被静默吞掉且本次会话条目缺失。
+        if (net.minecraft.client.Minecraft.getInstance().level == null) {
+            EnchantPeakMod.LOGGER.warn("[EnchantPeak] 未进入世界，跳过 REI 独立搜索条目注册（进世界后自动补）");
+            return;
+        }
         try {
-            // 官方 DefaultClientPlugin.registerEntries() 从不调用 BasicDisplay.registryAccess()，
-            // 只在 registerDisplays 阶段才用。这里 catch Throwable 兜住潜在的 AssertionError，
-            // 避免注册表未就绪时崩游戏（参考 REI Internals.throwNotSetup()）
             EnchantmentData data = new EnchantmentData(BasicDisplay.registryAccess());
             int count = 0;
 
             for (ItemEnchantRecord record : data.getAllRecords()) {
                 for (EnchantGroup group : record.groups()) {
                     ItemStack base = new ItemStack(record.item());
+                    // curse-only 物品是空方案（无附魔）：注册裸 ItemStack 会与原版条目重复，跳过
+                    if (group.entries().isEmpty()) {
+                        continue;
+                    }
                     // 真实附魔：原版会自动在 tooltip 中渲染附魔词条（时运 III 等），
                     // 不再手动写 Lore 重复这些信息，保持原生 tooltip 展示，避免鼠标悬停时内容重复
                     EnchantStacks.applyTo(base, group);

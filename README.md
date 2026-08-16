@@ -222,6 +222,15 @@ A: Currently vanilla-only. Modded enchantment support is planned for future vers
 
 A: Yes! EnchantPeak is licensed under MIT. Include it freely in any modpack.
 
+**Q: How is the enchantment data verified?**
+
+A: Every build is machine-verified against the official vanilla datapack in CI:
+1.18.2–1.20.4 via a JVM test that bootstraps the vanilla registry, 1.21+ and
+26.x via a Python verifier that cross-checks the Java data against the shipped
+enchantment JSONs. **Known exception: 1.20.5/1.20.6** — those versions ship no
+enchantment definitions in the game jar (transitional releases), so the data is
+checked against a reviewed static snapshot instead.
+
 ---
 
 ## 📝 License

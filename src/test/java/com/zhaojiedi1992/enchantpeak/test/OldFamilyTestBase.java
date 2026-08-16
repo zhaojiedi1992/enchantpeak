@@ -116,9 +116,12 @@ abstract class OldFamilyTestBase {
         // 深度校验的覆盖范围由 verify_enchants.py 的分工表决定：
         // mc118/mc119/mc120/mc1204（代码内置注册表 + 语义接线完整）
         String family = System.getProperty("enchantpeak.familyDir", "");
-        return family.contains("mc118") || family.contains("mc119")
-                || family.contains("mc120/") || family.contains("mc1204");
+        return IN_SCOPE_FAMILIES.contains(family);
     }
+
+    /** 深度校验覆盖的版本族（代码内置注册表 + 语义接线完整） */
+    private static final java.util.Set<String> IN_SCOPE_FAMILIES =
+            java.util.Set.of("mc118", "mc119", "mc120", "mc1204");
 
     static void requireApplicable() {
         bootstrap();

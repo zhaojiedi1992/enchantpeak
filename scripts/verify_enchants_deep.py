@@ -252,10 +252,329 @@ official_all_items = set().union(*ENCH_ITEMS.values())
 official_curse_only_items = official_all_items - official_non_curse_items
 expected_curse_only_items = CURSE_ONLY_ITEMS
 configured_items = set(all_items)
-java_registered_items = {
-    item.lower()
-    for item in re.findall(r"Items\.([A-Z0-9_]+)", DATA_SOURCE.read_text(encoding="utf-8"))
-}
+java_source = DATA_SOURCE.read_text(encoding="utf-8")
+java_registered_items = {item.lower() for item in re.findall(r"Items\.([A-Z0-9_]+)", java_source)}
+
+# Java 分组内容解析：支持字面量与参数化工厂方法，生成 {item_id: set[frozenset]}
+# 使用括号平衡计数处理嵌套方法调用（如 toolFortune(l)）
+
+def _paren_close(s, open_at):
+    depth, i = 1, open_at + 1
+    while i < len(s) and depth > 0:
+        if s[i] == '(': depth += 1
+        elif s[i] == ')': depth -= 1
+        i += 1
+    return i - 1
+
+def _top_comma(s):
+    depth = 0
+    for i, c in enumerate(s):
+        if c == '(': depth += 1
+        elif c == ')': depth -= 1
+        elif c == ',' and depth == 0: return i
+    return -1
+
+def _parse_e_calls(block):
+    return [(m.group(1).lower(), int(m.group(2)))
+            for m in re.finditer(
+                r'e\([^,]+,\s*Enchantments\.([A-Z0-9_]+)\s*,\s*(\d+)\s*\)', block)]
+
+java_item_builds = {}  # {item_id: set[frozenset[(ench, level)]]}
+
+# Step 1: All literal EnchantGroup("name", List.of(...)) using paren-balance
+all_groups = {}
+for m in re.finditer(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(', java_source):
+    gname = m.group(1)
+    lopen = m.end() - 1
+    lclose = _paren_close(java_source, lopen)
+    enchants = _parse_e_calls(java_source[lopen+1:lclose])
+    if enchants:
+        all_groups[gname] = frozenset(enchants)
+
+# Step 2: Parameterized factory methods
+factories = {}
+for m in re.finditer(
+    r'private\s+(?:static\s+)?EnchantGroup\s+([a-zA-Z0-9_]+)\s*\(([^)]+)\)\s*\{(.*?)\n    \}',
+    java_source, re.DOTALL
+):
+    mname, params_str, body = m.group(1), m.group(2), m.group(3)
+    static_e, has_var = [], False
+    for ec in re.finditer(r'e\([^,]+,\s*([^,]+)\s*,\s*([^)]+)\s*\)', body):
+        ek, el = ec.group(1).strip(), ec.group(2).strip()
+        if ek.startswith('Enchantments.'):
+            try: static_e.append((ek.replace('Enchantments.', '').lower(), int(el)))
+            except ValueError: has_var = True
+        else: has_var = True
+    if has_var:
+        factories[mname] = static_e
+
+# Step 3: （工厂调用不预先展开到全局表——同名组如 sharpness 在 sword/spear/mace
+# 间复用，全局键会互相覆盖；改为在 _extract_builds_from_listof 内按调用点就地展开）
+
+# Step 4: Method name -> group name mapping
+method_gname = {}
+for m in re.finditer(
+    r'private\s+(?:static\s+)?EnchantGroup\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*\{[^}]*?return\s+new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"',
+    java_source, re.DOTALL
+):
+    method_gname[m.group(1)] = m.group(2)
+for m in re.finditer(
+    r'private\s+(?:static\s+)?EnchantGroup\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*\{\s*return\s+[a-zA-Z0-9_]+\s*\([^"]*"([a-z0-9_]+)"',
+    java_source, re.DOTALL
+):
+    method_gname[m.group(1)] = m.group(2)
+changed = True
+while changed:
+    changed = False
+    for m in re.finditer(
+        r'private\s+(?:static\s+)?EnchantGroup\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*\{\s*return\s+([a-zA-Z0-9_]+)\s*\(',
+        java_source, re.DOTALL
+    ):
+        w, c2 = m.group(1), m.group(2)
+        if w not in method_gname and c2 in method_gname:
+            method_gname[w] = method_gname[c2]; changed = True
+
+def _enclosing_method(source, pos):
+    """返回 pos 所在的 private void buildXxx(...) 方法体文本。"""
+    best = None
+    for m in re.finditer(
+        r'private\s+void\s+build[A-Z][a-zA-Z]+\s*\([^)]*\)\s*\{', source
+    ):
+        if m.start() <= pos:
+            best = m
+        else:
+            break
+    if best is None:
+        return None
+    open_at = best.end() - 1
+    close = _paren_close(source, open_at)
+    return source[best.start():close + 1]
+
+
+def _resolve_method_build(method_name):
+    """解析返回 EnchantGroup 的方法体，返回 frozenset 或 None。
+    支持: return new EnchantGroup("name", List.of(...e()...)) 与
+          return factory(l, "name", KEY, level, ...) 两类。"""
+    mm = re.search(
+        r'private\s+(?:static\s+)?EnchantGroup\s+' + re.escape(method_name) +
+        r'\s*\([^)]*\)\s*\{\s*return\s+', java_source)
+    if not mm:
+        return None
+    rest = java_source[mm.end():]
+    # 分支 1：直接 return new EnchantGroup("name", List.of(...))
+    lit = re.match(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(', rest)
+    if lit:
+        lopen = mm.end() + lit.end() - 1
+        lclose = _paren_close(java_source, lopen)
+        enchants = _parse_e_calls(java_source[lopen + 1:lclose])
+        return frozenset(enchants) if enchants else None
+    # 分支 2：return factory(l, "name", ...)
+    fac = re.match(r'([a-zA-Z0-9_]+)\s*\(([^)]*)\)\s*;', rest)
+    if fac and fac.group(1) in factories:
+        call_args = fac.group(2)
+        keys = [k.lower() for k in re.findall(r'Enchantments\.([A-Z0-9_]+)', call_args)]
+        levels = [int(v) for v in re.findall(r',\s*(\d+)\b', call_args)]
+        pairs = list(zip(keys, levels))
+        if len(levels) < len(keys):
+            INFERRED = {'frost_walker': 2, 'depth_strider': 3, 'silk_touch': 1,
+                        'protection': 4, 'fire_protection': 4,
+                        'blast_protection': 4, 'projectile_protection': 4}
+            merged, li = [], 0
+            for k in keys:
+                if li < len(levels) and k not in INFERRED:
+                    merged.append((k, levels[li])); li += 1
+                elif k in INFERRED:
+                    merged.append((k, INFERRED[k]))
+            pairs = merged
+        return frozenset(factories[fac.group(1)] + pairs)
+    return None
+
+
+def _extract_builds_from_listof(inner):
+    """Given the content inside List.of(...), extract frozensets for each element."""
+    builds = set()
+    # Split by top-level commas to get individual expressions
+    parts, depth, last = [], 0, 0
+    for i, c in enumerate(inner):
+        if c == '(': depth += 1
+        elif c == ')': depth -= 1
+        elif c == ',' and depth == 0:
+            parts.append(inner[last:i].strip()); last = i + 1
+    parts.append(inner[last:].strip())
+    for part in parts:
+        if not part: continue
+        # Literal EnchantGroup: 直接从 part 解析完整内容。
+        # 注意同名组（helmet/chestplate/leggings 的 protection）内容不同，
+        # 绝不能查全局组表（会被最后一个写入的同名组覆盖）
+        lm = re.search(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(', part)
+        if lm:
+            plo = lm.end() - 1
+            plc = _paren_close(part, plo)
+            p_enchants = _parse_e_calls(part[plo + 1:plc])
+            if p_enchants:
+                builds.add(frozenset(p_enchants))
+                continue
+        # Factory call with name literal: axeGroup(l,"name",...) - expand in place
+        for fname, static_e in factories.items():
+            fm = re.search(
+                fname + r'\s*\(\s*[^,]+\s*,\s*"([a-z0-9_]+)"\s*,\s*((?:[^)]+))\)', part)
+            if fm:
+                rem = fm.group(2)
+                keys = [k.lower() for k in re.findall(r'Enchantments\.([A-Z0-9_]+)', rem)]
+                levels = [int(v) for v in re.findall(r',\s*(\d+)\b', rem)]
+                pairs = list(zip(keys, levels))
+                if len(levels) < len(keys):
+                    INFERRED = {'frost_walker': 2, 'depth_strider': 3, 'silk_touch': 1,
+                                'protection': 4, 'fire_protection': 4,
+                                'blast_protection': 4, 'projectile_protection': 4}
+                    merged, li = [], 0
+                    for k in keys:
+                        if li < len(levels) and k not in INFERRED:
+                            merged.append((k, levels[li])); li += 1
+                        elif k in INFERRED:
+                            merged.append((k, INFERRED[k]))
+                    pairs = merged
+                builds.add(frozenset(static_e + pairs))
+                break
+        # Method call: toolFortune(l), swordSharp(l), maceDensity(l) ...
+        # 直接解析该方法体的 return 语句（同名组如 sharpness 在 sword/spear 间内容不同，
+        # 不能走全局组表；必须按方法体解析）
+        mm = re.search(r'\b([a-zA-Z0-9_]+)\s*\(', part)
+        if mm:
+            resolved = _resolve_method_build(mm.group(1))
+            if resolved is not None:
+                builds.add(resolved)
+    return builds
+
+# Step 5: Walk every build method body, resolve groups and items
+for bm in re.finditer(
+    r'private void build[A-Z][a-zA-Z]+\s*\([^)]*\)\s*\{(.*?)\n    \}',
+    java_source, re.DOTALL
+):
+    body = bm.group(1)
+    # Collect all local variable assignments
+    # Single: EnchantGroup varname = expr;
+    local_vars = {}
+    for vm in re.finditer(r'\bEnchantGroup\s+([a-zA-Z0-9_]+)\s*=\s*(.+?);\s*\n', body, re.DOTALL):
+        vname, expr = vm.group(1), vm.group(2)
+        lm = re.search(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"', expr)
+        if lm and lm.group(1) in all_groups:
+            local_vars[vname] = frozenset([all_groups[lm.group(1)]])
+            continue
+        mm = re.search(r'\b([a-zA-Z0-9_]+)\s*\(', expr)
+        if mm:
+            mn = mm.group(1)
+            if mn in method_gname and method_gname[mn] in all_groups:
+                local_vars[vname] = frozenset([all_groups[method_gname[mn]]])
+    # Group list: List<EnchantGroup> groups = List.of(...)
+    group_lists = {}  # var_name -> set[frozenset]
+    for vm in re.finditer(r'\bList\s*<EnchantGroup>\s+([a-zA-Z0-9_]+)\s*=\s*List\.of\(', body):
+        vname = vm.group(1)
+        lopen = vm.end() - 1
+        lclose = _paren_close(body, lopen)
+        inner = body[lopen+1:lclose]
+        group_lists[vname] = _extract_builds_from_listof(inner)
+
+    # Parse addRecords calls
+    pos = 0
+    while True:
+        idx = body.find('addRecords(', pos)
+        if idx == -1: break
+        start = idx + len('addRecords(')
+        close = _paren_close(body, start - 1)
+        call = body[start:close]
+        first = _top_comma(call)
+        if first == -1: pos = close + 1; continue
+        grp_arg, item_arg = call[:first].strip(), call[first+1:]
+        item_ids = [mm.lower() for mm in re.findall(r'Items\.([A-Z0-9_]+)', item_arg)]
+        if not item_ids: pos = close + 1; continue
+        builds = set()
+        if 'List.of(' in grp_arg:
+            lo = grp_arg.find('List.of(')
+            lo_open = lo + len('List.of(') - 1
+            lo_close = _paren_close(grp_arg, lo_open)
+            builds = _extract_builds_from_listof(grp_arg[lo_open+1:lo_close])
+        elif grp_arg in group_lists:
+            builds = group_lists[grp_arg]
+        elif grp_arg in local_vars:
+            builds = local_vars[grp_arg]
+        for item_id in item_ids:
+            java_item_builds.setdefault(item_id, set()).update(builds)
+        pos = close + 1
+
+
+
+# 形式 D：records.add(new ItemEnchantRecord(<item>, List.of(group1, group2)))
+# <item> 可能是 Items.X 常量，也可能是 for 循环变量（mc121 等族的形态 E）
+pos = 0
+while True:
+    idx = java_source.find('records.add(new ItemEnchantRecord(', pos)
+    if idx == -1:
+        break
+    open_at = idx + len('records.add(') - 1
+    close = _paren_close(java_source, open_at)
+    call = java_source[open_at + 1:close]
+    enclosing = _enclosing_method(java_source, open_at)
+    # 第一个参数：Items.X 常量
+    im = re.match(r'\s*new\s+ItemEnchantRecord\s*\(\s*Items\.([A-Z0-9_]+)\s*,', call)
+    item_ids = []
+    if im:
+        item_ids = [im.group(1).lower()]
+    else:
+        # 形式 E：for (Item item : <listVar>) { records.add(new ItemEnchantRecord(item, ...)) }
+        vm = re.match(r'\s*new\s+ItemEnchantRecord\s*\(\s*([a-zA-Z0-9_]+)\s*,', call)
+        if vm and enclosing:
+            # 找 for 循环头里的集合变量名
+            loop_var = vm.group(1)
+            fm = re.search(
+                r'for\s*\(\s*Item\s+' + re.escape(loop_var) +
+                r'\s*:\s*([a-zA-Z0-9_]+)\s*\)', enclosing)
+            if fm:
+                list_var = fm.group(1)
+                lm = re.search(
+                    r'List\s*<\s*Item\s*>\s+' + re.escape(list_var) +
+                    r'\s*=\s*List\.of\(', enclosing)
+                if lm:
+                    lvo = lm.end() - 1
+                    lvc = _paren_close(enclosing, lvo)
+                    item_ids = [x.lower() for x in re.findall(
+                        r'Items\.([A-Z0-9_]+)', enclosing[lvo + 1:lvc])]
+    if not item_ids:
+        pos = close + 1
+        continue
+    # 第二个参数：List.of(...) -- 用括号平衡定位（不依赖第一个参数的匹配对象）
+    lst = re.search(r',\s*List\.of\(', call)
+    if not lst:
+        pos = close + 1
+        continue
+    lo_open = lst.end() - 1
+    lo_close = _paren_close(call, lo_open)
+    inner = call[lo_open + 1:lo_close]
+    builds = _extract_builds_from_listof(inner)
+    # List.of(standard) 等局部变量引用：找到调用点所在的 build 方法体，解析其局部变量
+    for var_m in re.finditer(r'\b([a-zA-Z0-9_]+)\b', inner):
+        vname = var_m.group(1)
+        if vname in ('List', 'of'):
+            continue
+        if not re.search(r'\b' + re.escape(vname) + r'\s*\(', inner):
+            # 是变量引用而非方法调用：定位所在方法体
+            enclosing = _enclosing_method(java_source, open_at)
+            if enclosing:
+                vassign = re.search(
+                    r'\bEnchantGroup\s+' + re.escape(vname) +
+                    r'\s*=\s*new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(',
+                    enclosing)
+                if vassign:
+                    vlopen = vassign.end() - 1
+                    vlclose = _paren_close(enclosing, vlopen)
+                    venchants = _parse_e_calls(enclosing[vlopen + 1:vlclose])
+                    if venchants:
+                        builds.add(frozenset(venchants))
+    for item_id in item_ids:
+        java_item_builds.setdefault(item_id, set()).update(builds)
+    pos = close + 1
+
+
 missing_items = official_all_items - configured_items
 extra_items = configured_items - official_all_items
 if missing_items:
@@ -273,6 +592,35 @@ if official_curse_only_items != expected_curse_only_items:
         "官方纯诅咒物品集合发生变化："
         f"expected={sorted(expected_curse_only_items)}, actual={sorted(official_curse_only_items)}"
     )
+
+
+# ========== 检查 0：Java 分组内容与 spec 一致（闭环验证）==========
+print("【检查 0/5】Java 分组内容与 spec 一致（源码 ↔ 规格闭环）...")
+for item_id, spec_groups in all_items.items():
+    # 将 spec 的方案列表转为 set[frozenset]
+    spec_builds = {frozenset(enchants) for _, enchants in spec_groups}
+    java_builds = java_item_builds.get(item_id, set())
+
+    # 过滤空方案（curse-only 物品的占位标记）
+    spec_builds = {b for b in spec_builds if b}
+    java_builds = {b for b in java_builds if b}
+
+    if spec_builds != java_builds:
+        only_spec = spec_builds - java_builds
+        only_java = java_builds - spec_builds
+        msg = f"{item_id}: Java 方案集合与 spec 不一致"
+        if only_spec:
+            msg += f"\n  仅在 spec: {sorted([sorted(b) for b in only_spec])}"
+        if only_java:
+            msg += f"\n  仅在 Java: {sorted([sorted(b) for b in only_java])}"
+        errors.append(msg)
+
+# 检查 Java 中注册但 spec 未涵盖的物品
+java_only_items = set(java_item_builds.keys()) - configured_items
+if java_only_items:
+    errors.append(f"Java 源码注册了 spec 未涵盖的物品：{sorted(java_only_items)}")
+
+print("  完成")
 
 
 def maximal_compatible_sets(enchants):

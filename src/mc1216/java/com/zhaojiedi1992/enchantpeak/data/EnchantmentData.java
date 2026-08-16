@@ -97,7 +97,8 @@ public class EnchantmentData {
                 Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL);
         for (Item item : shovels) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("axe_silk", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1), e(l, Enchantments.SILK_TOUCH, 1)))
+                    new EnchantGroup("fortune", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
+                    new EnchantGroup("silk_touch", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.SILK_TOUCH, 1), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -107,7 +108,8 @@ public class EnchantmentData {
                 Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE);
         for (Item item : hoes) {
             records.add(new ItemEnchantRecord(item, List.of(
-                    new EnchantGroup("full_build", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)))
+                    new EnchantGroup("fortune", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.FORTUNE, 3), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
+                    new EnchantGroup("silk_touch", List.of(e(l, Enchantments.EFFICIENCY, 5), e(l, Enchantments.SILK_TOUCH, 1), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)))
             )));
         }
     }
@@ -126,13 +128,10 @@ public class EnchantmentData {
 
     private void buildMaces(HolderLookup.RegistryLookup<Enchantment> l) {
         records.add(new ItemEnchantRecord(Items.MACE, List.of(
-                new EnchantGroup("density", List.of(e(l, Enchantments.DENSITY, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
-                new EnchantGroup("breach", List.of(e(l, Enchantments.BREACH, 4), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
-                new EnchantGroup("sharpness", List.of(e(l, Enchantments.SHARPNESS, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
-                new EnchantGroup("smite", List.of(e(l, Enchantments.SMITE, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
-                new EnchantGroup("bane", List.of(e(l, Enchantments.BANE_OF_ARTHROPODS, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
-                new EnchantGroup("fire_aspect", List.of(e(l, Enchantments.FIRE_ASPECT, 2), e(l, Enchantments.DENSITY, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
-                new EnchantGroup("wind_burst", List.of(e(l, Enchantments.WIND_BURST, 3), e(l, Enchantments.DENSITY, 5), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)))
+                new EnchantGroup("density", List.of(e(l, Enchantments.DENSITY, 5), e(l, Enchantments.FIRE_ASPECT, 2), e(l, Enchantments.WIND_BURST, 3), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
+                new EnchantGroup("breach", List.of(e(l, Enchantments.BREACH, 4), e(l, Enchantments.FIRE_ASPECT, 2), e(l, Enchantments.WIND_BURST, 3), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
+                new EnchantGroup("smite", List.of(e(l, Enchantments.SMITE, 5), e(l, Enchantments.FIRE_ASPECT, 2), e(l, Enchantments.WIND_BURST, 3), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1))),
+                new EnchantGroup("bane", List.of(e(l, Enchantments.BANE_OF_ARTHROPODS, 5), e(l, Enchantments.FIRE_ASPECT, 2), e(l, Enchantments.WIND_BURST, 3), e(l, Enchantments.UNBREAKING, 3), e(l, Enchantments.MENDING, 1)))
             )));
     }
 

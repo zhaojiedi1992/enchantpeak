@@ -84,6 +84,10 @@ public class ReiEnchantPlugin implements REIClientPlugin {
             for (ItemEnchantRecord record : data.getAllRecords()) {
                 for (EnchantGroup group : record.groups()) {
                     ItemStack base = new ItemStack(record.item());
+                    // curse-only 物品是空方案（无附魔）：注册裸 ItemStack 会与原版条目重复，跳过
+                    if (group.entries().isEmpty()) {
+                        continue;
+                    }
                     // 真实附魔：原版会自动在 tooltip 中渲染附魔词条（时运 III 等），
                     // 不再手动写 Lore 重复这些信息，保持原生 tooltip 展示，避免鼠标悬停时内容重复
                     EnchantStacks.applyTo(base, group);

@@ -98,10 +98,11 @@ echo "✓ 所有 Minecraft 目标构建和校验通过"
 # ---- 提交 + 打 tag + push ----
 # 只提交版本相关文件；发布前的干净工作区检查保证不会夹带其他改动。
 git add -- gradle.properties CHANGELOG.md
-git commit --only -m "update to ${NEW_VERSION}" -- gradle.properties CHANGELOG.md >/dev/null 2>&1 || {
+if ! commit_out=$(git commit --only -m "update to ${NEW_VERSION}" -- gradle.properties CHANGELOG.md 2>&1); then
+    echo "$commit_out" >&2
     echo "✗ git commit 失败" >&2
     exit 1
-}
+fi
 echo "✓ git commit: update to ${NEW_VERSION}"
 
 git tag "v${NEW_VERSION}"

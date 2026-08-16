@@ -19,6 +19,8 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
     private final IDrawable icon;
     private static final int SLOT_SIZE = 18;
     private static final int SLOT_GAP = 2;
+    // 布局硬上限：若未来某物品的流派数超过该值，槽位会溢出。
+    // 修改时必须同步检查所有 EnchantmentData 族的方案数（当前最大为靴子 8）。
     private static final int MAX_GROUPS = 8;
     private static final int INPUT_SLOT_X = 5;
     private static final int OUTPUT_START_X = INPUT_SLOT_X + SLOT_SIZE + 12;
@@ -67,7 +69,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
                     .addItemStack(enchanted)
                     .addRichTooltipCallback((slotView, tooltip) ->
-                            tooltip.add(Component.literal("§6▶ ").append(EnchantStacks.displayName(group))));
+                            tooltip.add(Component.literal("▶ ").append(EnchantStacks.displayName(group))));
             x += SLOT_SIZE + SLOT_GAP;
         }
     }

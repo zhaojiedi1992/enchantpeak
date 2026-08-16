@@ -67,7 +67,7 @@ public class JeiEnchantCategory implements IRecipeCategory<ItemEnchantRecord> {
             builder.addSlot(RecipeIngredientRole.OUTPUT, x, slotY)
                     .addItemStack(enchanted)
                     .addRichTooltipCallback((slotView, tooltip) ->
-                            tooltip.add(Component.literal("§6▶ ").append(EnchantStacks.displayName(group))));
+                            tooltip.add(Component.literal("▶ ").append(EnchantStacks.displayName(group))));
             x += SLOT_SIZE + SLOT_GAP;
         }
     }
