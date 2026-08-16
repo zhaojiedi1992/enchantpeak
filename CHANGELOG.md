@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.1.1
+
+Released on 2026-08-16.
+
+ci(release): serialize GitHub Release uploads (NeoForge first, then Fabric ascending)
+
+
+
 ## 1.1.0
 
 Released on 2026-08-16.
