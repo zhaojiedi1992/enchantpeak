@@ -53,6 +53,26 @@ is generated per cluster at build time.
   (other locales welcome; English must always be complete)
 - Conventional commits appreciated (`fix:`, `feat:`, `docs:`, …)
 
+## End-to-end testing
+
+Three tiers, deepest first:
+
+1. **Data closed-loop (all targets, every CI run)** — JVM deep tests, the Python
+   datapack verifier (`scripts/verify_enchants.py`), and jar metadata checks.
+2. **In-game API assertions (26.x targets)** — `src/e2e/` harness, built only with
+   `-Pe2e`: `./gradlew e2eJar -Ptarget_mc=26.2 -Pe2e`. Stage it alongside the mod:
+   `./gradlew stageE2eMods -Ptarget_mc=26.2` (copies the jar + JEI/REI/fabric-api
+   into `run/mods`). After entering a world the harness prints
+   `[EnchantPeak E2E] RESULT: OK <details>` and quits (exit 0/1).
+3. **Headless client smoke (representative matrix, tag pushes /
+   `gh workflow run e2e-smoke.yml`)** — boots the real client via mc-runtime-test
+   (Xvfb + auto world join) for fabric 26.2/1.21.9/1.21.4/1.20.4/1.18.2 and
+   neoforge 26.2/1.21.9, then asserts the log markers with
+   `scripts/assert_e2e_log.py`.
+
+Local quick check after manual launches: point your launcher at `run/` and run
+`python3 scripts/assert_e2e_log.py --require 'JEI recipes registered: \d+' ...`.
+
 ## Releasing (maintainers)
 
 `./push.sh -m "release notes"` bumps the patch version, converts the CHANGELOG
