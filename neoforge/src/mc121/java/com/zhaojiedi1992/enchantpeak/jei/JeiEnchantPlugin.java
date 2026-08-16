@@ -41,25 +41,32 @@ public class JeiEnchantPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         RegistryAccess registryAccess = getRegistryAccess();
         if (registryAccess == null) {
-            EnchantPeakMod.LOGGER.warn("[EnchantPeak] JEI: registry access not available, skipping recipe registration");
+            EnchantPeakMod.LOGGER.warn("[EnchantPeak] JEI: 注册表暂不可用（尚未进入世界），跳过配方注册；进入世界后 JEI 重载时会自动补齐");
             return;
         }
 
-        EnchantmentData data = new EnchantmentData(registryAccess);
-        List<ItemEnchantRecord> records = data.getAllRecords();
-        registration.addRecipes(RECIPE_TYPE, records);
-        for (ItemEnchantRecord record : records) {
-            for (EnchantGroup group : record.groups()) {
-                List<Component> lines = new ArrayList<>();
-                lines.add(EnchantStacks.displayHeading(group));
-                lines.addAll(EnchantStacks.enchantmentLines(group));
-                registration.addItemStackInfo(
-                        new ItemStack(record.item()),
-                        lines.toArray(Component[]::new)
-                );
+        try {
+            EnchantmentData data = new EnchantmentData(registryAccess);
+            List<ItemEnchantRecord> records = data.getAllRecords();
+            registration.addRecipes(RECIPE_TYPE, records);
+            for (ItemEnchantRecord record : records) {
+                for (EnchantGroup group : record.groups()) {
+                    List<Component> lines = new ArrayList<>();
+                    lines.add(EnchantStacks.displayHeading(group));
+                    lines.addAll(EnchantStacks.enchantmentLines(group));
+                    registration.addItemStackInfo(
+                            new ItemStack(record.item()),
+                            lines.toArray(Component[]::new)
+                    );
+                }
             }
+            EnchantPeakMod.LOGGER.info("[EnchantPeak] JEI recipes registered: {}", records.size());
+        } catch (RuntimeException e) {
+            EnchantPeakMod.LOGGER.error(
+                    "[EnchantPeak] JEI 配方注册失败，本模组的 JEI 分类与信息页将不可用（不影响游戏运行）。"
+                            + "若下方异常为 Missing key，通常是数据包移除了某个原版附魔。",
+                    e);
         }
-        EnchantPeakMod.LOGGER.info("[EnchantPeak] JEI recipes registered: {}", records.size());
     }
 
     private static RegistryAccess getRegistryAccess() {

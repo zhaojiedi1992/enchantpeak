@@ -283,7 +283,7 @@ java_item_builds = {}  # {item_id: set[frozenset[(ench, level)]]}
 
 # Step 1: All literal EnchantGroup("name", List.of(...)) using paren-balance
 all_groups = {}
-for m in re.finditer(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(', java_source):
+for m in re.finditer(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*(?:List\.of|nonNull)\(', java_source):
     gname = m.group(1)
     lopen = m.end() - 1
     lclose = _paren_close(java_source, lopen)
@@ -353,7 +353,7 @@ def _enclosing_method(source, pos):
 
 def _resolve_method_build(method_name):
     """解析返回 EnchantGroup 的方法体，返回 frozenset 或 None。
-    支持: return new EnchantGroup("name", List.of(...e()...)) 与
+    支持: return new EnchantGroup("name", List.of/nonNull(...e()...)) 与
           return factory(l, "name", KEY, level, ...) 两类。"""
     mm = re.search(
         r'private\s+(?:static\s+)?EnchantGroup\s+' + re.escape(method_name) +
@@ -361,8 +361,8 @@ def _resolve_method_build(method_name):
     if not mm:
         return None
     rest = java_source[mm.end():]
-    # 分支 1：直接 return new EnchantGroup("name", List.of(...))
-    lit = re.match(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(', rest)
+    # 分支 1：直接 return new EnchantGroup("name", List.of/nonNull(...))
+    lit = re.match(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*(?:List\.of|nonNull)\(', rest)
     if lit:
         lopen = mm.end() + lit.end() - 1
         lclose = _paren_close(java_source, lopen)
@@ -406,7 +406,7 @@ def _extract_builds_from_listof(inner):
         # Literal EnchantGroup: 直接从 part 解析完整内容。
         # 注意同名组（helmet/chestplate/leggings 的 protection）内容不同，
         # 绝不能查全局组表（会被最后一个写入的同名组覆盖）
-        lm = re.search(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(', part)
+        lm = re.search(r'new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*(?:List\.of|nonNull)\(', part)
         if lm:
             plo = lm.end() - 1
             plc = _paren_close(part, plo)
@@ -562,7 +562,7 @@ while True:
             if enclosing:
                 vassign = re.search(
                     r'\bEnchantGroup\s+' + re.escape(vname) +
-                    r'\s*=\s*new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*List\.of\(',
+                    r'\s*=\s*new\s+EnchantGroup\s*\(\s*"([a-z0-9_]+)"\s*,\s*(?:List\.of|nonNull)\(',
                     enclosing)
                 if vassign:
                     vlopen = vassign.end() - 1

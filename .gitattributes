@@ -1,0 +1,17 @@
+# 统一行尾为 LF：仓库曾因 core.autocrlf=true 出现 CRLF/LF 混用，
+# 导致族间 diff 整文件失效（mc26/mc1206 数据文件等）。属性优先于 git config。
+* text=auto
+*.java   text eol=lf
+*.gradle text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.py     text eol=lf
+*.sh     text eol=lf
+*.toml   text eol=lf
+*.yml    text eol=lf
+*.properties text eol=lf
+
+# 二进制
+*.png binary
+*.jar binary
+*.class binary

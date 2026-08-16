@@ -33,9 +33,9 @@ class EnchantmentDataStructureTest {
     // Gradle test 的工作目录即项目根；familyDir 形如 src/mc26/java
     private static final Path REPO_ROOT = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
 
-    // new EnchantGroup("name", List.of( e(l, KEY, 1), e(l, KEY, 5), ... ))
+    // new EnchantGroup("name", List.of/nonNull( e(l, KEY, 1), e(l, KEY, 5), ... ))
     private static final Pattern GROUP_PATTERN = Pattern.compile(
-            "new EnchantGroup\\(\\s*\"([a-z0-9_]+)\"\\s*,\\s*List\\.of\\((.*?)\\)\\s*\\)",
+            "new EnchantGroup\\(\\s*\"([a-z0-9_]+)\"\\s*,\\s*(?:List\\.of|nonNull)\\((.*?)\\)\\s*\\)",
             Pattern.DOTALL);
     private static final Pattern ENTRY_KEY_PATTERN = Pattern.compile(
             "Enchantments\\.([A-Z0-9_]+)");

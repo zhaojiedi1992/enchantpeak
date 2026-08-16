@@ -37,7 +37,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
             registry.add(new ReiEnchantCategory());
             EnchantPeakMod.LOGGER.info("[EnchantPeak] REI category registered");
         } catch (Throwable e) {
-            EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI category", e);
+            EnchantPeakMod.LOGGER.error("[EnchantPeak] REI 分类注册失败，'最佳附魔'分类将不可用（不影响游戏运行）", e);
         }
     }
 
@@ -70,7 +70,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
 
             EnchantPeakMod.LOGGER.info("[EnchantPeak] REI displays registered: {} info, {} custom", infoCount, displayCount);
         } catch (Throwable e) {
-            EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI displays", e);
+            EnchantPeakMod.LOGGER.error("[EnchantPeak] REI 显示注册失败，信息页与'最佳附魔'分类将不可用（若异常为 Missing key，通常是数据包移除了原版附魔）", e);
         }
     }
 
@@ -100,7 +100,7 @@ public class ReiEnchantPlugin implements REIClientPlugin {
 
             EnchantPeakMod.LOGGER.info("[EnchantPeak] REI entries added: {}", count);
         } catch (Throwable e) {
-            EnchantPeakMod.LOGGER.error("[EnchantPeak] Failed to register REI entries", e);
+            EnchantPeakMod.LOGGER.error("[EnchantPeak] REI 独立搜索条目注册失败，按附魔名搜索将不可用（若异常为 Missing key，通常是数据包移除了原版附魔）", e);
         }
     }
 }
