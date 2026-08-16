@@ -107,19 +107,19 @@ echo "✓ git commit: update to ${NEW_VERSION}"
 git tag "v${NEW_VERSION}"
 echo "✓ git tag: v${NEW_VERSION}"
 
-# push 失败必须显式报错：tag 推不上去 = CI 永远不触发，release 静默失败
-# 注意：不能用管道（如 | grep），否则 shell 反转的是 grep 的退出码而非 git push 的
-push_out=$(git push origin main 2>&1)
-push_rc=$?
-echo "$push_out"
-if [ $push_rc -ne 0 ]; then
+# push 失败必须显式报错：tag 推不上去 = CI 永远不触发，release 静默失败。
+# 注意：set -e 下赋值语句的命令替换失败会直接退出脚本，rc 检查必须是 if 包裹
+if push_out=$(git push origin main 2>&1); then
+    echo "$push_out"
+else
+    echo "$push_out"
     echo "✗ git push main 失败（本地已有提交与 tag，手动重试：git push origin main v${NEW_VERSION}）" >&2
     exit 1
 fi
-push_tag_out=$(git push origin "v${NEW_VERSION}" 2>&1)
-push_tag_rc=$?
-echo "$push_tag_out"
-if [ $push_tag_rc -ne 0 ]; then
+if push_out=$(git push origin "v${NEW_VERSION}" 2>&1); then
+    echo "$push_out"
+else
+    echo "$push_out"
     echo "✗ git push tag v${NEW_VERSION} 失败（main 已推送；手动重试：git push origin v${NEW_VERSION}）" >&2
     exit 1
 fi

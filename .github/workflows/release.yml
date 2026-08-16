@@ -9,7 +9,18 @@ permissions:
   contents: write
 
 jobs:
+  # 发布也可能由手动 git tag + push 触发（不经过 push.sh），漂移检查必须在这里再拦一次
+  family-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Fabric/NeoForge family sources are in sync
+        run: python3 scripts/sync_family_sources.py --check
+
   release-info:
+    needs: family-sync
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.info.outputs.matrix }}

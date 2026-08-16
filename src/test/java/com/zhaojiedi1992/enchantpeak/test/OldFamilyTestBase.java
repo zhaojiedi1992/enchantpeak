@@ -107,6 +107,19 @@ abstract class OldFamilyTestBase {
         return String.valueOf(bootFailure);
     }
 
+    /**
+     * 当前编译族是否属于本测试的预期范围（代码内置注册表族）。
+     * 范围判定独立于 bootstrap 结果：范围内的族 bootstrap 失败 = 环境错误（必须 fail），
+     * 范围外的族（1.21+/26.x datapack、1.20.5/1.20.6 未接线）= 合法 skip。
+     */
+    static boolean inExpectedScope() {
+        // 深度校验的覆盖范围由 verify_enchants.py 的分工表决定：
+        // mc118/mc119/mc120/mc1204（代码内置注册表 + 语义接线完整）
+        String family = System.getProperty("enchantpeak.familyDir", "");
+        return family.contains("mc118") || family.contains("mc119")
+                || family.contains("mc120/") || family.contains("mc1204");
+    }
+
     static void requireApplicable() {
         bootstrap();
         if (bootFailure != null) {
@@ -132,6 +145,31 @@ abstract class OldFamilyTestBase {
             return (Iterable<?>) registryValues();
         } catch (Exception e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /** 物品注册表（物品完整性检查用）。各版本位置：BuiltInRegistries.ITEM / Registry.ITEM。 */
+    static Iterable<?> itemRegistry() {
+        bootstrap();
+        Object registry;
+        try {
+            try {
+                Class<?> bir = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+                registry = bir.getField("ITEM").get(null);
+            } catch (ClassNotFoundException e) {
+                Class<?> reg = Class.forName("net.minecraft.core.Registry");
+                registry = reg.getField("ITEM").get(null);
+            }
+            Class<?> registryInterface = Class.forName("net.minecraft.core.Registry");
+            Object values;
+            try {
+                values = registryInterface.getMethod("values").invoke(registry);
+            } catch (NoSuchMethodException e) {
+                values = registry;
+            }
+            return (Iterable<?>) values;
+        } catch (Exception e) {
+            throw new IllegalStateException("物品注册表不可用", e);
         }
     }
 

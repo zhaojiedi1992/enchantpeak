@@ -25,7 +25,8 @@ import java.util.stream.Stream;
  * 4. 每件物品至少有一个方案，且方案数 ≥ 1（含 curse-only 的空方案标记）
  *
  * 不需要 Minecraft 运行时，因此可以和 verify_enchants_deep.py 的 datapack
- * 级校验互补：deep 校验只覆盖 mc2111/mc26，本测试覆盖全部 10 个版本族。
+ * 级校验互补：datapack 校验覆盖 1.21+/26.x，JVM 深度校验覆盖 mc118-mc1204，
+ * 本测试（源码解析）覆盖全部版本族的结构不变量。
  */
 class EnchantmentDataStructureTest {
 

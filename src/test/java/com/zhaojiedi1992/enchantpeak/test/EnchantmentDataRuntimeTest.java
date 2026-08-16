@@ -12,8 +12,9 @@ import java.util.List;
  * 数据层端到端测试：bootstrap 原版注册表后真正构造 EnchantmentData，
  * 验证所有物品/方案/附魔在运行时都能解析（Holder 绑定成功）且结构非空。
  *
- * 与 python datapack 深度校验互补：那套只覆盖 mc2111/mc26，旧族此前仅有
- * "编译器校验"；本测试让全部版本族在 JVM 里跑到真实数据装配。
+ * 与 python datapack 深度校验互补：datapack 校验覆盖 1.21+/26.x，
+ * EnchantmentDataDeepTest 覆盖 mc118-mc1204（代码内置注册表族）；
+ * 本测试只验证数据装配不炸，正确性由上面两者负责。
  */
 class EnchantmentDataRuntimeTest {
 

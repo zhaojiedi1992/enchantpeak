@@ -17,7 +17,7 @@ import java.util.List;
 public class EnchantStacks {
 
     /**
-     * Apply enchantments to an item stack using 1.21+ DataComponents API
+     * Apply via stack.enchant(Enchantment, int) (pre-1.20.5 API)
      */
     public static void applyTo(ItemStack stack, EnchantGroup group) {
         for (EnchantEntry entry : group.entries()) {
@@ -26,7 +26,7 @@ public class EnchantStacks {
     }
 
     /**
-     * Generate display lines for enchantments using 1.21+ description() API
+     * Generate display lines via getFullname(level) (pre-1.21 API)
      */
     public static List<Component> enchantmentLines(EnchantGroup group) {
         List<Component> lines = new ArrayList<>();

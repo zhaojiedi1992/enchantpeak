@@ -5,12 +5,19 @@
 同名目录）里，绝大多数文件应当逐字节一致（JEI 插件代码 loader 无关）。
 REI 插件是 Fabric 独有；EnchantmentData/EnchantStacks/JEI 插件两边共用。
 
+⚠️ 已知局限：KNOWN_DIVERGENCES 只能表达"仅一侧存在的文件"（NeoForge 独有
+路径的白名单）。它不能表达"两边都有但内容应当不同"的文件——这种文件
+--check 会误报不一致，同步模式会直接用 Fabric 侧覆盖 NeoForge 侧。如果
+将来出现这种分歧，需要把该文件整个移出共享范围（如 EnchantPeakMod 的
+做法：按族拆成多份），而不是试图加白名单。
+
 用法：
   python3 scripts/sync_family_sources.py            # 同步（以 Fabric 侧为源）
   python3 scripts/sync_family_sources.py --check    # 只检查，不一致时非零退出（CI 用）
 
 同步规则：对每个共享族，Fabric 侧文件覆盖 NeoForge 侧同名文件；NeoForge 侧
-多出的文件不动，Fabric 侧没有对应物的文件报告为 UNSYNCED 供人工确认。
+多出的文件（不在 KNOWN_DIVERGENCES 里）报告为漂移，Fabric 侧没有对应物的
+文件同样报告供人工确认。
 """
 
 import argparse

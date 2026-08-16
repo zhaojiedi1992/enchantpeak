@@ -10,12 +10,12 @@ import java.util.List;
 
 /**
  * MC 26.x / 1.21.11+ version rendering utilities.
- * Uses 1.21+ DataComponents API: stack.enchant() and holder.value().description()
+ * 1.20.5/1.20.6 API: Enchantments 常量为 Enchantment 实例，走 enchant(Enchantment,int) + getFullname
  */
 public class EnchantStacks {
 
     /**
-     * Apply enchantments to an item stack using 1.21+ DataComponents API
+     * Apply via stack.enchant(Enchantment, int) (1.20.5/1.20.6 API)
      */
     public static void applyTo(ItemStack stack, EnchantGroup group) {
         for (EnchantEntry entry : group.entries()) {
@@ -24,7 +24,7 @@ public class EnchantStacks {
     }
 
     /**
-     * Generate display lines for enchantments using 1.21+ description() API
+     * Generate display lines via getFullname(level) (1.20.5/1.20.6 API)
      */
     public static List<Component> enchantmentLines(EnchantGroup group) {
         List<Component> lines = new ArrayList<>();

@@ -27,9 +27,14 @@ class EnchantmentDataDeepTest extends OldFamilyTestBase {
 
     @org.junit.jupiter.api.Test
     void enchantmentDataMatchesVanillaSemantics() {
-        // 范围外的族（1.21+ datapack 定义、1.20.5/1.20.6 语义未接线）明确跳过；
-        // 范围内的族 bootstrap 失败则硬失败——它们没有其他校验兜底
-        org.junit.jupiter.api.Assumptions.assumeTrue(isApplicable(), skipReason());
+        // 范围内的族（mc118-mc1204，代码内置注册表）：bootstrap 失败即硬失败——
+        // 这些族除了本测试没有任何其他校验兜底，静默 skip 等于没测。
+        // 范围外的族（1.21+/26.x datapack、1.20.5/1.20.6 未接线）明确 skip。
+        if (inExpectedScope()) {
+            requireApplicable();
+        } else {
+            org.junit.jupiter.api.Assumptions.assumeTrue(isApplicable(), skipReason());
+        }
         List<String> errors = new ArrayList<>();
         EnchantmentData data = newData();
 
@@ -92,6 +97,70 @@ class EnchantmentDataDeepTest extends OldFamilyTestBase {
         }
         org.junit.jupiter.api.Assertions.assertTrue(errors.isEmpty(),
                 String.join("\n", errors));
+    }
+
+    /**
+     * 物品完整性：官方注册表里所有可附魔物品（任意非诅咒附魔 canEnchant 为真）
+     * 都必须有 mod 记录。与 python verifier 的 official_all_items 反向覆盖检查同构，
+     * 填补 JVM 侧只查"已注册物品"不查"该注册的都注册了"的盲区
+     * （上一轮 flint_and_steel / 诅咒物品缺口正是这类问题）。
+     */
+    @org.junit.jupiter.api.Test
+    void everyEnchantableItemHasARecord() {
+        if (inExpectedScope()) {
+            requireApplicable();
+        } else {
+            org.junit.jupiter.api.Assumptions.assumeTrue(isApplicable(), skipReason());
+        }
+        List<String> errors = new ArrayList<>();
+        EnchantmentData data = newData();
+
+        var registered = new java.util.HashSet<String>();
+        for (ItemEnchantRecord record : data.getAllRecords()) {
+            registered.add(itemIdOf(record.item()));
+        }
+
+        for (Object itemObj : itemRegistry()) {
+            var item = (net.minecraft.world.item.Item) itemObj;
+            var stack = new net.minecraft.world.item.ItemStack(item);
+            boolean enchantable = false;
+            for (var ench : officialNonCurse()) {
+                if (canEnchant(ench, stack)) {
+                    enchantable = true;
+                    break;
+                }
+            }
+            if (enchantable) {
+                String id = itemIdOf(item);
+                if (!registered.contains(id)) {
+                    errors.add("官方可附魔物品未注册: " + id);
+                }
+            }
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(errors.isEmpty(),
+                String.join("\n", errors));
+    }
+
+    private String itemIdOf(net.minecraft.world.item.Item item) {
+        // getDescriptionId: "item.minecraft.diamond_sword" -> "diamond_sword"
+        String did = item.getDescriptionId();
+        return did.substring(did.lastIndexOf('.') + 1);
+    }
+
+    private List<net.minecraft.world.item.enchantment.Enchantment> officialNonCurseCache;
+
+    private List<net.minecraft.world.item.enchantment.Enchantment> officialNonCurse() {
+        if (officialNonCurseCache == null) {
+            officialNonCurseCache = new ArrayList<>();
+            for (var entry : enchantmentRegistry()) {
+                var ench = unwrap(entry);
+                String id = idOf(ench);
+                if (!id.equals("binding_curse") && !id.equals("vanishing_curse")) {
+                    officialNonCurseCache.add(ench);
+                }
+            }
+        }
+        return officialNonCurseCache;
     }
 
     /**
