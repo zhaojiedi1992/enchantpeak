@@ -51,15 +51,16 @@ final class E2eJeiChecks {
                     .append(" fishing_rod=").append(fishingRod)
                     .append(' ');
 
-            // 验证预期值：镐2方案、斧6方案、剑3方案、头盔4方案、靴子8方案、弓2方案、三叉戟2方案、钓鱼竿1方案
+            // JEI 配方 = 每条物品记录一个（92 条记录，流派在 category 的槽位里渲染），
+            // 因此每件代表物品的记录数应为 1
             return recipes.size() >= 90
-                    && diamondPickaxe == 2
-                    && diamondAxe == 6
-                    && diamondSword == 3
-                    && diamondHelmet == 4
-                    && diamondBoots == 8
-                    && bow == 2
-                    && trident == 2
+                    && diamondPickaxe == 1
+                    && diamondAxe == 1
+                    && diamondSword == 1
+                    && diamondHelmet == 1
+                    && diamondBoots == 1
+                    && bow == 1
+                    && trident == 1
                     && fishingRod == 1;
         } catch (Throwable t) {
             detail.append("jei=exception:").append(t).append(' ');
