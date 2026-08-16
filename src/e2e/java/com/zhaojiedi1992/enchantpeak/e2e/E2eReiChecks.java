@@ -41,16 +41,18 @@ final class E2eReiChecks {
                     .append(' ');
 
             // 92 条物品记录；条目应覆盖全部 288 个附魔方案（允许 REI 自带少量额外附魔条目）
-            // 时运：镐6×2 + 铲6×2 + 锄6×2 + 斧6×6 = 60 个方案
-            // 锋利：剑6×1 + 斧6×3 = 24 个方案
-            // 保护：头7×1 + 胸6×1 + 腿6×1 + 靴6×4 = 43 个方案
-            // 效率：镐6×2 + 斧6×6 + 铲6×2 + 锄6×2 + 剪刀1 = 85 个方案
+            // 搜索阈值按 26.2（7 材质，含铜）实测校准：
+            // fortune：镐7×1 + 铲7×1 + 锄7×1 + 斧7×3 = 42（实测 42）
+            // sharpness：剑7×1 + 斧7×2 + 矛7×1 = 28（实测 28）
+            // protection：子串命中 protection/fire/blast/projectile_protection = 144（实测 144，
+            //   与 REI 子串搜索行为一致，正是玩家体验）
+            // efficiency：镐/铲/锄各14 + 斧42 + 剪刀1 = 85 起（实测 113，含 26.x 属性行文本）
             return displays >= 90
                     && enchantedEntries >= 288
-                    && fortuneResults >= 55        // 预期60，留10%容差
-                    && sharpnessResults >= 20       // 预期24，留容差
-                    && protectionResults >= 40      // 预期43，留容差
-                    && efficiencyResults >= 80;     // 预期85，留容差
+                    && fortuneResults >= 40
+                    && sharpnessResults >= 25
+                    && protectionResults >= 140
+                    && efficiencyResults >= 85;
         } catch (Throwable t) {
             detail.append("rei=exception:").append(t).append(' ');
             return false;
