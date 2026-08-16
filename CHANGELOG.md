@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+## 1.0.18
+
+Released on 2026-08-16.
+
+### Highlights
+
+Closed-loop verification for all version families + data fixes it uncovered.
+
+- Added: the Python datapack verifier now parses the actual Java EnchantmentData
+  source (helper methods, parameterized factories, all registration forms) and
+  cross-checks every build's content against the spec — changing one number in
+  the Java data now fails CI. This closed the last verification gap and
+  immediately caught real bugs in the 1.21 families: shovels were missing the
+  Fortune build, hoes were missing both Fortune and Silk Touch builds, and mace
+  builds were 7 jumbled groups instead of 4 correct maximal ones
+- Added: 1.20.5/1.20.6 (the only family with no official data source) now has a
+  reviewed static snapshot checked against the Java data; the exception is
+  documented in the README
+- Fixed: REI search entries no longer silently vanish on the title screen —
+  registry access is guarded before use and re-registered when entering a world
+- Fixed: REI no longer registers duplicate vanilla entries for curse-only items
+- Fixed: JEI tooltip arrows no longer hardcode gold color (matches REI styling)
+- Cleanup: dead code removed from the structure test, fragile path matching
+  replaced with an explicit whitelist, commit/push error output preserved
+
+
+
 ## 1.0.17
 
 Released on 2026-08-16.
