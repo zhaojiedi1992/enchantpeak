@@ -69,40 +69,33 @@ class EnchantmentDataStructureTest {
 
     @org.junit.jupiter.api.Test
     void everyBuildHasNoRepeatedEnchantmentPerItem() throws IOException {
+        // 语义：每个方案（EnchantGroup）内不得重复出现同一附魔键。
+        // 注意：不能检查"同物品的两个组不得共享附魔键"——合法方案必然共享
+        // unbreaking/mending/efficiency（时运流和精准流都含耐久 III），
+        // 且各组通过 helper 方法构造（toolFortune(l)），正则取不到组名。
         List<String> failures = new ArrayList<>();
         for (Path src : familySources()) {
             String code = Files.readString(src, StandardCharsets.UTF_8);
             String family = familyOf(src);
-            // 展开按组定义，得到 组名 -> 该组用到的附魔键集合
-            Map<String, Set<String>> groupEnchants = new HashMap<>();
             Matcher gm = GROUP_PATTERN.matcher(code);
+            int groups = 0;
             while (gm.find()) {
-                Set<String> keys = new HashSet<>();
+                groups++;
+                // gm.group(2) 是该组的 List.of(...) 内容；统计每个附魔键出现次数
+                Map<String, Integer> keyCounts = new HashMap<>();
                 Matcher em = ENTRY_KEY_PATTERN.matcher(gm.group(2));
-                while (em.find()) keys.add(em.group(1));
-                groupEnchants.merge(gm.group(1), keys, (a, b) -> {
-                    a.addAll(b); return a;
-                });
-            }
-            Matcher rm = ADD_RECORDS_PATTERN.matcher(code);
-            while (rm.find()) {
-                String[] groupNames = rm.group(1).split(",");
-                Set<String> perBuild = null;
-                for (String raw : groupNames) {
-                    String name = raw.replaceAll("[^a-z0-9_]", "");
-                    Set<String> keys = groupEnchants.get(name);
-                    if (keys == null) continue;
-                    if (perBuild != null) {
-                        Set<String> overlap = new HashSet<>(perBuild);
-                        overlap.retainAll(keys);
-                        if (!overlap.isEmpty()) {
-                            failures.add(family + ": 组 " + name + " 与同物品其他组共享附魔键（应是互斥分支而非叠加）："
-                                    + overlap);
-                        }
+                while (em.find()) {
+                    String key = em.group(1);
+                    keyCounts.merge(key, 1, Integer::sum);
+                }
+                for (Map.Entry<String, Integer> e : keyCounts.entrySet()) {
+                    if (e.getValue() > 1) {
+                        failures.add(family + "/" + gm.group(1) + ": 附魔键 " + e.getKey()
+                                + " 出现 " + e.getValue() + " 次（组内不允许重复）");
                     }
                 }
             }
-            if (groupEnchants.isEmpty()) {
+            if (groups == 0) {
                 failures.add(family + ": 未解析到任何 EnchantGroup —— 解析器或代码结构变化？");
             }
         }
