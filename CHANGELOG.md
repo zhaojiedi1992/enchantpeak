@@ -4,7 +4,7 @@
 
 ## 1.1.0
 
-Released on TBD.
+Released on 2026-08-16.
 
 ### E2E Testing Framework
 
