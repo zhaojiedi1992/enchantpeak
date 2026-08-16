@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 1.0.19
+
+Released on 2026-08-16.
+
+Fault tolerance and diagnosability round.
+
+- Added: enchantment resolution is now tolerant of datapack-removed vanilla
+  enchantments - a missing enchantment skips only the builds containing it
+  (precise warning in the log) instead of disabling the whole mod; applies to
+  all 1.21+/26.x families on both JEI and REI
+- Added: JEI/REI registration failures now log actionable messages (enter a
+  world to auto-recover; Missing key = an enchantment was removed by a datapack)
+- Fixed: inExpectedScope regression from 1.0.18 - old-family deep tests would
+  silently skip instead of hard-failing on bootstrap errors (path-segment
+  matching now also keeps the 1.20.6 skip intact)
+- Chore: unified line endings to LF via .gitattributes; closed-loop verifier
+  and structure test parse the new tolerant group form
+
+
+
 ## 1.0.18
 
 Released on 2026-08-16.
