@@ -126,3 +126,21 @@ jar {
 tasks.matching { it.name.contains('DownloadAssets') }.configureEach {
     onlyIf { false }
 }
+
+// ===== E2E：把构建产物 + JEI NeoForge 运行时复制进 ../run/mods（供 mc-runtime-test 加载）=====
+configurations {
+    e2eMods { transitive = false }
+}
+dependencies {
+    e2eMods "mezz.jei:jei-${jeiMc}-neoforge:${jeiVersion}"
+}
+tasks.register('stageE2eMods', Copy) {
+    group = 'e2e'
+    description = 'Copy the built NeoForge jar + JEI into run/mods'
+    doFirst {
+        delete '../run/mods'
+    }
+    from configurations.e2eMods
+    from(tasks.named('jar'))
+    into '../run/mods'
+}

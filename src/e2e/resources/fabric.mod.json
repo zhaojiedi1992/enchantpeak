@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "enchantpeak_e2e",
+  "version": "1.0.0",
+  "name": "EnchantPeak E2E Harness",
+  "description": "Dev-only in-game assertions for EnchantPeak. Never shipped in release jars.",
+  "authors": ["zhaojiedi1992"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.zhaojiedi1992.enchantpeak.e2e.E2eClient"
+    ],
+    "jei_mod_plugin": [
+      "com.zhaojiedi1992.enchantpeak.e2e.E2eJeiPlugin"
+    ],
+    "rei_client": [
+      "com.zhaojiedi1992.enchantpeak.e2e.E2eReiPlugin"
+    ]
+  },
+  "depends": {
+    "minecraft": "*",
+    "fabricloader": ">=0.15.0"
+  }
+}

@@ -203,3 +203,57 @@ sourcesJar {
     from sourceSets[mcFamily].allSource
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// ===== E2E 测试 harness（仅 -Pe2e 时启用；独立 jar，绝不进发布产物）=====
+def e2eEnabled = providers.gradleProperty('e2e').isPresent()
+if (e2eEnabled) {
+    sourceSets.create('e2e') {
+        // 默认约定目录即 src/e2e/java 与 src/e2e/resources，无需显式声明
+        compileClasspath += sourceSets.main.compileClasspath
+        compileClasspath += sourceSets[mcFamily].compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+        runtimeClasspath += sourceSets[mcFamily].runtimeClasspath
+    }
+    dependencies {
+        e2eImplementation sourceSets.main.output
+        e2eImplementation sourceSets[mcFamily].output
+    }
+    tasks.register('e2eJar', Jar) {
+        group = 'e2e'
+        description = 'Build the dev-only E2E harness jar (staged into run/mods)'
+        archiveBaseName = 'enchantpeak-e2e'
+        archiveVersion = project.version
+        from sourceSets.e2e.output
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+// ===== E2E 运行依赖：把 JEI/REI/cloth/architectury/fabric-api 复制进 run/mods
+// （供 mc-runtime-test 等真实启动器方式加载；与发布 jar 完全无关）=====
+configurations {
+    e2eMods { transitive = false }
+}
+def hasJeiRuntime = !project.hasProperty('jei_enabled') || project.jei_enabled.toBoolean()
+def jeiRuntimeArtifact = project.hasProperty('jei_runtime_enabled') && project.jei_runtime_enabled.toBoolean()
+dependencies {
+    e2eMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    e2eMods "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
+    e2eMods "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+    e2eMods "dev.architectury:architectury-fabric:${project.architectury_version}"
+    if (hasJeiRuntime && jeiRuntimeArtifact) {
+        e2eMods "mezz.jei:jei-${project.jei_minecraft_version}-fabric:${project.jei_version}"
+    }
+}
+tasks.register('stageE2eMods', Copy) {
+    group = 'e2e'
+    description = 'Copy the built mod jar + JEI/REI/API jars into run/mods'
+    doFirst {
+        delete 'run/mods'
+    }
+    from configurations.e2eMods
+    from('build/libs') {
+        include '*.jar'
+        exclude '*-sources.jar'
+    }
+    into 'run/mods'
+}
