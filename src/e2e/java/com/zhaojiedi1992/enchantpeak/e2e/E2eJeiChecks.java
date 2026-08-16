@@ -21,7 +21,10 @@ final class E2eJeiChecks {
         }
         try {
             Class<?> pluginClass = Class.forName("com.zhaojiedi1992.enchantpeak.jei.JeiEnchantPlugin");
-            Object recipeType = pluginClass.getField("RECIPE_TYPE").get(null);
+            // RECIPE_TYPE 是包私有字段，必须 getDeclaredField + setAccessible
+            java.lang.reflect.Field field = pluginClass.getDeclaredField("RECIPE_TYPE");
+            field.setAccessible(true);
+            Object recipeType = field.get(null);
             var lookup = runtime.getRecipeManager().createRecipeLookup(
                     (mezz.jei.api.recipe.types.IRecipeType<ItemEnchantRecord>) recipeType);
             // JEI 30+（26.x）的 IRecipeLookup.get() 返回 Stream；兼容起见统一 toList()
