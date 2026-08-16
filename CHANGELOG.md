@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 1.1.0
+
+Released on TBD.
+
+### E2E Testing Framework
+
+This release introduces a comprehensive end-to-end testing framework that validates the entire mod pipeline from in-game initialization through JEI/REI plugin registration to actual search functionality — ensuring players can reliably find and use enchantment builds.
+
+- Added: Complete e2e test harness with HeadlessMc integration — real Minecraft client boots, loads into a world, and runs API assertions before auto-exiting
+- Added: JEI multi-item validation across 8 representative items (tools/weapons/armor) — verifies that every category has queryable recipes
+- Added: REI search validation for 4 key enchantments (fortune/efficiency/sharpness/protection) — simulates player search experience by matching tooltip text
+- Added: In-game API assertions with watchdog mechanism (180s timeout, 2s settle after world load)
+- Added: Smoke test CI matrix covering Fabric 26.2/1.21.9/1.21.4/1.20.4 and NeoForge 26.2/1.21.4/1.20.4
+- Added: `scripts/assert_e2e_log.py` — robust log assertion with file-based pattern input (avoids shell escaping issues)
+- Fixed: `push.sh` network probing now runs both before build and before push — the v1.0.19 release failed to push because the initial probe result expired after an hour-long build
+- Docs: Added comprehensive `docs/E2E_TEST_COVERAGE.md` documenting the test architecture, coverage scope, and local testing workflow
+
+### Technical Details
+
+The e2e harness (`src/e2e/`) is a separate source set built only with `-Pe2e` and never shipped in release jars. It hooks into Fabric's client entrypoint and JEI/REI plugin registration, waits for world load, then executes assertions on the main thread. Results are printed as machine-readable log lines (`[EnchantPeak E2E] RESULT: OK <details>`) that CI validates via regex.
+
+Only Fabric 26.2 runs the full API assertion harness; other versions perform log-marker checks (mod initialized, recipes registered, no error patterns). This hybrid approach gives high confidence on the latest version while ensuring older versions don't regress.
+
 ## 1.0.19
 
 Released on 2026-08-16.
