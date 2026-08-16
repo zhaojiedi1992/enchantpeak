@@ -39,7 +39,24 @@ def main():
                         help="必须出现的正则（全部命中才通过）")
     parser.add_argument("--forbid", nargs="*", default=[],
                         help="禁止出现的正则（任一命中即失败）")
+    parser.add_argument("--require-file", type=Path, default=None,
+                        help="每行一个必须出现的正则（跳过空行与 # 注释）；"
+                             "推荐在 CI 中用文件传参，避免 shell 转义破坏反斜杠")
+    parser.add_argument("--forbid-file", type=Path, default=None,
+                        help="每行一个禁止出现的正则（同上）")
     args = parser.parse_args()
+
+    def read_patterns(path):
+        out = []
+        if path is not None and path.is_file():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    out.append(line)
+        return out
+
+    require = list(args.require) + read_patterns(args.require_file)
+    forbid = list(args.forbid) + read_patterns(args.forbid_file)
 
     log = find_log()
     if log is None:
@@ -49,12 +66,12 @@ def main():
     print(f"检查日志: {log} ({len(text)} 字节)")
 
     failures = []
-    for pattern in args.require:
+    for pattern in require:
         if not re.search(pattern, text):
             failures.append(f"缺少必需标记: {pattern}")
         else:
             print(f"  ✓ 必需标记命中: {pattern}")
-    for pattern in args.forbid:
+    for pattern in forbid:
         m = re.search(pattern, text)
         if m:
             failures.append(f"出现禁止标记: {pattern}（上下文: …{text[max(0, m.start()-80):m.end()+80]}…）")

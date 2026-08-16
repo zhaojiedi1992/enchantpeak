@@ -87,19 +87,40 @@ jobs:
 
       - name: Assert EnchantPeak markers in client log
         run: |
+          # 正则经文件传参（heredoc 引号形式不经过 shell 转义，避免反斜杠被吃）
           if [ "${{ matrix.rei_only }}" = "true" ]; then
-            REQUIRES=( '\[EnchantPeak\] Initialized\.' 'REI displays registered: \d+ info, \d+ custom' 'REI entries added: \d+' )
+            cat > /tmp/e2e-require.txt <<'REQUIRES'
+\[EnchantPeak\] Initialized\.
+REI displays registered: \d+ info, \d+ custom
+REI entries added: \d+
+REQUIRES
           elif [ "${{ matrix.e2e }}" = "true" ]; then
-            REQUIRES=( '\[EnchantPeak\] Initialized\.' 'JEI recipes registered: \d+' 'REI displays registered: \d+ info, \d+ custom' 'REI entries added: \d+' '\[EnchantPeak E2E\] RESULT: OK' )
+            cat > /tmp/e2e-require.txt <<'REQUIRES'
+\[EnchantPeak\] Initialized\.
+JEI recipes registered: \d+
+REI displays registered: \d+ info, \d+ custom
+REI entries added: \d+
+\[EnchantPeak E2E\] RESULT: OK
+REQUIRES
           elif [ "${{ matrix.loader }}" = "neoforge" ]; then
-            REQUIRES=( '\[EnchantPeak\] NeoForge mod initialized\.' 'JEI recipes registered: \d+' )
+            cat > /tmp/e2e-require.txt <<'REQUIRES'
+\[EnchantPeak\] NeoForge mod initialized\.
+JEI recipes registered: \d+
+REQUIRES
           else
-            REQUIRES=( '\[EnchantPeak\] Initialized\.' 'JEI recipes registered: \d+' 'REI displays registered: \d+ info, \d+ custom' 'REI entries added: \d+' )
+            cat > /tmp/e2e-require.txt <<'REQUIRES'
+\[EnchantPeak\] Initialized\.
+JEI recipes registered: \d+
+REI displays registered: \d+ info, \d+ custom
+REI entries added: \d+
+REQUIRES
           fi
-          FORBIDS=( '注册失败' '当前注册表中缺失' 'RESULT: FAIL' )
-          python3 scripts/assert_e2e_log.py \
-            $(printf -- "--require %q " "${REQUIRES[@]}") \
-            $(printf -- "--forbid %q " "${FORBIDS[@]}")
+          cat > /tmp/e2e-forbid.txt <<'FORBIDS'
+注册失败
+当前注册表中缺失
+RESULT: FAIL
+FORBIDS
+          python3 scripts/assert_e2e_log.py --require-file /tmp/e2e-require.txt --forbid-file /tmp/e2e-forbid.txt
 
       - name: Upload client log on failure
         if: failure()
