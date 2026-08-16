@@ -81,24 +81,59 @@ jobs:
             !build/libs/*-sources.jar
           if-no-files-found: error
 
-  github-release:
+  # GitHub Release 创建（先创建空 release）
+  github-release-init:
     needs: [release-info, build, neoforge-build]
     runs-on: ubuntu-latest
     steps:
-      - name: Download all Minecraft jars (Fabric + NeoForge)
-        uses: actions/download-artifact@v4
-        with:
-          # 同时匹配 enchantpeak-mc<target>（Fabric）与 enchantpeak-neoforge-mc<target>（NeoForge）
-          pattern: enchantpeak-*
-          path: dist
-          merge-multiple: true
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.jar
           name: EnchantPeak ${{ needs.release-info.outputs.version }}
           generate_release_notes: true
+          body: |
+            Artifacts are being uploaded...
+          draft: false
+
+  # NeoForge 文件上传（低版本到高版本，先上传）
+  github-release-neoforge:
+    needs: [release-info, neoforge-info, neoforge-build, github-release-init]
+    strategy:
+      max-parallel: 1  # 串行上传
+      matrix:
+        target: ${{ fromJSON(needs.neoforge-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download NeoForge ${{ matrix.target }} jar
+        uses: actions/download-artifact@v4
+        with:
+          name: enchantpeak-neoforge-mc${{ matrix.target }}
+          path: dist
+
+      - name: Upload NeoForge ${{ matrix.target }} to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.jar
+
+  # Fabric 文件上传（低版本到高版本，后上传，最终在顶部）
+  github-release-fabric:
+    needs: [release-info, build, github-release-neoforge]
+    strategy:
+      max-parallel: 1  # 串行上传
+      matrix:
+        minecraft: ${{ fromJSON(needs.release-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Fabric ${{ matrix.minecraft }} jar
+        uses: actions/download-artifact@v4
+        with:
+          name: enchantpeak-mc${{ matrix.minecraft }}
+          path: dist
+
+      - name: Upload Fabric ${{ matrix.minecraft }} to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.jar
 
   # ===== NeoForge 构建（独立 Gradle 构建，见 neoforge/）=====
   neoforge-info:
