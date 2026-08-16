@@ -115,9 +115,10 @@ abstract class OldFamilyTestBase {
     static boolean inExpectedScope() {
         // 深度校验的覆盖范围由 verify_enchants.py 的分工表决定：
         // mc118/mc119/mc120/mc1204（代码内置注册表 + 语义接线完整）
-        // familyDir 是完整路径（如 "src/mc1204/java"），须按子串匹配而非精确相等
+        // familyDir 形如 "src/mc1204/java"：按路径段精确匹配，
+        // 防止 "mc120" 子串误中 mc1206（1.20.5/1.20.6 语义未接线，必须 skip）
         String family = System.getProperty("enchantpeak.familyDir", "");
-        return IN_SCOPE_FAMILIES.stream().anyMatch(family::contains);
+        return java.util.Arrays.stream(family.split("/")).anyMatch(IN_SCOPE_FAMILIES::contains);
     }
 
     /** 深度校验覆盖的版本族（代码内置注册表 + 语义接线完整） */
