@@ -2,8 +2,17 @@
 
 ## Unreleased
 
-### Forge Support
+## 1.1.2
 
+Released on 2026-08-17.
+
+Added Forge (LexForge) loader support for MC 1.18.2 ~ 1.21.1
+
+- forge/ (ForgeGradle 6): 1.18.2, 1.19.2-1.19.4, 1.20.1-1.20.2, 1.20.3-1.20.4
+- forge7/ (ForgeGradle 7): 1.20.5-1.20.6, 1.21-1.21.1
+- Coverage stops at 1.21.1: JEI publishes no Forge builds beyond that
+
+### Forge Support
 - Added: Forge (LexForge) loader track covering MC 1.18.2 ~ 1.21.1 - the full range where JEI publishes Forge builds (6 clusters: 1.18.2, 1.19.2-1.19.4, 1.20.1-1.20.2, 1.20.3-1.20.4, 1.20.5-1.20.6, 1.21-1.21.1)
 - Added: `forge/` subproject (ForgeGradle 6 + Gradle 8.8) for MC 1.20.4 and earlier - jars reobfuscated to SRG names as Forge runtime requires
 - Added: `forge7/` subproject (ForgeGradle 7 + Gradle 9.4) for MC 1.20.5+ - official Mojang names at runtime, no reobf
@@ -11,6 +20,7 @@
 - Added: `scripts/verify_jars.py` validates Forge mods.toml metadata (loader/mc/jei ranges, embedded license)
 - Added: CI `build-forge.yml` matrix and release pipeline jobs (GitHub Release + Modrinth + CurseForge with the `forge` loader tag)
 - Added: E2E smoke coverage for Forge - `forge-1.20.1` (FG6) and `forge-1.21` (FG7) booted via mc-runtime-test, asserting the Forge init + JEI registration log markers; `stageE2eMods` task added to both Forge builds (waits for reobfJar on FG6)
+
 
 ## 1.1.1
 
