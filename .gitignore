@@ -40,3 +40,11 @@ neoforge/run/
 neoforge/runs/
 docs/superpowers/
 logs/
+
+# Forge 独立构建产物（forge/ FG6 + forge7/ FG7）
+forge/build/
+forge/.gradle/
+forge/run/
+forge7/build/
+forge7/.gradle/
+forge7/run/

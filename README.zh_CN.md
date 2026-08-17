@@ -4,11 +4,12 @@
 
 Minecraft 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有正向附魔的展示全部极大兼容顶配方案，仅支持诅咒的明确标识为空方案。REI 还会把每个方案注册为可搜索的独立条目。
 
-> 💡 **推荐组合：Fabric + REI** — 独立可搜索方案条目体验最佳。同时也为所有可适配的版本簇提供 NeoForge 构建（JEI 集成）。
+> 💡 **推荐组合：Fabric + REI** — 独立可搜索方案条目体验最佳。同时也提供 NeoForge 与 Forge 构建：NeoForge 覆盖所有可适配的版本簇，Forge 覆盖 1.18.2 ~ 1.21.1（JEI 发布 Forge 构建的范围）。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2~26.2-brightgreen)](https://www.minecraft.net/)
 [![Fabric](https://img.shields.io/badge/Loader-Fabric-blue)](https://fabricmc.net/)
+[![Forge](https://img.shields.io/badge/Loader-Forge-lightgray)](https://files.minecraftforge.net/)
 [![NeoForge](https://img.shields.io/badge/Loader-NeoForge-orange)](https://neoforged.net/)
 
 ---
@@ -79,8 +80,23 @@ Minecraft 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有正向�
 
 > NeoForge 构建从 1.20.3 起（NeoForge 无 1.20.1 及更早的稳定版，请用 Fabric）。REI 独立搜索条目仅限 Fabric；NeoForge 请使用 JEI 的 **最强附魔方案** 分类。
 
+**Forge（JEI 集成）：**
+
+| 游戏版本 | 文件 |
+|---|---|
+| 1.18.2 | `enchantpeak-forge-<版本>+mc1.18.2.jar` |
+| 1.19.2 ~ 1.19.4 | `enchantpeak-forge-<版本>+mc1.19.2-1.19.4.jar` |
+| 1.20.1 ~ 1.20.2 | `enchantpeak-forge-<版本>+mc1.20.1-1.20.2.jar` |
+| 1.20.3 ~ 1.20.4 | `enchantpeak-forge-<版本>+mc1.20.3-1.20.4.jar` |
+| 1.20.5 ~ 1.20.6 | `enchantpeak-forge-<版本>+mc1.20.5-1.20.6.jar` |
+| 1.21 ~ 1.21.1 | `enchantpeak-forge-<版本>+mc1.21-1.21.1.jar` |
+
+> Forge 构建止于 1.21.1 - JEI 此后不再发布 Forge 构建（那些版本请用 NeoForge）。REI 独立搜索条目仅限 Fabric；Forge 请使用 JEI 的 **最强附魔方案** 分类。
+
+
 **依赖要求：**
 - **Fabric**：Fabric Loader + Fabric API，以及 **REI**（推荐）或 **JEI**
+- **Forge**：对应版本 Forge + **JEI**
 - **NeoForge**：对应版本 NeoForge + **JEI**
 
 **下载地址：**
@@ -89,7 +105,7 @@ Minecraft 模组，在 JEI/REI 中覆盖全部原版可附魔物品：有正向�
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
 
 **安装步骤：**
-1. 下载与你 loader 和游戏版本匹配的 `enchantpeak-fabric-...+mc<范围>.jar` 或 `enchantpeak-neoforge-...+mc<范围>.jar`
+1. 下载与你 loader 和游戏版本匹配的 `enchantpeak-fabric-...+mc<范围>.jar`、`enchantpeak-forge-...+mc<范围>.jar` 或 `enchantpeak-neoforge-...+mc<范围>.jar`
 2. 放入 `.minecraft/mods/` 文件夹
 3. 确保已安装对应 loader 的依赖（Fabric + Fabric API + REI/JEI，或 NeoForge + JEI）
 4. 启动游戏，在 JEI/REI 中打开 **最强附魔方案** 分类；REI（Fabric）还可直接搜索每个方案条目

@@ -172,3 +172,18 @@ EnchantPeak 是否支持 NeoForge？
 ---
 
 **结论**：当前阶段**保持 Fabric-only** 是最优解，长期根据用户反馈灵活调整。
+
+---
+
+## 附：2026-08-17 Forge 落地时的 maven 实测数据
+
+实施 Forge 支持时对官方 maven 的实测（决定 forge/forge7 目标矩阵的依据）：
+
+- **LexForge 仍全线存活**：从 1.18.2（40.3.12）到 26.2（65.1.1）都有官方构建。
+- **JEI 的 Forge 构建止于 1.21.1**（`jei-*-forge-api` 在 maven 上 1.21.4+ 为 404）。
+  因此 Forge 轨道只做 1.18.2 ~ 1.21.1：本 mod 的展示层只有 JEI/REI，再往上的
+  Forge 版本没有可用的展示端（EMI 是未来选项）。
+- **REI 的 Forge 构建止于 1.20.4**（`RoughlyEnoughItems-forge` 最高 14.1.x）。
+- **工具链在 MC 1.20.5 分界**：MDK 在 1.20.4 及以前用 ForgeGradle 6（Gradle 8.8，
+  产物需 reobfJar 回映射到 SRG 名），1.20.6 起用 ForgeGradle 7（Gradle 9.x，
+  官方名运行时，无 reobf）。对应本仓库的 `forge/` 与 `forge7/` 两个构建。

@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
-# 构建所有支持的目标（Fabric 13 + NeoForge 8），产物统一放 dist/，并做元数据校验。
-# Fabric 与 NeoForge 是两个完全独立的 Gradle 项目，默认并行跑（约省一半时间）；
-# 可用 --fabric-only / --neoforge-only 单跑一条流水线。
+# 构建所有支持的目标（Fabric 13 + NeoForge 8 + Forge 6），产物统一放 dist/，并做元数据校验。
+# Fabric / NeoForge / Forge 是完全独立的 Gradle 项目；Fabric 与 NeoForge 默认并行跑，
+# Forge（forge/ FG6 + forge7/ FG7 两个构建）在 Fabric 之后串行跑（避免 3 个 daemon 并存）。
+# 可用 --fabric-only / --neoforge-only / --forge-only 单跑一条流水线。
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 FABRIC_ONLY=0
 NEOFORGE_ONLY=0
+FORGE_ONLY=0
 for arg in "$@"; do
     case "$arg" in
         --fabric-only) FABRIC_ONLY=1 ;;
         --neoforge-only) NEOFORGE_ONLY=1 ;;
-        *) echo "用法: $0 [--fabric-only|--neoforge-only]" >&2; exit 2 ;;
+        --forge-only) FORGE_ONLY=1 ;;
+        *) echo "用法: $0 [--fabric-only|--neoforge-only|--forge-only]" >&2; exit 2 ;;
     esac
 done
 
@@ -20,6 +23,10 @@ mapfile -t versions < <(python3 -c \
     'import json; print(*json.load(open("versions/minecraft.json"))["targets"], sep="\n")')
 mapfile -t neoforge_versions < <(python3 -c \
     'import json; print(*json.load(open("neoforge/targets.json")), sep="\n")')
+mapfile -t forge_versions < <(python3 -c \
+    'import json; print(*json.load(open("forge/targets.json")), sep="\n")')
+mapfile -t forge7_versions < <(python3 -c \
+    'import json; print(*json.load(open("forge7/targets.json")), sep="\n")')
 
 rm -rf dist
 mkdir -p dist
@@ -60,11 +67,56 @@ build_neoforge() {
     echo "NeoForge 全部目标构建通过：${neoforge_versions[*]}"
 }
 
+
+# ===== Forge 子流水线：forge/（FG6，Gradle 8.8 daemon 需 Java 21）+ forge7/（FG7，Gradle 9.4）=====
+build_forge() {
+    # FG6 的 Gradle 8.8 daemon 不支持 Java 25，与 NeoForge 一样固定用 Java 21 跑
+    local fg_java_home=""
+    fg_java_home="${JAVA_HOME:-}"
+    if [ -z "${fg_java_home}" ] || ! "${fg_java_home}/bin/java" -version 2>&1 | grep -q 'version "21'; then
+        for candidate in /usr/lib/jvm/java-21-openjdk-amd64 /usr/lib/jvm/java-21-openjdk /usr/lib/jvm/temurin-21-jdk-amd64; do
+            if [ -x "${candidate}/bin/java" ] && "${candidate}/bin/java" -version 2>&1 | grep -q 'version "21'; then
+                fg_java_home="${candidate}"
+                break
+            fi
+        done
+    fi
+    if [ -z "${fg_java_home}" ]; then
+        echo "未找到 Java 21（Forge Gradle 8.8/9.4 daemon 要求）" >&2
+        return 1
+    fi
+    export JAVA_HOME="${fg_java_home}"
+
+    local jar_path dir target
+    for spec in "forge:${forge_versions[*]}" "forge7:${forge7_versions[*]}"; do
+        dir="${spec%%:*}"
+        for target in ${spec#*:}; do
+            echo "==> Building Forge (${dir}) ${target}"
+            (cd "${dir}" && ./gradlew clean build --daemon -Ptarget_mc="${target}")
+
+            jar_path=$(find "${dir}/build/libs" -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -print -quit)
+            if [ -z "${jar_path}" ]; then
+                echo "未找到 Forge ${target} 的构建产物" >&2
+                return 1
+            fi
+            cp "${jar_path}" dist/
+        done
+    done
+    echo "Forge 全部目标构建通过：FG6 ${forge_versions[*]}；FG7 ${forge7_versions[*]}"
+}
+
 nf_pid=""
 if [ "$NEOFORGE_ONLY" -eq 1 ]; then
     build_neoforge
     python3 scripts/verify_jars.py
     JAVA_HOME="${NF_JAVA_HOME}" neoforge/gradlew --stop >/dev/null 2>&1 || true
+    exit 0
+fi
+if [ "$FORGE_ONLY" -eq 1 ]; then
+    build_forge
+    python3 scripts/verify_jars.py
+    JAVA_HOME="${JAVA_HOME}" forge/gradlew --stop >/dev/null 2>&1 || true
+    JAVA_HOME="${JAVA_HOME}" forge7/gradlew --stop >/dev/null 2>&1 || true
     exit 0
 fi
 if [ "$FABRIC_ONLY" -eq 0 ]; then
@@ -88,6 +140,11 @@ for minecraft_version in "${versions[@]}"; do
 done
 echo "Fabric 全部目标构建并校验通过：${versions[*]}"
 
+# ===== Forge 子流水线（前台串行，避免第三个 daemon 与内存峰值叠加）=====
+if [ "$FABRIC_ONLY" -eq 0 ]; then
+    build_forge
+fi
+
 # ===== 等待 NeoForge 子流水线，失败时回放日志 =====
 if [ -n "${nf_pid}" ]; then
     echo "（等待 NeoForge 并行构建完成，日志：${nf_log}）"
@@ -103,10 +160,12 @@ fi
 # ===== 端到端校验：逐 jar 对照版本矩阵检查元数据 =====
 python3 scripts/verify_jars.py
 
-# 释放两条流水线留下的常驻 Gradle daemon（各占 2GB 堆上限）
+# 释放流水线留下的常驻 Gradle daemon（各占 2-3GB 堆上限）
 ./gradlew --stop >/dev/null 2>&1 || true
 if [ -n "${NF_JAVA_HOME:-}" ]; then
     JAVA_HOME="${NF_JAVA_HOME}" neoforge/gradlew --stop >/dev/null 2>&1 || true
 fi
+forge/gradlew --stop >/dev/null 2>&1 || true
+forge7/gradlew --stop >/dev/null 2>&1 || true
 
-echo "全部完成：Fabric ${#versions[@]} 个 + NeoForge ${#neoforge_versions[@]} 个目标，产物在 dist/"
+echo "全部完成：Fabric ${#versions[@]} 个 + NeoForge ${#neoforge_versions[@]} 个 + Forge $(( ${#forge_versions[@]} + ${#forge7_versions[@]} )) 个目标，产物在 dist/"

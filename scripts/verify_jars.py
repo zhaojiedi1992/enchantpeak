@@ -6,7 +6,7 @@
 2. minecraft 依赖只钉了簇代表版本，同簇其他版本被 loader 拒载
 3. 模板占位符未展开（如 ">=${jei_min_version}"）；NeoForge 依赖范围一刀切
 
-以 versions/minecraft.json 与 neoforge/targets.json 为唯一事实来源，
+以 versions/minecraft.json 与 neoforge/forge/forge7 的 targets.json 为唯一事实来源，
 逐 jar 对照校验，不通过则非零退出。
 """
 
@@ -20,6 +20,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FABRIC_MATRIX = REPO_ROOT / "versions/minecraft.json"
 NEOFORGE_TARGETS = REPO_ROOT / "neoforge/targets.json"
+FORGE_TARGETS = REPO_ROOT / "forge/targets.json"
+FORGE7_TARGETS = REPO_ROOT / "forge7/targets.json"
 DIST = REPO_ROOT / "dist"
 
 PLACEHOLDER = re.compile(r"\$\{[a-zA-Z0-9_.]+\}")
@@ -118,6 +120,52 @@ def check_neoforge_jar(jar: Path, targets: dict, mod_version: str, errors: list)
         errors.append(f"{jar.name}: mods.toml 存在未展开的占位符")
 
 
+def check_forge_jar(jar: Path, targets: dict, mod_version: str, errors: list):
+    """Forge（forge/ FG6 与 forge7/ FG7 共用产物命名 enchantpeak-forge-*）。
+
+    与 NeoForge 同一套校验，mods.toml 依赖段顺序：forge -> minecraft -> jei。
+    """
+    with zipfile.ZipFile(jar) as zf:
+        names = zf.namelist()
+        try:
+            toml = zf.read("META-INF/mods.toml").decode("utf-8")
+        except KeyError:
+            errors.append(f"{jar.name}: 缺少 META-INF/mods.toml")
+            return
+        has_license = any("LICENSE" in n for n in names)
+
+    suffix = jar.stem.split("+mc", 1)[1] if "+mc" in jar.stem else None
+    matches = [v for v in targets.values() if v["suffix"] == suffix]
+    if not matches:
+        errors.append(f"{jar.name}: 找不到 suffix={suffix} 的 Forge 目标")
+        return
+    target = matches[0]
+
+    if not has_license:
+        errors.append(f"{jar.name}: jar 内未内嵌 LICENSE")
+
+    m = re.search(r'^version = "([^"]+)"', toml, re.M)
+    if not m:
+        errors.append(f"{jar.name}: mods.toml 缺少 version")
+    elif not m.group(1).startswith(mod_version):
+        errors.append(f"{jar.name}: mods.toml version {m.group(1)!r} 不以 mod_version {mod_version} 开头")
+
+    ranges = re.findall(r'versionRange = "([^"]+)"', toml)
+    if len(ranges) < 3:
+        errors.append(f"{jar.name}: mods.toml 依赖段不完整: {ranges}")
+    else:
+        if ranges[0] != target["forge_range"]:
+            errors.append(f"{jar.name}: forge/loader 范围 {ranges[0]} ≠ 矩阵 forge_range {target['forge_range']}")
+        if ranges[1] != target["mc_range"]:
+            errors.append(f"{jar.name}: minecraft 范围 {ranges[1]} ≠ 矩阵 mc_range {target['mc_range']}")
+
+    m = re.search(r'^loaderVersion = "([^"]+)"', toml, re.M)
+    if not m or m.group(1) != target["forge_range"]:
+        errors.append(f"{jar.name}: loaderVersion {m.group(1) if m else None!r} ≠ 矩阵 forge_range {target['forge_range']}")
+
+    if PLACEHOLDER.search(toml):
+        errors.append(f"{jar.name}: mods.toml 存在未展开的占位符")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dist", type=Path, default=DIST, help="jar 目录（默认 dist/）")
@@ -133,6 +181,7 @@ def main():
 
     fabric_targets = json.loads(FABRIC_MATRIX.read_text())["targets"]
     neoforge_targets = json.loads(NEOFORGE_TARGETS.read_text())
+    forge_targets = dict(json.loads(FORGE_TARGETS.read_text()), **json.loads(FORGE7_TARGETS.read_text()))
 
     jars = sorted(args.dist.glob("*.jar"))
     if not jars:
@@ -145,6 +194,8 @@ def main():
             check_fabric_jar(jar, fabric_targets, errors)
         elif jar.stem.startswith("enchantpeak-neoforge"):
             check_neoforge_jar(jar, neoforge_targets, mod_version, errors)
+        elif jar.stem.startswith("enchantpeak-forge"):
+            check_forge_jar(jar, forge_targets, mod_version, errors)
         else:
             errors.append(f"{jar.name}: 无法识别的产物命名")
 
@@ -155,7 +206,7 @@ def main():
         for e in errors:
             print(f"  - {e}")
         return 1
-    print(f"✓ {len(jars)} 个 jar 元数据校验通过（对照 versions/minecraft.json 与 neoforge/targets.json）")
+    print(f"✓ {len(jars)} 个 jar 元数据校验通过（对照 versions/minecraft.json 与各 targets.json）")
     return 0
 
 

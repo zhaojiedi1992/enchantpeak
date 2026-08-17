@@ -1,0 +1,138 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+    id 'maven-publish'
+}
+
+// Forge（LexForge）轨道：MC 1.20.4 及更早（ForgeGradle 6 工具链，产物需 reobf 到 SRG）。
+// MC 1.20.5+ 的 Forge 走 ../forge7（ForgeGradle 7，官方名运行时无需 reobf）。
+// 与 neoforge/ 相同的模式：mod_version/id/author 以仓库根 gradle.properties 为单一事实来源。
+def rootProps = new Properties()
+rootProps.load(new FileInputStream(file('../gradle.properties')))
+ext.rootModVersion = rootProps.getProperty('mod_version')
+
+def targetMinecraftVersion = providers.gradleProperty('target_mc')
+        .orElse('1.20.1')
+        .get()
+
+def forgeMap = new groovy.json.JsonSlurper().parse(file('targets.json'))
+def forgeTarget = forgeMap[targetMinecraftVersion]
+if (forgeTarget == null) {
+    throw new GradleException(
+            "Target '${targetMinecraftVersion}' has no Forge mapping. " +
+            "Forge(FG6)-supported clusters: ${forgeMap.keySet().join(', ')}"
+    )
+}
+
+def mcFamily = forgeTarget.mc_family
+def javaVersion = forgeTarget.java as int
+def forgeVersion = forgeTarget.forge
+def mcVersion = forgeTarget.mc
+def jeiVersion = forgeTarget.jei
+def jeiMc = forgeTarget.jei_mc
+
+// 依赖范围下界：取构建版本的主.次.修订（去掉补丁号），如 15.49.0.188 -> [15.49.0,)
+// 与 neoforge 侧 minorBound 粒度一致
+static String minorBound(String v) { v.replaceFirst(/\.\d+$/, '') }
+
+group = "com.${rootProps.getProperty('mod_author')}"
+
+base {
+    archivesName = "${rootProps.getProperty('mod_id')}-forge"
+}
+
+// jar 名对齐社区规范：<modid>-forge-<modver>+mc<范围>.jar
+version = rootModVersion + '+mc' + forgeTarget.suffix
+
+repositories {
+    if (providers.gradleProperty('use_aliyun_mirror').map { it.toBoolean() }.getOrElse(false)) {
+        maven { url = 'https://maven.aliyun.com/repository/central' }
+    }
+    // ForgeGradle 6 自动附加 Forge maven 与 Maven Central，这里只需 JEI
+    maven {
+        name = 'Jared Maven'
+        url = 'https://maven.blamejared.com'
+    }
+}
+
+// 每个版本簇一个 source set，目录名 = 主项目同款 mcFamily（代码从主项目同步生成）
+sourceSets {
+    create(mcFamily) {
+        java { srcDir "src/${mcFamily}/java" }
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+minecraft {
+    // 官方 Mojang mappings；构建产物由 reobfJar 回映射到 Forge 运行时的 SRG 名
+    mappings channel: 'official', version: mcVersion
+}
+
+// 家族代码依赖 main 的输出（common record 类：EnchantEntry/EnchantGroup/ItemEnchantRecord）
+// EnchantPeakMod 入口类在各族源集（src/<family>/java），不在 main
+dependencies {
+    "${mcFamily}Implementation" sourceSets.main.output
+
+    minecraft "net.minecraftforge:forge:${mcVersion}-${forgeVersion}"
+
+    // JEI Forge：挂到家族 configuration（FG6 对自建 source set 的 classpath 注入
+    // 时机晚于 sourceSets 块，经 main.compileClasspath 继承拿不到依赖）。
+    // JEI 的 -common-api/-forge-api 是映射中立的纯接口 jar（不含 SRG 名，签名里
+    // 只出现类名，而类名在官方名/SRG 世界一致），无需 fg.deobf——fg.deobf 在
+    // 1.18.2 上会错误地走 bundled_deobf_repo 解析而失败
+    "${mcFamily}CompileOnly" "mezz.jei:jei-${jeiMc}-common-api:${jeiVersion}"
+    "${mcFamily}CompileOnly" "mezz.jei:jei-${jeiMc}-forge-api:${jeiVersion}"
+    // 完整版 JEI 仅开发期 runClient 需要；产物 jar 不依赖
+    "${mcFamily}RuntimeOnly" "mezz.jei:jei-${jeiMc}-forge:${jeiVersion}"
+}
+
+// mods.toml 占位符按簇展开：范围来自 targets.json
+processResources {
+    def props = [
+            mod_version : project.version,
+            mc_range    : forgeTarget.mc_range,
+            forge_range : forgeTarget.forge_range,
+            jei_min     : minorBound(jeiVersion),
+    ]
+    inputs.properties(props)
+    filesMatching('META-INF/mods.toml') {
+        expand props
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = javaVersion
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+    withSourcesJar()
+}
+
+jar {
+    from sourceSets[mcFamily].output
+    // MIT 要求分发副本携带版权声明（与 Fabric/NeoForge 侧一致）
+    from('../LICENSE') {
+        rename { "${it}_${project.name}" }
+    }
+    manifest {
+        attributes([
+                'Specification-Title'   : rootProps.getProperty('mod_id'),
+                'Specification-Vendor'  : rootProps.getProperty('mod_author'),
+                'Specification-Version' : '1',
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor' : rootProps.getProperty('mod_author'),
+        ])
+    }
+    // Forge 1.20.4- 运行时使用 SRG 名：把 jar 回映射（家族源集类并入 jar 后一并 reobf）
+    finalizedBy 'reobfJar'
+}
+
+sourcesJar {
+    from sourceSets[mcFamily].allSource
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

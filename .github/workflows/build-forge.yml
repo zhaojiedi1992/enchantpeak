@@ -1,0 +1,79 @@
+name: Build Forge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'forge/**'
+      - 'forge7/**'
+      - '.github/workflows/build-forge.yml'
+      - 'versions/minecraft.json'
+      - 'gradle.properties'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  forge-targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Forge target keys (forge/ FG6 + forge7/ FG7)
+        id: targets
+        run: |
+          MATRIX=$(python3 -c "
+          import json
+          m = []
+          for d in ('forge', 'forge7'):
+              for k in json.load(open(d + '/targets.json')):
+                  m.append({'dir': d, 'target': k})
+          print(json.dumps(m))")
+          echo "value=${MATRIX}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: forge-targets
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.forge-targets.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 17 先装（FG6 目标的 toolchain），21 后装（成为默认 JAVA_HOME；
+      # forge/ 的 Gradle 8.8 daemon 不支持 Java 25，必须用 21 跑）
+      - name: Set up JDK 17 (FG6 toolchain target)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Set up JDK 21 (Gradle daemon)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Forge ${{ matrix.target }} (${{ matrix.dir }})
+        working-directory: ${{ matrix.dir }}
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
+
+      - name: Upload Forge ${{ matrix.target }} jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchantpeak-forge-mc${{ matrix.target }}
+          path: |
+            ${{ matrix.dir }}/build/libs/*.jar
+            !${{ matrix.dir }}/build/libs/*-sources.jar
+          if-no-files-found: error
+          retention-days: 14

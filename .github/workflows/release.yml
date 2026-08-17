@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check Fabric/NeoForge family sources are in sync
+      - name: Check Fabric/NeoForge/Forge family sources are in sync
         run: python3 scripts/sync_family_sources.py --check
 
   release-info:
@@ -83,7 +83,7 @@ jobs:
 
   # GitHub Release 创建（先创建空 release）
   github-release-init:
-    needs: [release-info, build, neoforge-build]
+    needs: [release-info, build, neoforge-build, forge-build]
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub Release
@@ -95,9 +95,29 @@ jobs:
             Artifacts are being uploaded...
           draft: false
 
+  # Forge 文件上传（先于 NeoForge/Fabric，串行；最终 fabric 在 release 顶部）
+  github-release-forge:
+    needs: [release-info, forge-info, forge-build, github-release-init]
+    strategy:
+      max-parallel: 1  # 串行上传
+      matrix:
+        include: ${{ fromJSON(needs.forge-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Forge ${{ matrix.target }} jar
+        uses: actions/download-artifact@v4
+        with:
+          name: enchantpeak-forge-mc${{ matrix.target }}
+          path: dist
+
+      - name: Upload Forge ${{ matrix.target }} to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.jar
+
   # NeoForge 文件上传（低版本到高版本，先上传）
   github-release-neoforge:
-    needs: [release-info, neoforge-info, neoforge-build, github-release-init]
+    needs: [release-info, neoforge-info, neoforge-build, github-release-init, github-release-forge]
     strategy:
       max-parallel: 1  # 串行上传
       matrix:
@@ -260,6 +280,138 @@ jobs:
           version-type: release
           changelog-file: .gh-changelog.md
           loaders: neoforge
+          game-versions: ${{ steps.game-versions.outputs.versions }}
+          java: ${{ steps.game-versions.outputs.java }}
+          dependencies: |
+            jei(optional){curseforge:238222}
+
+  # ===== Forge 构建（forge/ FG6 与 forge7/ FG7 两个独立 Gradle 构建）=====
+  forge-info:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Forge target keys (forge/ + forge7/)
+        id: targets
+        run: |
+          MATRIX=$(python3 -c "
+          import json
+          m = []
+          for d in ('forge', 'forge7'):
+              for k in json.load(open(d + '/targets.json')):
+                  m.append({'dir': d, 'target': k})
+          print(json.dumps(m))")
+          echo "value=${MATRIX}" >> "$GITHUB_OUTPUT"
+
+  forge-build:
+    needs: [release-info, forge-info]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.forge-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 17 先装（FG6 目标的 toolchain），21 后装（默认 JAVA_HOME；Gradle 8.8 daemon 不支持 25）
+      - name: Set up JDK 17 (FG6 toolchain target)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Set up JDK 21 (Gradle daemon)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Forge ${{ matrix.target }} (${{ matrix.dir }})
+        working-directory: ${{ matrix.dir }}
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
+
+      - name: Verify Forge ${{ matrix.target }} jar metadata
+        run: |
+          mkdir -p dist && cp ${{ matrix.dir }}/build/libs/*.jar dist/ && rm -f dist/*-sources.jar
+          python3 scripts/verify_jars.py --dist dist
+
+      - name: Upload Forge ${{ matrix.target }} jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchantpeak-forge-mc${{ matrix.target }}
+          path: |
+            ${{ matrix.dir }}/build/libs/*.jar
+            !${{ matrix.dir }}/build/libs/*-sources.jar
+          if-no-files-found: error
+
+  forge-release:
+    needs: [release-info, forge-info, forge-build]
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.forge-info.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Forge ${{ matrix.target }} jar
+        uses: actions/download-artifact@v4
+        with:
+          name: enchantpeak-forge-mc${{ matrix.target }}
+          path: dist
+
+      - name: Read Forge game versions for ${{ matrix.target }}
+        id: game-versions
+        run: |
+          VERSIONS=$(jq -r '.["${{ matrix.target }}"].game_versions | join("\n")' ${{ matrix.dir }}/targets.json)
+          {
+            echo "versions<<GAME_VERSIONS_EOF"
+            echo "$VERSIONS"
+            echo "GAME_VERSIONS_EOF"
+            echo "java=Java $(jq -r '.["${{ matrix.target }}"].java' ${{ matrix.dir }}/targets.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Extract changelog for ${{ needs.release-info.outputs.version }}
+        run: |
+          awk '/^## ${{ needs.release-info.outputs.version }}$/{flag=1;next} /^## /{flag=0} flag' \
+            CHANGELOG.md > .gh-changelog.md
+          test -s .gh-changelog.md
+
+      - name: Publish Forge ${{ matrix.target }} to Modrinth
+        uses: Kira-NT/mc-publish@v3
+        with:
+          modrinth-id: Ieptg3ne
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: dist/*.jar
+          name: EnchantPeak Forge ${{ needs.release-info.outputs.version }} for MC ${{ matrix.target }}
+          version: ${{ needs.release-info.outputs.version }}+forge-mc${{ matrix.target }}
+          version-type: release
+          changelog-file: .gh-changelog.md
+          loaders: forge
+          game-versions: ${{ steps.game-versions.outputs.versions }}
+          java: ${{ steps.game-versions.outputs.java }}
+          dependencies: |
+            jei(optional){modrinth:u6dRKJwZ}
+
+      - name: Publish Forge ${{ matrix.target }} to CurseForge
+        uses: Kira-NT/mc-publish@v3
+        with:
+          curseforge-id: 1648044
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: dist/*.jar
+          name: EnchantPeak Forge ${{ needs.release-info.outputs.version }} for MC ${{ matrix.target }}
+          version: ${{ needs.release-info.outputs.version }}+forge-mc${{ matrix.target }}
+          version-type: release
+          changelog-file: .gh-changelog.md
+          loaders: forge
           game-versions: ${{ steps.game-versions.outputs.versions }}
           java: ${{ steps.game-versions.outputs.java }}
           dependencies: |

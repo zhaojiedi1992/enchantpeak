@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
-"""Fabric ↔ NeoForge 家族源码同步工具。
+"""Fabric ↔ NeoForge/Forge 家族源码同步工具（Fabric 侧为唯一事实来源）。
 
-两边共享的家族目录（neoforge/targets.json 的 mc_family 指向 src/<family>/ 的
+各加载器侧共享的家族目录（<side>/targets.json 的 mc_family 指向 src/<family>/ 的
 同名目录）里，绝大多数文件应当逐字节一致（JEI 插件代码 loader 无关）。
-REI 插件是 Fabric 独有；EnchantmentData/EnchantStacks/JEI 插件两边共用。
+REI 插件是 Fabric 独有；EnchantmentData/EnchantStacks/JEI 插件各侧共用。
+Forge 分两个 Gradle 构建：forge/（FG6，MC 1.20.4-）与 forge7/（FG7，MC 1.20.5+），
+各自 targets.json 定义自己的簇，同步逻辑相同。
 
-⚠️ 已知局限：KNOWN_DIVERGENCES 只能表达"仅一侧存在的文件"（NeoForge 独有
-路径的白名单）。它不能表达"两边都有但内容应当不同"的文件——这种文件
---check 会误报不一致，同步模式会直接用 Fabric 侧覆盖 NeoForge 侧。如果
-将来出现这种分歧，需要把该文件整个移出共享范围（如 EnchantPeakMod 的
-做法：按族拆成多份），而不是试图加白名单。
+⚠️ 已知局限：EXTRA_ONLY 只能表达"仅一侧存在的文件"（加载器侧独有的白名单）。
+它不能表达"两边都有但内容应当不同"的文件--这种文件 --check 会误报不一致，
+同步模式会直接用 Fabric 侧覆盖加载器侧。如果将来出现这种分歧，需要把该文件
+整个移出共享范围（如 EnchantPeakMod 的做法：按族拆成多份），而不是试图加白名单。
 
 用法：
   python3 scripts/sync_family_sources.py            # 同步（以 Fabric 侧为源）
   python3 scripts/sync_family_sources.py --check    # 只检查，不一致时非零退出（CI 用）
 
-同步规则：对每个共享族，Fabric 侧文件覆盖 NeoForge 侧同名文件；NeoForge 侧
-多出的文件（不在 KNOWN_DIVERGENCES 里）报告为漂移，Fabric 侧没有对应物的
-文件同样报告供人工确认。
+同步规则：对每个共享族，Fabric 侧文件覆盖加载器侧同名文件；加载器侧多出的文件
+（不在 EXTRA_ONLY 里）报告为漂移，Fabric 侧没有对应物的文件同样报告供人工确认。
 """
 
 import argparse
@@ -29,37 +29,47 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FABRIC_SRC = REPO_ROOT / "src"
-NEOFORGE_SRC = REPO_ROOT / "neoforge/src"
 
-# Fabric 侧独有（REI 插件、fabric loader 入口），不参与同步
-FABRIC_ONLY_DIR = "rei"
-
-# 已知的合法双侧分歧（loader 生态差异，不是漂移）：
-# - mc1214 的 JEI：NeoForge 有 1.21.2-1.21.4 适配，JEI 官方未出过这些版本的
-#   fabric 构建（maven 无 jei-1.21.4-fabric-api），Fabric 侧无 JEI 代码
-# - 各 NeoForge 族的 EnchantPeakMod 入口：Fabric 侧入口在 src/main
-#   （ClientModInitializer），NeoForge 侧需要族内 @Mod(dist=CLIENT)（1.20.4
-#   的老 FML 不支持 dist，该族是无 dist 的副本）
-KNOWN_DIVERGENCES = {
-    "mc1214/com/zhaojiedi1992/enchantpeak/jei/JeiEnchantCategory.java",
-    "mc1214/com/zhaojiedi1992/enchantpeak/jei/JeiEnchantPlugin.java",
-    "mc1204/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-    "mc1206/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-    "mc121/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-    "mc1214/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-    "mc1216/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-    "mc2111/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-    "mc26/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java",
-}
-
-NEOFORGE_TARGETS = json.loads((REPO_ROOT / "neoforge/targets.json").read_text())
+# Fabric 侧独有（REI 插件是 fabric 入口方式、EMI 尚未实现），不参与同步
+FABRIC_ONLY_DIRS = ("rei", "emi")
 
 
-def shared_families():
+def entry_classes(family: str) -> set:
+    """加载器侧独有的 @Mod/入口类（Fabric 侧入口在 src/main，是 ClientModInitializer）"""
+    return {f"{family}/com/zhaojiedi1992/enchantpeak/EnchantPeakMod.java"}
+
+
+# 各加载器侧：源码根、目标矩阵、已知的合法单侧分歧
+SIDES = [
+    {
+        "name": "neoforge",
+        "src": REPO_ROOT / "neoforge/src",
+        "targets": json.loads((REPO_ROOT / "neoforge/targets.json").read_text()),
+        # mc1214 的 JEI：NeoForge 有 1.21.2-1.21.4 适配，JEI 官方未出过这些版本的
+        # fabric 构建（maven 无 jei-1.21.4-fabric-api），Fabric 侧无 JEI 代码
+        "extra_only": {"mc1214/com/zhaojiedi1992/enchantpeak/jei/JeiEnchantCategory.java",
+                       "mc1214/com/zhaojiedi1992/enchantpeak/jei/JeiEnchantPlugin.java"},
+    },
+    {
+        "name": "forge",
+        "src": REPO_ROOT / "forge/src",
+        "targets": json.loads((REPO_ROOT / "forge/targets.json").read_text()),
+        "extra_only": set(),
+    },
+    {
+        "name": "forge7",
+        "src": REPO_ROOT / "forge7/src",
+        "targets": json.loads((REPO_ROOT / "forge7/targets.json").read_text()),
+        "extra_only": set(),
+    },
+]
+
+
+def side_families(side):
     fams = []
-    for target in NEOFORGE_TARGETS.values():
+    for target in side["targets"].values():
         fam = target["mc_family"]
-        if fam not in fams and (FABRIC_SRC / fam).is_dir() and (NEOFORGE_SRC / fam).is_dir():
+        if fam not in fams and (FABRIC_SRC / fam).is_dir() and (side["src"] / fam).is_dir():
             fams.append(fam)
     return sorted(fams)
 
@@ -72,30 +82,32 @@ def main():
 
     differences = []
     synced = 0
-    for fam in shared_families():
-        fam_root = FABRIC_SRC / fam / "java"
-        nf_root = NEOFORGE_SRC / fam / "java"
-        for src_file in sorted(fam_root.rglob("*.java")):
-            if FABRIC_ONLY_DIR in src_file.parts:
-                continue
-            rel = src_file.relative_to(fam_root)
-            dst_file = nf_root / rel
-            if not dst_file.exists():
-                differences.append(f"仅 Fabric 侧存在（未同步）：{fam}/{rel}")
-                continue
-            if not filecmp.cmp(src_file, dst_file, shallow=False):
-                if args.check:
-                    differences.append(f"内容不一致：{fam}/{rel}")
-                else:
-                    shutil.copyfile(src_file, dst_file)
-                    synced += 1
-        # 反向检查：NeoForge 侧不该有 Fabric 侧没有的家族文件（已知分歧除外）
-        for nf_file in sorted(nf_root.rglob("*.java")):
-            if FABRIC_ONLY_DIR in nf_file.parts:
-                continue
-            rel = nf_file.relative_to(nf_root)
-            if not (fam_root / rel).exists() and f"{fam}/{rel}" not in KNOWN_DIVERGENCES:
-                differences.append(f"仅 NeoForge 侧存在（人工确认）：{fam}/{rel}")
+    total_families = 0
+    for side in SIDES:
+        for fam in side_families(side):
+            total_families += 1
+            allowed_extra = side["extra_only"] | entry_classes(fam)
+            fam_root = FABRIC_SRC / fam / "java"
+            side_root = side["src"] / fam / "java"
+            for src_file in sorted(fam_root.rglob("*.java")):
+                if any(d in src_file.parts for d in FABRIC_ONLY_DIRS):
+                    continue
+                rel = src_file.relative_to(fam_root)
+                dst_file = side_root / rel
+                if not dst_file.exists():
+                    differences.append(f"[{side['name']}] 仅 Fabric 侧存在（未同步）：{fam}/{rel}")
+                    continue
+                if not filecmp.cmp(src_file, dst_file, shallow=False):
+                    if args.check:
+                        differences.append(f"[{side['name']}] 内容不一致：{fam}/{rel}")
+                    else:
+                        shutil.copyfile(src_file, dst_file)
+                        synced += 1
+            # 反向检查：加载器侧不该有 Fabric 侧没有的家族文件（入口类等已知分歧除外）
+            for side_file in sorted(side_root.rglob("*.java")):
+                rel = side_file.relative_to(side_root)
+                if not (fam_root / rel).exists() and f"{fam}/{rel}" not in allowed_extra:
+                    differences.append(f"[{side['name']}] 仅 {side['name']} 侧存在（人工确认）：{fam}/{rel}")
 
     if differences:
         print("✗ 家族源码存在漂移：")
@@ -104,8 +116,8 @@ def main():
         if args.check:
             print("\n运行 python3 scripts/sync_family_sources.py 同步（Fabric 侧为源）")
             return 1
-    print(f"✓ {len(shared_families())} 个共享家族源码同步完成（本次复制 {synced} 个文件）"
-          if not args.check else f"✓ {len(shared_families())} 个共享家族源码一致")
+    mode = "同步完成" if not args.check else "一致"
+    print(f"✓ {len(SIDES)} 侧共 {total_families} 个共享家族源码{mode}（本次复制 {synced} 个文件）")
     return 0
 
 

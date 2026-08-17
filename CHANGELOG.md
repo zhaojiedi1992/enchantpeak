@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Forge Support
+
+- Added: Forge (LexForge) loader track covering MC 1.18.2 ~ 1.21.1 - the full range where JEI publishes Forge builds (6 clusters: 1.18.2, 1.19.2-1.19.4, 1.20.1-1.20.2, 1.20.3-1.20.4, 1.20.5-1.20.6, 1.21-1.21.1)
+- Added: `forge/` subproject (ForgeGradle 6 + Gradle 8.8) for MC 1.20.4 and earlier - jars reobfuscated to SRG names as Forge runtime requires
+- Added: `forge7/` subproject (ForgeGradle 7 + Gradle 9.4) for MC 1.20.5+ - official Mojang names at runtime, no reobf
+- Added: `scripts/sync_family_sources.py` now 4-way syncs family sources (Fabric -> NeoForge / Forge / Forge7)
+- Added: `scripts/verify_jars.py` validates Forge mods.toml metadata (loader/mc/jei ranges, embedded license)
+- Added: CI `build-forge.yml` matrix and release pipeline jobs (GitHub Release + Modrinth + CurseForge with the `forge` loader tag)
+
 ## 1.1.1
 
 Released on 2026-08-16.

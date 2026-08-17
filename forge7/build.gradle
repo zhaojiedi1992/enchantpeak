@@ -1,0 +1,123 @@
+plugins {
+    // FG7 不自动应用 java 插件（MDK 显式声明），sourceSets/toolchain/withSourcesJar 都依赖它
+    id 'java'
+    id 'net.minecraftforge.gradle' version '[7.0.3,8)'
+    id 'maven-publish'
+}
+
+// Forge（LexForge）轨道：MC 1.20.5+。ForgeGradle 7 工具链（运行时即官方名，无 reobf）。
+// MC 1.20.4 及更早的 Forge 走 ../forge（ForgeGradle 6）。
+// 与 neoforge/ 相同的模式：mod_version/id/author 以仓库根 gradle.properties 为单一事实来源。
+def rootProps = new Properties()
+rootProps.load(new FileInputStream(file('../gradle.properties')))
+ext.rootModVersion = rootProps.getProperty('mod_version')
+
+def targetMinecraftVersion = providers.gradleProperty('target_mc')
+        .orElse('1.21')
+        .get()
+
+def forgeMap = new groovy.json.JsonSlurper().parse(file('targets.json'))
+def forgeTarget = forgeMap[targetMinecraftVersion]
+if (forgeTarget == null) {
+    throw new GradleException(
+            "Target '${targetMinecraftVersion}' has no Forge mapping. " +
+            "Forge(FG7)-supported clusters: ${forgeMap.keySet().join(', ')}"
+    )
+}
+
+def mcFamily = forgeTarget.mc_family
+def javaVersion = forgeTarget.java as int
+def forgeVersion = forgeTarget.forge
+def mcVersion = forgeTarget.mc
+def jeiVersion = forgeTarget.jei
+def jeiMc = forgeTarget.jei_mc
+
+static String minorBound(String v) { v.replaceFirst(/\.\d+$/, '') }
+
+group = "com.${rootProps.getProperty('mod_author')}"
+
+base {
+    archivesName = "${rootProps.getProperty('mod_id')}-forge"
+}
+
+version = rootModVersion + '+mc' + forgeTarget.suffix
+
+minecraft {
+    mappings channel: 'official', version: mcVersion
+}
+
+sourceSets {
+    create(mcFamily) {
+        java { srcDir "src/${mcFamily}/java" }
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+    maven {
+        name = 'Jared Maven'
+        url = 'https://maven.blamejared.com'
+    }
+}
+
+dependencies {
+    "${mcFamily}Implementation" sourceSets.main.output
+
+    implementation minecraft.dependency("net.minecraftforge:forge:${mcVersion}-${forgeVersion}")
+
+    // JEI Forge：api 编译期引入（挂在 main classpath，经家族源集继承），完整版仅运行时
+    implementation "mezz.jei:jei-${jeiMc}-forge-api:${jeiVersion}"
+    runtimeOnly "mezz.jei:jei-${jeiMc}-forge:${jeiVersion}"
+}
+
+processResources {
+    def props = [
+            mod_version : project.version,
+            mc_range    : forgeTarget.mc_range,
+            forge_range : forgeTarget.forge_range,
+            jei_min     : minorBound(jeiVersion),
+    ]
+    inputs.properties(props)
+    filesMatching('META-INF/mods.toml') {
+        expand props
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = javaVersion
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+    withSourcesJar()
+}
+
+jar {
+    from sourceSets[mcFamily].output
+    from('../LICENSE') {
+        rename { "${it}_${project.name}" }
+    }
+    manifest {
+        attributes([
+                'Specification-Title'   : rootProps.getProperty('mod_id'),
+                'Specification-Vendor'  : rootProps.getProperty('mod_author'),
+                'Specification-Version' : '1',
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor' : rootProps.getProperty('mod_author'),
+        ])
+    }
+}
+
+sourcesJar {
+    from sourceSets[mcFamily].allSource
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

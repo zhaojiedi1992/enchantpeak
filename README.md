@@ -4,11 +4,12 @@
 
 A Minecraft mod that covers every vanilla enchantable item in JEI/REI. It shows maximal non-curse enchantment combinations where available and identifies curse-only items. REI also exposes every build as a standalone searchable entry.
 
-> 💡 **Recommended setup: Fabric + REI** — the best experience with standalone searchable build entries. NeoForge builds are also provided for every supported cluster where JEI has an adapter.
+> 💡 **Recommended setup: Fabric + REI** — the best experience with standalone searchable build entries. NeoForge and Forge builds are also provided: NeoForge for every supported cluster where JEI has an adapter, Forge for 1.18.2 ~ 1.21.1 (the range where JEI publishes Forge builds).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2%20~%2026.2-brightgreen)](https://www.minecraft.net/)
 [![Fabric](https://img.shields.io/badge/Loader-Fabric-blue)](https://fabricmc.net/)
+[![Forge](https://img.shields.io/badge/Loader-Forge-lightgray)](https://files.minecraftforge.net/)
 [![NeoForge](https://img.shields.io/badge/Loader-NeoForge-orange)](https://neoforged.net/)
 
 ---
@@ -80,7 +81,21 @@ Each JAR covers an API-compatible version cluster (shown by the `mc` range in it
 > NeoForge builds start at 1.20.3 — NeoForge itself has no stable release for 1.20.1 or earlier (use Fabric there). REI's standalone search entries are Fabric-only; on NeoForge use the JEI **Best Enchantments** category.
 
 **Requirements:**
+**Forge (JEI integration):**
+
+| Game version | File |
+|---|---|
+| 1.18.2 | `enchantpeak-forge-<version>+mc1.18.2.jar` |
+| 1.19.2 ~ 1.19.4 | `enchantpeak-forge-<version>+mc1.19.2-1.19.4.jar` |
+| 1.20.1 ~ 1.20.2 | `enchantpeak-forge-<version>+mc1.20.1-1.20.2.jar` |
+| 1.20.3 ~ 1.20.4 | `enchantpeak-forge-<version>+mc1.20.3-1.20.4.jar` |
+| 1.20.5 ~ 1.20.6 | `enchantpeak-forge-<version>+mc1.20.5-1.20.6.jar` |
+| 1.21 ~ 1.21.1 | `enchantpeak-forge-<version>+mc1.21-1.21.1.jar` |
+
+> Forge builds stop at 1.21.1 - JEI no longer publishes Forge builds after that (use NeoForge there). REI's standalone search entries are Fabric-only; on Forge use the JEI **Best Enchantments** category.
+
 - **Fabric**: Fabric Loader + Fabric API, plus **REI** (recommended) or **JEI**
+- **Forge**: matching Forge, plus **JEI**
 - **NeoForge**: matching NeoForge, plus **JEI**
 
 **Download from:**
@@ -89,7 +104,7 @@ Each JAR covers an API-compatible version cluster (shown by the `mc` range in it
 - [GitHub Releases](https://github.com/zhaojiedi1992/enchantpeak/releases)
 
 **Installation:**
-1. Download the `enchantpeak-fabric-...+mc<your-range>.jar` or `enchantpeak-neoforge-...+mc<your-range>.jar` matching your loader and game version
+1. Download the `enchantpeak-fabric-...+mc<your-range>.jar`, `enchantpeak-forge-...+mc<your-range>.jar` or `enchantpeak-neoforge-...+mc<your-range>.jar` matching your loader and game version
 2. Place it in your `.minecraft/mods/` folder
 3. Launch the game with your loader's requirements installed (Fabric + Fabric API + REI/JEI, or NeoForge + JEI)
 4. Open the **Best Enchantments** category in JEI/REI; REI (Fabric) also exposes each build as a searchable entry
@@ -178,7 +193,7 @@ git clone https://github.com/zhaojiedi1992/enchantpeak.git
 cd enchantpeak
 ./gradlew build                                  # 默认 26.2
 ./gradlew clean build -Ptarget_mc=1.21           # 指定簇（如 1.21 = 1.21/1.21.1）
-scripts/build_all_versions.sh                    # 全部 Fabric + NeoForge 簇，产物在 dist/
+scripts/build_all_versions.sh                    # 全部 Fabric + NeoForge + Forge 簇，产物在 dist/
 ```
 
 Supported targets and dependency versions are defined once in `versions/minecraft.json`.
@@ -191,6 +206,17 @@ cd neoforge
 ```
 
 NeoForge clusters and NeoForge/JEI versions are defined in `neoforge/targets.json`.
+
+**Forge (`forge/` + `forge7/` independent builds):**
+
+Forge needs two toolchains: `forge/` uses ForgeGradle 6 + Gradle 8.8 for MC 1.20.4 and earlier (jars are reobfuscated to SRG names), `forge7/` uses ForgeGradle 7 + Gradle 9.4 for MC 1.20.5 and later (official names at runtime).
+
+```bash
+cd forge && ./gradlew build -Ptarget_mc=1.20.1     # FG6 簇（1.18.2 / 1.19 / 1.20.1 / 1.20.4）
+cd forge7 && ./gradlew build -Ptarget_mc=1.21      # FG7 簇（1.20.6 / 1.21）
+```
+
+Forge clusters and Forge/JEI versions are defined in `forge/targets.json` and `forge7/targets.json`.
 
 **Requirements:** Java 17 (for MC 1.18.2–1.20.1), Java 21 (for MC 1.21.x), and Java 25 (for MC 26.x). Gradle automatically selects the correct JDK via toolchain.
 
