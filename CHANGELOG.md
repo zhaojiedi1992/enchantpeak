@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.1.3
+
+Released on 2026-08-17.
+
+### E2E Smoke Fix
+
+- Fixed: Forge smoke targets in `e2e-smoke.yml` - the mc-runtime-test action needs `modloader: forge` (HeadlessMC install command) paired with `mc-runtime-test: lexforge` (release asset name uses `-lexforge-`); the previous `lexforge` value for both broke asset lookup and HMC command resolution
+
+
 ## 1.1.2
 
 Released on 2026-08-17.
