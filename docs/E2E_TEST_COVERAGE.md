@@ -18,6 +18,7 @@ EnchantPeak 的端到端测试使用 HeadlessMc 框架，通过真实客户端�
 - **Fabric 1.21.x**：日志标记检查
 - **Fabric 1.20.x/1.18.x**：日志标记检查
 - **NeoForge**：JEI 日志标记检查
+- **Forge**：代表簇冒烟（forge-1.20.1 = FG6 工具链 / forge-1.21 = FG7 工具链），断言 `Forge mod initialized` + `JEI recipes registered` 日志标记
 
 ## 详细覆盖
 

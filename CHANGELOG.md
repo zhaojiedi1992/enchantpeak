@@ -10,6 +10,7 @@
 - Added: `scripts/sync_family_sources.py` now 4-way syncs family sources (Fabric -> NeoForge / Forge / Forge7)
 - Added: `scripts/verify_jars.py` validates Forge mods.toml metadata (loader/mc/jei ranges, embedded license)
 - Added: CI `build-forge.yml` matrix and release pipeline jobs (GitHub Release + Modrinth + CurseForge with the `forge` loader tag)
+- Added: E2E smoke coverage for Forge - `forge-1.20.1` (FG6) and `forge-1.21` (FG7) booted via mc-runtime-test, asserting the Forge init + JEI registration log markers; `stageE2eMods` task added to both Forge builds (waits for reobfJar on FG6)
 
 ## 1.1.1
 

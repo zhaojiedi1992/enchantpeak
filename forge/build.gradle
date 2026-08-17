@@ -136,3 +136,23 @@ sourcesJar {
     from sourceSets[mcFamily].allSource
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// ===== E2E：把构建产物 + JEI Forge 运行时复制进 ../run/mods（供 mc-runtime-test 加载）=====
+configurations {
+    e2eMods { transitive = false }
+}
+dependencies {
+    e2eMods "mezz.jei:jei-${jeiMc}-forge:${jeiVersion}"
+}
+// 依赖 reobfJar 而非 jar：reobf 会原地重写 build/libs 下的 jar，须等其完成后再拷贝
+tasks.register('stageE2eMods', Copy) {
+    group = 'e2e'
+    description = 'Copy the built Forge jar + JEI into run/mods'
+    dependsOn 'reobfJar'
+    doFirst {
+        delete '../run/mods'
+    }
+    from configurations.e2eMods
+    from(tasks.named('jar'))
+    into '../run/mods'
+}

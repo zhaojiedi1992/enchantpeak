@@ -27,6 +27,9 @@ jobs:
           - { name: fabric-1.20.4, loader: fabric,  mc: "1.20.4",  target: "1.20.4", gradle_java: 21, runtime_java: 17, e2e: "false" }
           # 1.18.2 暂不冒烟：mc-runtime-test 的自动退出 mod 在 1.18.2 上不生效，
           # 游戏不退出导致 job 超时（数据正确性已由 JVM 深测覆盖，1.20.4 代表旧 API 时代）
+          # ---- Forge 代表（forge/ FG6 与 forge7/ FG7 各一）----
+          - { name: forge-1.20.1, loader: forge, mc: "1.20.1", target: "1.20.1", dir: "forge",  gradle_java: 21, runtime_java: 17, e2e: "false" }
+          - { name: forge-1.21,   loader: forge, mc: "1.21.1", target: "1.21",   dir: "forge7", gradle_java: 21, runtime_java: 21, e2e: "false" }
           # ---- NeoForge 代表 ----
           - { name: neoforge-26.2,   loader: neoforge, mc: "26.2",    target: "26.2",  gradle_java: 21, runtime_java: 25, e2e: "false" }
           - { name: neoforge-1.21.9, loader: neoforge, mc: "1.21.11", target: "1.21.9", gradle_java: 21, runtime_java: 21, e2e: "false" }
@@ -66,11 +69,18 @@ jobs:
         working-directory: neoforge
         run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
 
+      - name: Build mod jar (Forge)
+        if: matrix.loader == 'forge'
+        working-directory: ${{ matrix.dir }}
+        run: ./gradlew build --no-daemon -Ptarget_mc=${{ matrix.target }}
+
       - name: Stage mods into run/mods
         run: |
           rm -rf run/mods && mkdir -p run/mods
           if [ "${{ matrix.loader }}" = "fabric" ]; then
             ./gradlew stageE2eMods --no-daemon -Ptarget_mc=${{ matrix.target }}
+          elif [ "${{ matrix.loader }}" = "forge" ]; then
+            (cd ${{ matrix.dir }} && ./gradlew stageE2eMods --no-daemon -Ptarget_mc=${{ matrix.target }})
           else
             (cd neoforge && ./gradlew stageE2eMods --no-daemon -Ptarget_mc=${{ matrix.target }})
           fi
@@ -104,6 +114,10 @@ jobs:
           elif [ "${{ matrix.loader }}" = "neoforge" ]; then
             printf '%s\n' \
               '\[EnchantPeak\] NeoForge mod initialized\.' \
+              'JEI recipes registered: \d+' > /tmp/e2e-require.txt
+          elif [ "${{ matrix.loader }}" = "forge" ]; then
+            printf '%s\n' \
+              '\[EnchantPeak\] Forge mod initialized\.' \
               'JEI recipes registered: \d+' > /tmp/e2e-require.txt
           else
             printf '%s\n' \
