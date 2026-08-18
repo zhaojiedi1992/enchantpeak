@@ -97,6 +97,13 @@ jobs:
           mc-runtime-test: ${{ matrix.mcrt || matrix.loader }}
           java: ${{ matrix.runtime_java }}
           xvfb: "true"
+          # Forge 有已知的偶发崩溃（NightConfig 并发读取导致 NPE，
+          # https://github.com/headlesshq/mc-runtime-test/issues/13），
+          # HMC 的 --retries 会在 launch 失败时自动重试
+          headlessmc-command: >-
+            ${{ matrix.loader == 'forge'
+                && '--jvm "-Djava.awt.headless=true" --retries 3'
+                || '--jvm "-Djava.awt.headless=true"' }}
 
       - name: Assert EnchantPeak markers in client log
         run: |

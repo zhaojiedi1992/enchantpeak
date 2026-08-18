@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.1.4
+
+Released on 2026-08-17.
+
+### E2E Smoke Fix
+
+- Fixed: Forge smoke jobs (forge-1.20.1 / forge-1.21) intermittently crashed on launch with a NightConfig NPE (`FMLConfig$ConfigValue.getConfigValue` returning null under concurrent config file access) - a known upstream mc-runtime-test issue (headlesshq/mc-runtime-test#13). Added `--retries 3` to the HeadlessMC launch command for Forge targets, per the upstream fix (#18)
+
+
 ## 1.1.3
 
 Released on 2026-08-17.
