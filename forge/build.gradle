@@ -34,6 +34,11 @@ def jeiMc = forgeTarget.jei_mc
 // 与 neoforge 侧 minorBound 粒度一致
 static String minorBound(String v) { v.replaceFirst(/\.\d+$/, '') }
 
+// pack.mcmeta 的 pack_format：与 MC 版本的对应关系（Mojang 资源包格式）
+static final def PACK_FORMATS_BY_MC = [
+        '1.18.2': 8, '1.19.2': 9, '1.20.1': 15, '1.20.4': 18, '1.20.6': 22, '1.21.1': 34,
+]
+
 group = "com.${rootProps.getProperty('mod_author')}"
 
 base {
@@ -93,9 +98,13 @@ processResources {
             mc_range    : forgeTarget.mc_range,
             forge_range : forgeTarget.forge_range,
             jei_min     : minorBound(jeiVersion),
+            pack_format : forgeTarget.pack_format,
     ]
     inputs.properties(props)
     filesMatching('META-INF/mods.toml') {
+        expand props
+    }
+    filesMatching('pack.mcmeta') {
         expand props
     }
 }

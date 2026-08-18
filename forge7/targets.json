@@ -7,7 +7,11 @@
     "jei": "18.0.0.66",
     "jei_mc": "1.20.6",
     "java": 21,
-    "game_versions": ["1.20.5", "1.20.6"],
+    "pack_format": 22,
+    "game_versions": [
+      "1.20.5",
+      "1.20.6"
+    ],
     "mc_range": "[1.20.5,1.21)",
     "forge_range": "[50,)"
   },
@@ -19,7 +23,11 @@
     "jei": "19.44.0.401",
     "jei_mc": "1.21.1",
     "java": 21,
-    "game_versions": ["1.21", "1.21.1"],
+    "pack_format": 34,
+    "game_versions": [
+      "1.21",
+      "1.21.1"
+    ],
     "mc_range": "[1.21,1.21.2)",
     "forge_range": "[52,)"
   }
