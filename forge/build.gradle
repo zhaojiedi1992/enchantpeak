@@ -35,7 +35,7 @@ def jeiMc = forgeTarget.jei_mc
 static String minorBound(String v) { v.replaceFirst(/\.\d+$/, '') }
 
 // pack.mcmeta 的 pack_format：与 MC 版本的对应关系（Mojang 资源包格式）
-static final def PACK_FORMATS_BY_MC = [
+final def PACK_FORMATS_BY_MC = [
         '1.18.2': 8, '1.19.2': 9, '1.20.1': 15, '1.20.4': 18, '1.20.6': 22, '1.21.1': 34,
 ]
 
