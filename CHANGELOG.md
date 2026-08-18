@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.1.5
+
+Released on 2026-08-18.
+
+### Forge E2E Fix
+
+- Fixed: Forge smoke tests crashed on launch - the mod jars were missing `pack.mcmeta`, so FML collected a "Missing metadata in pack mod:enchantpeak" mod loading warning and (with `showLoadWarnings=true`) displayed a LoadingErrorScreen, which the mc-runtime-test harness treats as a hard failure
+- Added: `pack.mcmeta` to both Forge builds with per-MC-version `pack_format` expansion (8/9/15/18/22/34 for 1.18.2 ~ 1.21.1) in `processResources`
+- Fixed: `PACK_FORMATS_BY_MC` declaration in `build.gradle` (Groovy script-level `final`, not `static`)
+- Verified: forge-1.20.1 (FG6) and forge-1.21 (FG7) headless smoke both pass; crash-reports/debug.log are now uploaded with the e2e log artifact for future diagnostics
+
+
 ## 1.1.4
 
 Released on 2026-08-17.
